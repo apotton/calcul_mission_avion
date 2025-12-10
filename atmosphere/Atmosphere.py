@@ -12,7 +12,7 @@ class Atmosphere:
     # Constantes de Conversion
     conv_fttom = 0.3048   # Facteur de conversion : 1 pied = 0.3048 mètre
     DISA=0
-    DISA=np.interp(distance_NM_ligne*conv_NM_m,DISA_ligne,d)
+    #DISA=np.interp(d,distance_NM_ligne*conv_NM_m,DISA_ligne)
 
     def getRhoPT(self, h_m) :
         if h_m <= 11000:
