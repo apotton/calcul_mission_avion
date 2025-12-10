@@ -35,3 +35,20 @@ class Avion:
 
     def __repr__(self):
         return f"<Avion: {getattr(self, 'Name', 'Unknown')}>"
+    
+    def getName(self):
+        return self.Name
+    
+    def getWingspan(self):
+        return self.Wingspan
+
+    def getLength(self):
+        return self.Length
+
+    def getHeight(self):
+        return self.Height 
+    
+    def getMaxPassengers(self):
+        return self.HMaxPassengers
+    
+   
