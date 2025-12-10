@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Cette ligne ajoute le dossier parent au chemin de recherche de Python
-
 import numpy as np
 from constantes.constantes import Constantes
 
