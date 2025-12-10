@@ -6,7 +6,7 @@ class Aero:
     def __init__(self, avion):
         self.avion = avion
         self.Cx_t = self.avion.getCx0Climb()
-        self.Cz_t = self.avion.getMaxTakeoffWeight()*Constantes.g/(0.7*Constantes.p0_Pa*self.avion.getSref()*self.avion.getMMO()**2) #ATTENTION CHANGER MTOW PAR LA MASSE ACTUELLE ET MMO PAR MACH_T
+        self.Cz_t = self.CalculateCz() #ATTENTION CHANGER MTOW PAR LA MASSE ACTUELLE ET MMO PAR MACH_T
 
     #Calcul du Cz
     def CalculateCz(self):
