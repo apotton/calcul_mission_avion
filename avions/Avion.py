@@ -7,7 +7,7 @@ class Avion:
         # Dossier de ce fichier Avion.py
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         # Construire le chemin complet vers csv_avions
-        csv_folder = os.path.join(base_dir, "csv_avions")
+        csv_folder = os.path.join(base_dir, "avions", "csv_avions")
         full_path = os.path.join(csv_folder, nom_fichier_csv)
         print(full_path)
 
