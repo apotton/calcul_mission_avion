@@ -9,8 +9,8 @@ class Avion:
         # Construire le chemin complet vers csv_avions
         csv_folder = os.path.join(base_dir, "avions", "csv_avions")
         full_path = os.path.join(csv_folder, nom_fichier_csv)
-        print(full_path)
 
+        # Si fichier non trouvé
         if not os.path.isfile(full_path):
             raise FileNotFoundError(f"Fichier CSV non trouvé : {full_path}")
 
@@ -25,6 +25,8 @@ class Avion:
                         valeur = float(valeur)
                     except ValueError:
                         pass
+
+                    # Attribution dynamique des attributs
                     setattr(self, cle, valeur)
 
     def __repr__(self):
