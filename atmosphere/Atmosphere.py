@@ -7,40 +7,40 @@ class Atmosphere:
     p0_Pa = 101325.0      # Pression de référence au niveau de la mer (Pa)
     Th_Kparm = -0.0065       # Gradient thermique troposphérique standard (K/m)
     g = 9.80665         # Accélération de la gravité (m/s^2)
-    r_JparKgK = 287.05287    # Constante spécifique des gaz pour l'air (J/(kg*K))
+    r = 287.05287    # Constante spécifique des gaz pour l'air (J/(kg*K))
     
     # Constantes de Conversion
     conv_fttom = 0.3048   # Facteur de conversion : 1 pied = 0.3048 mètre
     DISA=0
-    #DISA=np.interp(distance_NM_ligne*conv_NM_m,DISA_ligne,d)
+    DISA=np.interp(distance_NM_ligne*conv_NM_m,DISA_ligne,d)
 
-    def getRhoPT(h_m) :
+    def getRhoPT(self, h_m) :
         if h_m <= 11000:
             # --- Troposphère (Altitude à gradient constant : h <= 11000 m) ---
             
             # Température (T = T0 + T_h*h + DISA)
-            T = T0_K + Th_Kparm * h_m + DISA
+            T = self.T0_K + self.Th_Kparm * h_m + self.DISA
             
             # Pression (Formule de pression pour gradient constant)
-            exponent_p = -g / (r_JparKgK * Th_Kparm)
-            p = p0_Pa * (1 + Th_Kparm / T0_K * h_m) ** exponent_p 
+            exponent_p = -self.g / (self.r * self.Th_Kparm)
+            p = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * h_m) ** exponent_p 
             
-            # Densité (Loi des gaz parfaits : rho = p/(R*T))
-            rho = p / (r_JparKgK * T)
             
         else:
             # --- Stratosphère Isotherme (Altitude au-dessus de 11000 m) ---
             # 1. Calcul des conditions de transition à 11 km (sans DISA)
-            T_11_ISA_0 = T0_K + Th_Kparm * 11000 
-            p_11 = p0_Pa * (1 + Th_Kparm / T0_K * 11000) ** (-g / (r_JparKgK * Th_Kparm))
+            T_11_ISA_0 = self.T0_K + self.Th_Kparm * 11000 
+            p_11 = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * 11000) ** (-self.g / (self.r * self.Th_Kparm))
             
             # 2. Calcul des conditions actuelles (T est constante au-dessus de 11 km, corrigée par DISA)
-            T = T_11_ISA_0 + DISA
+            T = T_11_ISA_0 + self.DISA
             
             # Pression (Formule de pression pour couche isotherme)
-            exponent_p_strato = -g / (r_JparKgK * T_11_ISA_0) * (h_m - 11000)
+            exponent_p_strato = -self.g / (self.r * T_11_ISA_0) * (h_m - 11000)
             p = p_11 * np.exp(exponent_p_strato)
             
-            # Densité (Loi des gaz parfaits)
-            rho = p / (r_JparKgK * T)
+        # Densité (Loi des gaz parfaits)
+        rho = p / (self.r * T)
+
+        return rho,p,T
 
