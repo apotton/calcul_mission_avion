@@ -32,6 +32,8 @@ class Aero:
         return self.Mach
     
     def CalculateCx(self):
+        #Calcul du Cx0
+        ################################################################
         #va falloir convertir plein d'angles donc :
         phi_25_deg = 24.97
         phi_rad = np.radians(phi_25_deg) 
@@ -51,3 +53,30 @@ class Aero:
         Delta_Cx_0=0.0115
         Cx_0_wing=2*Cf*((K_e+K_c)*K_phi+K_i+1)
         Cx_0=Cx_0_wing+Delta_Cx_0
+        #################################################################
+
+        #Calcul du Cx_i
+        Taper_ratio=0.246
+        D_fuselage = 3.95
+        Envergure = 34.1
+        Aspect_ratio = 9.603
+        delta_e=0.233*Taper_ratio**2-0.068*Taper_ratio+0.012
+        delta_to_delta_0=(0.7/Aero.getCz())**2
+        Cx_i=(1.03+delta_e*delta_to_delta_0+(D_fuselage/Envergure)**2)/(np.pi*Aspect_ratio)*Aero.getCz()**2
+
+        #Calcul du Cx_trim
+        Cx_trim = (5.89*10**(-4))*Aero.getCz()
+
+        #Calcul du Cx_compressibility
+        MDD= 0.95/np.cos(phi_rad) - t_to_c_ref/le_cosinus - Aero.getCz()/(10*(np.cos(phi_rad))**3)
+        M_cr = MDD - (0.1/80)**(1/3)
+
+        #Maintenant c'est la boucle :
+        if Aero.getMach()>M_cr :
+            Cx_compressibility = 20 * (Aero.getMach()-M_cr)**4
+        else :
+            Cx_compressibility = 0
+        
+        #Calcul final
+        Cx = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
+        return Cx
