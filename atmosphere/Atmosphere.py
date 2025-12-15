@@ -14,6 +14,11 @@ class Atmosphere:
     DISA=0
     #DISA=np.interp(d,distance_NM_ligne*Constantes.conv_NM_m,DISA_ligne)
 
+    def __init__(self):
+        self.rho_t = 1.225  # Densité standard au niveau de la mer (kg/m^3)
+        self.P_t = 101325.0  # Pression standard au niveau de la mer (Pa)
+        self.T_t = 288.15  # Température standard au niveau de la mer (K)
+
     def getRhoPT(self, h_m) :
         if h_m <= 11000:
             # --- Troposphère (Altitude à gradient constant : h <= 11000 m) ---
@@ -42,5 +47,15 @@ class Atmosphere:
         # Densité (Loi des gaz parfaits)
         rho = p / (self.r * T)
 
-        return rho,p,T
+        self.rho_t = rho
+        self.P_t = p
+        self.T_t = T
 
+    def getRho_t(self):
+        return self.rho_t
+    
+    def getP_t(self):
+        return self.P_t
+    
+    def getT_t(self):
+        return self.T_t
