@@ -1,4 +1,4 @@
-from constantes.constantes import Constantes
+from constantes.Constantes import Constantes
 
 class Masse:
     def __init__(self, avion):

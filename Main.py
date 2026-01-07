@@ -1,4 +1,4 @@
-from constantes.constantes import Constantes
+from constantes.Constantes import Constantes
 from avions.Avion import Avion
 from atmosphere.Atmosphere import Atmosphere
 

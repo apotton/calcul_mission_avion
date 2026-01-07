@@ -1,4 +1,4 @@
-from constantes.constantes import Constantes
+from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
 
