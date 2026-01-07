@@ -9,11 +9,11 @@ class Aero:
         self.Avion = avion
         self.Cx_t = self.Avion.getCx0Climb()
         # print("Test" + str(Constantes().a1_stratosphere))
-        self.Cz_t = self.CalculateCz() #ATTENTION CHANGER MMO PAR MACH_T
+        self.Cz_t = 0 #Uniquement pour l'initialisation 
 
     #Calcul du Cz
-    def CalculateCz(self):
-        self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*Constantes.p0_Pa*self.Avion.getSref()*self.Avion.getMMO()**2) #CHANGER MMO PAR MACH_T
+    def CalculateCz(self,Mach_t):
+        self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*Constantes.p0_Pa*self.Avion.getSref()*Mach_t**2) 
     
 
     #Calcul du simplifié de Cx en fonction de la configuration du vol
@@ -29,62 +29,63 @@ class Aero:
     
 
     #Calcul avancé du Cx
-    def CalculateCx(self):
+    def CalculateCx(self, atmosphere):
         #Calcul du Cx0
         ################################################################
         #va falloir convertir plein d'angles donc :
-        phi_25_deg = 24.97
-        phi_rad = np.radians(phi_25_deg) 
-        #ules random constante du matlab :
-        l_ref = 6
-        t_to_c_ref = 0.1093
+        phi_rad = np.radians(self.Avion.getPhi25deg())
+        cos_phi = np.cos(phi_rad)
+        cos_phi_c = np.cos(phi_rad)**2
+
         #Calcul du nombre de Reynolds
-        Re = (47899*Atmosphere.getP_t()*Aero.getMach()*((1+0.126*Aero.getMach()**2)*Atmosphere.getT_t()+110.4)/(Atmosphere.getT_t()**2))/(1+0.126*Aero.getMach()**2)**(5/2)
+        Re = (47899*atmosphere.getP_t()*self.getMach()*
+              ((1+0.126*self.getMach()**2)*atmosphere.getT_t()+110.4)
+              /(atmosphere.getT_t()**2))/(1+0.126*self.getMach()**2)**(5/2)
+        
         #Calcul du Cf
-        Cf = 0.455/(1+0.126*Aero.getMach()**2)/(np.log10(Re*l_ref))**2.58
+        Cf = 0.455/(1+0.126*self.getMach()**2)/(np.log10(Re*self.Avion.getLref()))**2.58
+
         #Calcul du K_e & K_c
-        K_e = 4.688*t_to_c_ref**2+3.146*t_to_c_ref
-        le_cosinus = np.cos(phi_rad)**2
-        K_c = 2.859*(Aero.getCz()/le_cosinus)**3-1.849*(Aero.getCz()/le_cosinus)**2 + 0.382*(Aero.getCz()/le_cosinus)+0.06
-        K_phi = 1-0.000178*(phi_rad)**2-0.00065*phi_rad
-        K_i=0.04
-        Delta_Cx_0=0.0115
-        Cx_0_wing=2*Cf*((K_e+K_c)*K_phi+K_i+1)
-        Cx_0=Cx_0_wing+Delta_Cx_0
+        K_e = 4.688*self.Avion.getTtoCref()**2 + 3.146*self.Avion.getTtoCref()
+        K_c = 2.859*(self.getCz()/cos_phi_c)**3 - 1.849*(self.getCz()/cos_phi_c)**2 + 0.382*(self.getCz()/cos_phi_c)+0.06
+        K_phi = 1 - 0.000178*(phi_rad)**2 - 0.00065*phi_rad
+
+        # ??? Trouver origine constantes
+        K_i = 0.04
+        Delta_Cx_0 = 0.0115
+        Cx_0_wing = 2*Cf*((K_e+K_c)*K_phi+K_i+1)
+        Cx_0 = Cx_0_wing + Delta_Cx_0
         #################################################################
 
         #Calcul du Cx_i
-        Taper_ratio=0.246 #C EST QUOI CES VALEURS ???
-        D_fuselage = 3.95
-        Envergure = 34.1
-        Aspect_ratio = 9.603
-        delta_e=0.233*Taper_ratio**2-0.068*Taper_ratio+0.012
-        delta_to_delta_0=(0.7/Aero.getCz())**2
-        Cx_i=(1.03+delta_e*delta_to_delta_0+(D_fuselage/Envergure)**2)/(np.pi*Aspect_ratio)*Aero.getCz()**2
+
+        delta_e = 0.233*self.Avion.getTaperRatio()**2-0.068*self.Avion.getTaperRatio()+0.012
+        delta_to_delta_0 = (0.7/self.getCz())**2
+        Cx_i = (1.03+delta_e*delta_to_delta_0+(self.Avion.getDFuselage()
+               /self.Avion.getEnvergure())**2)/(np.pi*self.Avion.getAspectRatio())*self.getCz()**2
 
         #Calcul du Cx_trim
-        Cx_trim = (5.89*10**(-4))*Aero.getCz()
+        Cx_trim = (5.89*10**(-4))*self.getCz()
 
         #Calcul du Cx_compressibility
-        MDD= 0.95/np.cos(phi_rad) - t_to_c_ref/le_cosinus - Aero.getCz()/(10*(np.cos(phi_rad))**3)
+        MDD = 0.95/cos_phi - self.Avion.getTtoCref()/cos_phi_c - self.getCz()/(10*cos_phi**3)
         M_cr = MDD - (0.1/80)**(1/3)
 
         #Maintenant c'est la boucle :
-        if Aero.getMach()>M_cr :
-            Cx_compressibility = 20 * (Aero.getMach()-M_cr)**4
+        if self.getMach()>M_cr :
+            Cx_compressibility = 20 * (self.getMach()-M_cr)**4
         else :
             Cx_compressibility = 0
         
         #Calcul final
-        Cx = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
-        return Cx
+        self.Cx_t = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
     
     #Getters 
     def getCx(self):
         return self.Cx_t
     
     def getMach(self):
-        return self.Mach_T #ATTENTION ATTRIBUT MACH A AJOUTER APRES CALCULS MOTEURS
+        return 0.5 # self.Mach_T #ATTENTION ATTRIBUT MACH A AJOUTER APRES CALCULS MOTEURS
     
     def getCz(self):
         return self.Cz_t

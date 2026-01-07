@@ -54,6 +54,7 @@ class Avion:
 # Camber : Cambrure du profil ()
 # MaxThicknessPosition : Position de l'épaisseur de profil maximale sur la corde ()
 # DFuselage : Diamètre du fuselage (m)
+# Envergure : Envergure de l'avion (m)
 # KVMO : Vitesse maximale opérationnelle(kt)
 # MMO : Mach maximal opérationnelle 
 # PressurisationCeilingFt : Altitude maximale atteignable avec une cabine pressurisée (ft)
@@ -126,6 +127,9 @@ class Avion:
     
     def getDFuselage(self):
         return self.DFuselage
+    
+    def getEnvergure(self):
+        return self.Envergure
     
     def getKVMO(self):
         return self.KVMO

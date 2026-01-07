@@ -13,9 +13,9 @@ print(A320.getHeight())
 print(Constantes.g)
 print(Atmosphere.T0_K)
 
-test  = Atmosphere()
-test.getRhoPT(15000)
-print("At 15000 m: rho = {:.4f} kg/m³, p = {:.2f} Pa, T = {:.2f} K".format(test.rho_t, test.P_t, test.T_t))
+test_atmos  = Atmosphere()
+test_atmos.getRhoPT(15000)
+print("At 15000 m: rho = {:.4f} kg/m³, p = {:.2f} Pa, T = {:.2f} K".format(test_atmos.rho_t, test_atmos.P_t, test_atmos.T_t))
 
 print("Cx_t = " + str(A320.Aero.Cx_t))
 
@@ -39,5 +39,18 @@ print(Cz)
 print(Cx_Climb)
 print(Cx_Cruise)
 print(Cx_Descent)
+
+# Test de l'obtention de l'envergure dans la classe avion
+env = A320.Envergure
+print("Envergure de l'avion : " + str(env) + " m")
+
+# Test de l'obtention de l'envergure via la méthode getEnvergure()
+env_method = A320.getEnvergure()
+print("Envergure de l'avion via méthode : " + str(env_method) + " m")
+
+# Test du calcul complet de Cx
+A320.Aero.CalculateCx(test_atmos)
+Cx_complete = A320.Aero.getCx()
+print("Cx complet calculé : " + str(Cx_complete))
 
 print("Test complete.")
