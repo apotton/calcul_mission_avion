@@ -30,8 +30,8 @@ class Avion:
                     # Attribution dynamique des attributs
                     setattr(self, cle, valeur) #On crée les attributs à partir des clés du csv et on leur associe les valeurs du fichiers
 
-        self.Aero = Aero(self)
         self.Masse = Masse(self)
+        self.Aero = Aero(self)
 
 #LISTE DES ATTRIBUTS :
 # Name : Nom du modèle d'avion

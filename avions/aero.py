@@ -1,11 +1,14 @@
-from constantes.constantes import Constantes 
+from constantes.constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
+# from .Avion import Avion
+# from .Masse import Masse
 
 class Aero:
     def __init__(self, avion):
         self.Avion = avion
         self.Cx_t = self.Avion.getCx0Climb()
+        # print("Test" + str(Constantes().a1_stratosphere))
         self.Cz_t = self.CalculateCz() #ATTENTION CHANGER MMO PAR MACH_T
 
     #Calcul du Cz

@@ -2,7 +2,7 @@ from constantes.constantes import Constantes
 
 class Masse:
     def __init__(self, avion):
-        self.avion = avion
+        self.Avion = avion
 
         # --- Masses mission ---
         self.m_payload = 0.0 #Payload de la mission
@@ -42,9 +42,9 @@ class Masse:
 
     def getCurrentMass(self):
         return (
-            self.avion.getEmptyWeight() +
+            self.Avion.getEmptyWeight() +
             self.m_payload +
-            self.m_fuel_remaining
+            self.m_fuel_remaining_T
         )
 
 
