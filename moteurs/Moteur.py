@@ -2,6 +2,8 @@ from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
 
+from scipy.interpolate import RegularGridInterpolator
+
 
 class Moteur:
     def __init__(self, BPR=0, OPR=0, Reseau_moteur=0):
@@ -157,3 +159,9 @@ class Moteur:
 
     def get_SFC(self):
         return self.SFC
+
+    def Calculate_F_MCL_cruise_step(self, mach, h_ft):
+        interp=RegularGridInterpolator((Mach_table, alt_table_ft), Fn_MCL_table)
+        self.F_T=interp((mach,h_ft))
+        return self.F_T
+        
