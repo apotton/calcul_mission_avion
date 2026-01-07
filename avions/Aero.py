@@ -9,11 +9,11 @@ class Aero:
         self.Avion = avion
         self.Cx_t = self.Avion.getCx0Climb()
         # print("Test" + str(Constantes().a1_stratosphere))
-        self.Cz_t = self.CalculateCz() #ATTENTION CHANGER MMO PAR MACH_T
+        self.Cz_t = 0 #Uniquement pour l'initialisation 
 
     #Calcul du Cz
-    def CalculateCz(self):
-        self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*Constantes.p0_Pa*self.Avion.getSref()*self.Avion.getMMO()**2) #CHANGER MMO PAR MACH_T
+    def CalculateCz(self,Mach_t):
+        self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*Constantes.p0_Pa*self.Avion.getSref()*Mach_t**2) 
     
 
     #Calcul du simplifié de Cx en fonction de la configuration du vol

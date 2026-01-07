@@ -50,16 +50,20 @@ class Mission:
             # --- Atmosphère ---
             self.atmosphere.getRhoPT(h) #ATTENTION TRES MAUVAIS CHOIX DE NOM POUR ATM CE DEVRAIT ETRE CALCULATE RHO PT
 
-            rho = self.atmosphere.getRho_t()
-            T = self.atmosphere.getT_t()
+            rho_t = self.atmosphere.getRho_t()
+            P_t = self.atmosphere.getP_t()
+            T_t = self.atmosphere.getT_t()
 
             # --- Mach et TAS ---
-            Mach = CAS / np.sqrt(1.4 * 287.05 * T)  # approximation Mach = V_true / sqrt(gamma*R*T)
-            TAS = Mach * np.sqrt(1.4 * 287.05 * T)
+            Gamma = Constantes.gamma
+            Delta_p = P_t*(((Gamma-1)/2*Mach**2+1)**(Gamma/(Gamma-1))-1)
+            CAS = np.sqrt(2*Gamma*Constantes.r*(Constantes.T0_K)/(Gamma-1)*((1+Delta_p/Constantes.p0_Pa)**(0.4/Gamma)-1))
+
+            TAS = Mach*np.sqrt(1.4*Constantes.r*T_t)
 
             # --- Cz et Cx ---
-            self.aero.CalculateCz
-            Cz = self.aero.getCz
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
 
             self.aero.CalculateCxClimb_Simplified()  # ici on peut remplacer par CalculateCx si on veut le modèle complet
             Cx = self.aero.getCx()
@@ -68,7 +72,7 @@ class Mission:
 
             # --- Poussée moteur et SFC ---
             if self.moteur.get_Reseau_moteur() == 1:
-                # Ici on pourrait interpoler depuis des tables (MATLAB interp2)
+                # ATTENTION A MODIFIER UNE FOIS QU'ON AURA FAIT LES INTERPOLLATIONS MOTEUR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 F_N = 0.0
                 SFC = 0.0
             else:
@@ -103,15 +107,13 @@ class Mission:
             self.history["Mach"].append(Mach)
             self.history["Cz"].append(Cz)
             self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
             self.history["F_N"].append(F_N)
             self.history["SFC"].append(SFC)
-            self.history["FB"].append(FB)
-            self.history["m"].append(m)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
 
-            # --- Mise à jour de CAS pour la boucle ---
-            CAS += 0.5  # incrément par pas de temps, à calibrer
-
-        return h, l, t
 
     # --- Phase 2 : Descente à V constante jusqu'à 10000 ft ---
     def phase2_descent_high_speed(self, h_cruise, h_10000ft): #Descente à V = Max CAS jusqu'à 10 000ft
