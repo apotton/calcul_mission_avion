@@ -4,8 +4,12 @@ import numpy as np
 
 
 class Moteur:
-    def __init__(self):
-        pass
+    def __init__(self, BPR=0, OPR=0, Reseau_moteur=0):
+        self.BPR = BPR        # Bypass ratio
+        self.OPR = OPR        # Overall Pressure Ratio
+        self.Reseau_moteur = Reseau_moteur  # choix du modèle
+        self.F_T = 0            # Poussée actuelle (N)
+        self.SFC_T = 0          # SFC actuelle (kg/(N.s))
 
 
     def CalculateSFC(F_max,F,T,Mach,h_m,self):
@@ -137,3 +141,19 @@ class Moteur:
             
             # Calcul Final
             SFC = SFC_reduced * SFC_CLB
+
+    # Getters
+    def get_BPR(self):
+        return self.BPR
+
+    def get_OPR(self):
+        return self.OPR
+
+    def get_Reseau_moteur(self):
+        return self.Reseau_moteur
+
+    def get_F(self):
+        return self.F
+
+    def get_SFC(self):
+        return self.SFC
