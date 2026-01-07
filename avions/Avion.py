@@ -7,7 +7,7 @@ class Avion:
     def __init__(self, nom_fichier_csv):
 
         # Dossier de ce fichier Avion.py
-        base_dir = os.path.dirname(os.path.abspath(__file__)) #Renvoie le Directory du fichier actuel et remont d'un cran
+        base_dir = os.path.dirname(os.path.abspath(__file__)) #Renvoie le Directory du fichier actuel et remonte d'un cran
         csv_folder = os.path.join(base_dir, "csv_avions") #Ajoute le terme "csv_avions" au Directory précédent pour se rendre dans le Directory des fichiers csv à lire
         full_path = os.path.join(csv_folder, nom_fichier_csv) #Ajoute le nom du fichier csv au Directory afin de le compléter
 

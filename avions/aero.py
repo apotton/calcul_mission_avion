@@ -6,14 +6,11 @@ class Aero:
     def __init__(self, avion):
         self.avion = avion
         self.Cx_t = self.avion.getCx0Climb()
-        self.Cz_t = self.CalculateCz() #ATTENTION CHANGER MTOW PAR LA MASSE ACTUELLE ET MMO PAR MACH_T
+        self.Cz_t = self.CalculateCz() #ATTENTION CHANGER MMO PAR MACH_T
 
     #Calcul du Cz
     def CalculateCz(self):
-        self.Cz_t = self.avion.getMaxTakeoffWeight()*Constantes.g/(0.7*Constantes.p0_Pa*self.avion.getSref()*self.avion.getMMO()**2) #ATTENTION CHANGER MTOW PAR LA MASSE ACTUELLE ET MMO PAR MACH_T
-    
-    def getCz(self):
-        return self.Cz_t
+        self.Cz_t = self.avion.Masse.getCurrentMass()*Constantes.g/(0.7*Constantes.p0_Pa*self.avion.getSref()*self.avion.getMMO()**2) #CHANGER MMO PAR MACH_T
     
 
     #Calcul du simplifié de Cx en fonction de la configuration du vol
@@ -26,11 +23,9 @@ class Aero:
     def CalculateCxDescent_Simplified(self):
         self.Cx_t = self.avion.getCx0Descent() + 1/(np.pi*self.avion.getAspectRatio()*self.avion.getOswaldDescent()) *self.Cz_t**2
 
-    def getCx(self):
-        return self.Cx_t
-    def getMach(self):
-        return self.Mach
     
+
+    #Calcul avancé du Cx
     def CalculateCx(self):
         #Calcul du Cx0
         ################################################################
@@ -56,7 +51,7 @@ class Aero:
         #################################################################
 
         #Calcul du Cx_i
-        Taper_ratio=0.246
+        Taper_ratio=0.246 #C EST QUOI CES VALEURS ???
         D_fuselage = 3.95
         Envergure = 34.1
         Aspect_ratio = 9.603
@@ -80,3 +75,13 @@ class Aero:
         #Calcul final
         Cx = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
         return Cx
+    
+    #Getters 
+    def getCx(self):
+        return self.Cx_t
+    
+    def getMach(self):
+        return self.Mach_T #ATTENTION ATTRIBUT MACH A AJOUTER APRES CALCULS MOTEURS
+    
+    def getCz(self):
+        return self.Cz_t
