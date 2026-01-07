@@ -34,7 +34,7 @@ class Masse:
         )
 
     def burn_fuel(self, dt):
-        fuel_flow = SFC * F #ATTENTION UTILISER LES GETTERS DE LA CLASSE MOTEUR UNE FOIS CREES
+        fuel_flow = SFC * F #ATTENTION UTILISER LES GETTERS DE LA CLASSE MOTEUR UNE FOIS CREES 
         dm = fuel_flow * dt #Débit de carburant consommé pendant dt
         self.m_fuel_remaining -= dm #On soustrait le fuel consommé au fuel restant
         self.m_burned_total += dm #On ajoute le fuel consommé au fuel brulé
