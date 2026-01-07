@@ -1,7 +1,7 @@
 import os
 import csv
-from .aero import Aero
-from .masse import Masse
+from .Aero import Aero
+from .Masse import Masse
 
 class Avion:
     def __init__(self, nom_fichier_csv):
