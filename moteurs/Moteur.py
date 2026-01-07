@@ -8,8 +8,8 @@ class Moteur:
         self.BPR = BPR        # Bypass ratio
         self.OPR = OPR        # Overall Pressure Ratio
         self.Reseau_moteur = Reseau_moteur  # choix du modèle
-        self.F_T = 0            # Poussée actuelle (N)
-        self.SFC_T = 0          # SFC actuelle (kg/(N.s))
+        self.F = 0            # Poussée actuelle (N)
+        self.SFC = 0          # SFC actuelle (kg/(N.s))
 
 
     def CalculateSFC(F_max,F,T,Mach,h_m,self):
