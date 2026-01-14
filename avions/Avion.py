@@ -31,7 +31,7 @@ class Avion:
                     setattr(self, cle, valeur) #On crée les attributs à partir des clés du csv et on leur associe les valeurs du fichiers
 
         self.Masse = Masse(self)
-        self.Aero = Aero(self)
+        self.Aero = Aero(self) #AJOUTER LE SELF.MOTEUR
 
 #LISTE DES ATTRIBUTS :
 # Name : Nom du modèle d'avion
