@@ -107,7 +107,7 @@ class Reseau_moteur:
 
 # Dictionnaire structuré par altitude.
 # Format: { Altitude_ft : { 'fn': array_1D, 'sfc': array_2D } }
-        cruise_data = {
+        self.cruise_data = {
             25000: {
                 "fn": np.array([3067.8, 3473.52, 3879.24, 4284.96, 4690.68, 5096.4, 5502.12, 5907.84, 6313.56, 6719.28, 7125]),
                 "sfc": np.array([
