@@ -11,57 +11,57 @@ class Mission:
 
         # Historique pour suivi de la descente (pour fournir le résultat à chaque pas de temps)
         self.history = {
-            "h": [],
-            "l": [],
-            "t": [],
-            "V_CAS": [],
-            "V_true": [],
-            "Mach": [],
-            "Cz": [],
-            "Cx": [],
-            "F_N": [],
-            "SFC": [],
-            "FB": [],
-            "m": []
+            "h": [], #Altitude en UNITE
+            "l": [], #Distance franchie en UNITE
+            "t": [], #Temps en UNITE
+            "V_CAS": [], #Vitesse conventionnelle en UNITE
+            "V_true": [], #Vitesse vraie en UNITE
+            "Mach": [], #Mach
+            "Cz": [], #Coef de portance
+            "Cx": [], #Coef de trainée
+            "F_N": [], #Poussée
+            "SFC": [], #Consommation spécifique
+            "FB": [], #Carburant consommée
+            "m": [] #Masse appareil
         }
 
-    # --- Phase 1 : Ajustement vitesse à Max CAS ---
-    def phase1(self, h_start, l_start, t_start, dt=1.0): #Ajuste la vitesse avant d'initier la descente réelle
+    # --- Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
+    def phase1(self, h_start, l_start, t_start, Mach_start, dt=1.0):
         """
-        Ajuste l'avion pour atteindre la vitesse maximale autorisée en CAS (Vmax_CAS).
-        La descente commence à l'altitude h_start.
+        Laisse l'avion initier une descente libre pour atteindre la vitesse maximale autorisée en CAS (Vmax_CAS) avant de passer à la phase 2
 
         Arguments :
-        h_start : altitude initiale en mètres
+        h_start : altitude initiale en mètres, récupérée en fin de croisière
+        l_start : position en x initiale à cette phase (unité), récupérée en fin de croisière
+        t_start : temps initiale à cette phase (unité), récupéré en fin de croisière
+        Mach_start : Mach initial à cette phrase, récupéré en fin de croisière
         dt      : pas de temps pour la simulation en secondes (par défaut 1 s)
         """
         h = h_start
         l = l_start #ATTENTION A PRENDRE DU CALCUL DE CROISIERE PRECEDENT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         t = t_start
+        Gamma = Constantes.gamma #Coefficient de Laplace thermodynamique pour les conversions entre CAS, Mach et TAS 
 
         # CAS max en m/s
-        V_CAS_max = self.avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s
-        CAS = 0.0  # CAS initial
-        Mach = 0.0 #ATTENTION RECUPERER DE LA PHASE DE CROISIERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        TAS = 0.0
+        CAS_max = self.avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s  Vitesse maximale de descente de l'avion
+        CAS = 0.0  # Initialisation avant calcul à partir du Mach connu
+        Mach = Mach_start #ATTENTION RECUPERER DE LA PHASE DE CROISIERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        TAS = 0.0 # Initialisation avant calcul à partir du Mach connu
 
 
-        while CAS < V_CAS_max:
-            # --- Atmosphère ---
+        while CAS < CAS_max: #On cherche à diminuer l'altitude h jusqu'à atteindre la vitesse CAS Max
+
+            # --- Atmosphère --- Calcule des conditions atm à cet altitude afin d'extraire la température et la pression au temps t
             self.atmosphere.getRhoPT(h) #ATTENTION TRES MAUVAIS CHOIX DE NOM POUR ATM CE DEVRAIT ETRE CALCULATE RHO PT
+            P_t = self.atmosphere.getP_t() #Pression au temps t, en UNITE
+            T_t = self.atmosphere.getT_t() #Température au temps t, en K
 
-            rho_t = self.atmosphere.getRho_t()
-            P_t = self.atmosphere.getP_t()
-            T_t = self.atmosphere.getT_t()
+            # --- Mach et TAS --- 
+            CAS = Constantes.Convert_Mach_to_CAS(Mach,P_t) #Calcul du CAS à partir du Mach
 
-            # --- Mach et TAS --- ##UTILISER LES FONCTIONS CREES DANS MON CODE PERSO CONVERT MACH TO CAS
-            Gamma = Constantes.gamma
-            Delta_p = P_t*(((Gamma-1)/2*Mach**2+1)**(Gamma/(Gamma-1))-1)
-            CAS = np.sqrt(2*Gamma*Constantes.r*(Constantes.T0_K)/(Gamma-1)*((1+Delta_p/Constantes.p0_Pa)**(0.4/Gamma)-1))
+            TAS = Mach*np.sqrt(Gamma*Constantes.r*T_t) #Calcul du TAS à partir du Mach
 
-            TAS = Mach*np.sqrt(1.4*Constantes.r*T_t)
-
-            # --- Cz et Cx ---
+            # --- Cz et Cx --- Calcul des coefs aéro
             self.aero.CalculateCz(Mach)
             Cz = self.aero.getCz()
 
@@ -95,7 +95,7 @@ class Mission:
             t += dt
 
             # --- Fuel burn ---
-            self.masse.burn_fuel(dt)
+            self.masse.burn_fuel(dt) #Carburant consommé à ce pas de temps dt, on met à jour la masse de carburant 
         
 
             # --- Stockage historique ---
@@ -118,13 +118,13 @@ class Mission:
     # --- Phase 2 : Descente à V constante jusqu'à 10000 ft ---
     def phase2(self, h_start, h_end, l_start, t_start, dt=1.0):
         """
-        Phase 2 : Descente réelle à CAS constant
+        Phase 2 : Descente jusqu'à 10000ft à vitesse constante Max CAS
 
         Arguments :
-        h_start : altitude initiale (m)
-        h_end   : altitude finale de la phase (m)
-        l_start : distance initiale (m)
-        t_start : temps initial (s)
+        h_start : altitude initiale, après phase 1 (UNITE)
+        h_end   : altitude finale de la phase 2, 10 000ft 
+        l_start : distance initiale, après phase 1 (UNITE)
+        t_start : temps initial, après phase 1 (UNITE)
         dt      : pas de temps (s)
         """
 
@@ -132,34 +132,23 @@ class Mission:
         h = h_start
         l = l_start
         t = t_start
+        Gamma = Constantes.gamma
 
         # --- CAS imposée ---
-        CAS = self.avion.getCAS_descent() * Constantes.conv_kt_mps  # kt -> m/s N'EXISTE PAS!!!!!!!!!
+        CAS = self.avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
 
-        Mach = 0.0
+        Mach = 0.0 #Initialisation de Mach et de TAS avant calcul à partir du CAS
         TAS  = 0.0
 
         while h > h_end:
 
             # --- Atmosphère ---
             self.atmosphere.getRhoPT(h) #NOM A CHANGER
-
-            rho_t = self.atmosphere.getRho_t()
             P_t   = self.atmosphere.getP_t()
-            T_t   = self.atmosphere.getT_t()
+            T_t = self.atmosphere.getT_t()
 
             # --- Conversion CAS -> Mach ---
-            Gamma = Constantes.gamma
-
-            Delta_p = Constantes.p0_Pa * (
-                (1 + (Gamma - 1) / 2 * CAS**2 / (Gamma * Constantes.r * Constantes.T0_K)) #A CHANGER PAR LA FONCTION CODER DANS MON MAIN
-                ** (Gamma / (Gamma - 1)) - 1
-            )
-
-            Mach = np.sqrt(
-                2 / (Gamma - 1)
-                * ((Delta_p / P_t + 1) ** ((Gamma - 1) / Gamma) - 1) #A CHANGER PAR LA FONCTION CODER DANS MON MAIN CONVERT CAS TO MACH
-            )
+            Mach = Constantes.Convert_CAS_to_Mach(CAS, P_t)
 
             # --- TAS ---
             TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
@@ -188,7 +177,7 @@ class Mission:
             # --- Pente de trajectoire ---
             pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
 
-            Vz = TAS * np.sin(pente)   # négatif
+            Vz = TAS * np.sin(pente)   # négatif car en descente
             Vx = TAS * np.cos(pente)
 
             # --- Mise à jour position ---
@@ -222,12 +211,12 @@ class Mission:
     # --- Phase 3 : Réduction de vitesse en plateau à 250 kt ---
     def phase3(self, h_const, l_start, t_start, dt=1.0):
         """
-        Phase 3 : Décélération en palier (ex : 10000 ft -> 250 kt)
+        Phase 3 : Décélération en palier, on fixe l'altitude à 10000ft et on passe la vitesse à Min CAS
 
         Arguments :
-        h_const : altitude constante (m)
-        l_start : distance initiale (m)
-        t_start : temps initial (s)
+        h_const : altitude constante, après phase 2 (UNITE)
+        l_start : distance initiale, après phase 2 (UNITE)
+        t_start : temps initial, après phase 2 (UNITE)
         dt      : pas de temps (s)
         """
 
@@ -235,40 +224,24 @@ class Mission:
         h = h_const
         l = l_start
         t = t_start
+        Gamma = Constantes.gamma
 
         # --- CAS initiale (issue phase 2) ---
         CAS = self.history["V_CAS"][-1]
 
         # --- CAS cible (250 kt) ---
-        CAS_target = 250.0 * Constantes.conv_kt_mps
+        CAS_target = 250.0 * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
 
-        Mach = 0.0
-        TAS  = 0.0
+        Mach = Constantes.Convert_CAS_to_Mach
+        TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
 
-        # --- Atmosphère --- ##ALTITUDE CONSTANTE DONC CONDITIONS ATM CONSTANTES
+        # --- Atmosphère --- #NB : on peut calculer les conditions atm en dehors de la boucle car, l'altitude étant constante, les conditions reste les mêmes à chaque pas de temps
         self.atmosphere.getRhoPT(h)
+        P_t = self.atmosphere.getP_t()
+        T_t = self.atmosphere.getT_t()
 
-        rho_t = self.atmosphere.getRho_t()
-        P_t   = self.atmosphere.getP_t()
-        T_t   = self.atmosphere.getT_t()
-
-        # --- Conversion CAS -> Mach --- ##SUREMENT MIEUX DE PASSER LES CONSTANTES EN DEHORS DE LA FONCTION POUR PAS LES RECALCULER H24
-        Gamma = Constantes.gamma
-
-        while CAS > CAS_target:
-
-            Delta_p = Constantes.p0_Pa * (
-                (1 + (Gamma - 1) / 2 * CAS**2 / (Gamma * Constantes.r * Constantes.T0_K)) #REMPLACER PAR LA FONCTION CAS TO MACH
-                ** (Gamma / (Gamma - 1)) - 1
-            )
-
-            Mach = np.sqrt(
-                2 / (Gamma - 1)
-                * ((Delta_p / P_t + 1) ** ((Gamma - 1) / Gamma) - 1)
-            )
-
-            # --- TAS ---
-            TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+        while CAS > CAS_target: #On diminue la vitesse jusqu'à la valeur désirée
+            #A noter que les nouvelles vitesses sont calculées en fin de boucle
 
             # --- Coefficients aérodynamiques ---
             self.aero.CalculateCz(Mach)
@@ -291,25 +264,20 @@ class Mission:
                 F_N = 0.0
                 SFC = 0.0
 
-            # --- Dynamique longitudinale simplifiée --- ##ON A PAS DE PENTE ICI CAR EN PALIER
+            # --- Dynamique longitudinale simplifiée --- #c'est la force qui va faire ralentir l'appareil
             ax = (F_N - Rx) / self.masse.getCurrentMass()
 
             # --- Mise à jour des vitesses ---
-            TAS = max(TAS + ax * dt, 0.0)
+            TAS = max(TAS + ax * dt, 0.0) #Calcul de la nouvelle vitesse avec la resistance longitudinale
 
             # Recalcul CAS depuis Mach/TAS
 
             Mach = TAS / np.sqrt(Gamma * Constantes.r * T_t)
 
-            Delta_p = P_t * (((Gamma - 1) / 2 * Mach**2 + 1) ** (Gamma / (Gamma - 1)) - 1)
-
-            CAS = np.sqrt(
-                2 * Gamma * Constantes.r * Constantes.T0_K / (Gamma - 1)
-                * ((1 + Delta_p / Constantes.p0_Pa) ** (0.4 / Gamma) - 1)
-            ) ## A REMPLACER PAR CONVERT MACH TO CAS
+            CAS = Constantes.Convert_Mach_to_CAS(Mach,P_t)
 
             # --- Cinématique ---
-            Vz = 0.0
+            Vz = 0.0 #On vole en palier, donc on ne descend pas
             Vx = TAS
 
             dh = 0.0
@@ -341,22 +309,24 @@ class Mission:
     # --- Phase 4 : Descente finale jusqu'à h_final ---
     def phase4(self, h_start, l_start, t_start, h_final, dt=1.0):
         """
-        Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale.
+        Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale de 1500ft
 
-        h_start : altitude initiale (m)
-        h_final : altitude finale (m)
+        h_start : altitude initiale, récupérée à la fin de la phase 3 en UNITE
+        h_final : altitude finale, fixée par la mission (1500ft)
+        l_start : distance franchie initiale, récupérée à la fin de la phase 3 en UNITE
+        t_start : temps initial, récupérée à la fin de la phase 3 en UNITE
         dt      : pas de temps (s)
         """
 
         h = h_start
         l = l_start
         t = t_start
-
-        # --- CAS imposée ---
-        CAS_target = 250.0 * Constantes.conv_kt_mps  # kt → m/s
-
         Gamma = Constantes.gamma
 
+        # --- CAS imposée ---
+        CAS = 250.0 * Constantes.conv_kt_mps  # kt → m/s Ajouter dans les constantes le 250kt ?
+
+        
         while h > h_final:
 
             # --- Atmosphère ---
@@ -365,17 +335,7 @@ class Mission:
             T_t = self.atmosphere.getT_t()
 
             # --- Mach depuis CAS ---
-            Delta_p = Constantes.p0_Pa * (
-                (1 + (Gamma - 1) / 2 * CAS**2 / (Gamma * Constantes.r * Constantes.T0_K)) #REMPLACER PAR LA FONCTION CAS TO MACH
-                ** (Gamma / (Gamma - 1)) - 1
-            )
-
-            Mach = np.sqrt(
-                2 / (Gamma - 1)
-                * ((Delta_p / P_t + 1) ** ((Gamma - 1) / Gamma) - 1)
-            )
-
-            ##Mach = convert_CAS_to_Mach(CAS_target, h)
+            Mach = Constantes.Convert_CAS_to_Mach(CAS,P_t)
 
             # --- TAS ---
             TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
@@ -422,7 +382,7 @@ class Mission:
             self.history["h"].append(h)
             self.history["l"].append(l)
             self.history["t"].append(t)
-            self.history["V_CAS"].append(CAS_target)
+            self.history["V_CAS"].append(CAS)
             self.history["V_true"].append(TAS)
             self.history["Mach"].append(Mach)
             self.history["Cz"].append(Cz)

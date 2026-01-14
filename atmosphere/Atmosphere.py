@@ -19,7 +19,7 @@ class Atmosphere:
         self.P_t = 101325.0  # Pression standard au niveau de la mer (Pa)
         self.T_t = 288.15  # Température standard au niveau de la mer (K)
 
-    def getRhoPT(self, h_m) :
+    def getRhoPT(self, h_m) : #CHANGER LE NOM EN CalculateRhoPT CAR CE N EST PAS UN GETTER
         if h_m <= 11000:
             # --- Troposphère (Altitude à gradient constant : h <= 11000 m) ---
             

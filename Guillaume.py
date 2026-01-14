@@ -22,7 +22,6 @@ def convert_Mach_to_CAS(Mach, press):##A VOIR SI QUI ON MET EN ENTREE GENRE LES 
 
     return CAS
 
-import numpy as np
 
 def convert_mach_to_cas(Mach, press): ##A VOIR SI QUI ON MET EN ENTREE GENRE LES CONSTANTES
     gamma = Constantes.gamma
