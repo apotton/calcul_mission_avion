@@ -9,7 +9,11 @@ class Mission:
         self.masse = masse
         self.aero = aero
         self.atmosphere = Atmosphere() #A DISCUTER DES ATTRIBUTS MISSION QUAND ON AURA FINI
+
+        #Je mets ce qui suit en attribut pour l'instant en attendant de décier ce qu'on en fait
         self.l_descent = 0 #Distance nécessaire à la descente
+        self.RRoC_min = 300 #Excédent de puissance minimale pour monter en croisière en ft/min
+        self.Pressurisation_Ceiling = 40000 #Valeur du plafond de précurisation en ft qui dépend de chaque avions peut être à ajouter aux fichiers de csv avion 
 
         # Historique pour suivi de la descente (pour fournir le résultat à chaque pas de temps)
         self.history = {
@@ -511,32 +515,40 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, t_start, Mach_cruise, dt=1.0)
         # --- RRoC (Rate of Climb virtuel) ---
         RRoC_up = (F_N_up - Rx_up) / self.masse.getCurrentWeight() * TAS_up #UTILISER LA MONTEE ISO MACH DE LA PHASE DE MONTEE MAINTENANT
 
+        # --- Condition de montée iso-Mach ---
+        if (
+            RRoC_up > self.RRoC_min and               # RRoC suffisant
+            h_up < self.Pressurisation_Ceiling and  # Pas au plafond
+            SGR_up > SGR):                     # Gain SGR positif
 
-        # --- Intégration ---
-        dh = 0.0
-        dl = Vx * dt
+            self.climb_iso_Mach(self, h_start, h_up, l, t, Mach_cruise, dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
 
-        h += dh
-        l += dl
-        t += dt
+        else : 
+            # --- Intégration ---
+            
+            dl = Vx * dt
 
-        # --- Fuel burn ---
-        self.masse.burn_fuel(dt, SFC, F_N)
+            
+            l += dl
+            t += dt
 
-        # --- Historique ---
-        self.history["h"].append(h)
-        self.history["l"].append(l)
-        self.history["t"].append(t)
-        self.history["Mach"].append(Mach_cruise)
-        self.history["V_true"].append(TAS)
-        self.history["Cz"].append(Cz)
-        self.history["Cx"].append(Cx)
-        self.history["Vz"].append(Vz)
-        self.history["Vx"].append(Vx)
-        self.history["F_N"].append(F_N)
-        self.history["SFC"].append(SFC)
-        self.history["FB"].append(self.masse.getFuelBurned())
-        self.history["m"].append(self.masse.getCurrentMass())
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt, SFC, F_N)
+
+            # --- Historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["Mach"].append(Mach_cruise)
+            self.history["V_true"].append(TAS)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
 
 
 ##
