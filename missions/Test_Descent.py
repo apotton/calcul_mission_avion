@@ -517,8 +517,8 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, t_start, Mach_cruise, dt=1.0)
 
         # --- Condition de montée iso-Mach ---
         if (
-            RRoC_up > self.RRoC_min and               # RRoC suffisant
-            h_up < self.Pressurisation_Ceiling and  # Pas au plafond
+            RRoC_up > self.RRoC_min*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s
+            h_up < self.Pressurisation_Ceiling*Constantes.conv_ft_m and  # Pas au plafond converti de ft en m
             SGR_up > SGR):                     # Gain SGR positif
 
             self.climb_iso_Mach(self, h_start, h_up, l, t, Mach_cruise, dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
