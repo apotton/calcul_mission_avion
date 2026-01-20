@@ -56,8 +56,8 @@ class Moteur:
         
         # L'interpolateur renvoie un tableau numpy (ex: array([15000.5])), 
         # on prend la valeur [0] ou .item() pour avoir un float propre.
-        resultat = interp((mach, h_ft))
-        self.F_t = float(resultat) 
+        resultat = interp((mach, h_ft)) # résultat pour un moteur en lbf
+        self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
         
         
     
@@ -95,7 +95,7 @@ class Moteur:
 
         # 4. Conversion de l'axe Poussée de la table (lbf -> Newtons)
         # Nécessaire car l'entrée 'thrust_to_use' est en Newtons
-        fn_newton_vector = fn_lbf_vector * conv_lbf_N
+        fn_newton_vector = fn_lbf_vector * Constantes.g * Constantes.conv_lb_kg
 
         # 5. Interpolation 2D
         # RegularGridInterpolator attend (x_grid, y_grid). 
