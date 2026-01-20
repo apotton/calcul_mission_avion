@@ -9,7 +9,7 @@ class Mission:
         self.masse = masse
         self.aero = aero
         self.atmosphere = Atmosphere() #A DISCUTER DES ATTRIBUTS MISSION QUAND ON AURA FINI
-        self.l_descent = 0 #
+        self.l_descent = 0 #Distance nécessaire à la descente
 
         # Historique pour suivi de la descente (pour fournir le résultat à chaque pas de temps)
         self.history = {
@@ -396,7 +396,7 @@ class Mission:
 ##
 #Croisière MACH SAR
 ##
-def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_cruise, dt=1.0):
+def Cruise_Mach_SAR(self, h_start, l_start, l_end, t_start, Mach_cruise, dt=1.0):
     """
     Phase : croisière en palier à Mach constant
 
@@ -414,16 +414,21 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_crui
     t = t_start
     Gamma = Constantes.gamma
 
-    while l < l_end - l_descent and self.masse.getFuelRemaining() > self.masse.getFuelReserve():
+
+    while l < l_end - self.l_descent and self.masse.getFuelRemaining() > self.masse.getFuelReserve():
 
         # --- Atmosphère ---
-        self.atmosphere.getRhoPT(h)
+        self.atmosphere.CalculateRhoPT(h)
         rho = self.atmosphere.getRho()
         P_t = self.atmosphere.getP_t()
         T_t = self.atmosphere.getT_t()
 
         # --- Vitesse ---
         TAS = Mach_cruise * np.sqrt(Gamma * Constantes.r * T_t)
+
+        # --- Vitesses ---
+        Vx = TAS
+        Vz = 0.0
 
         # --- Aérodynamique ---
         self.aero.CalculateCz(Mach_cruise)
@@ -432,26 +437,80 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_crui
         self.aero.CalculateCxCruise()
         Cx = self.aero.getCx()
 
-        # --- Forces ---
-        W = self.masse.getCurrentWeight()
-        S = self.avion.getSurfaceAile()
-
-        # Portance (vérification cohérence)
-        L = 0.5 * rho * TAS**2 * S * Cz
+        finesse = Cz/Cx
 
         # Traînée
-        Rx = 0.5 * rho * TAS**2 * S * Cx
+        Rx = self.masse.getCurrentWeight() / finesse
 
         # --- Poussée moteur ---
-        if self.moteur.get_Reseau_moteur() == 1:
+        if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER QUAND MOTEUR PRET
             F_N, SFC = self.moteur.getThrustCruise(Mach_cruise, h)
         else:
             F_N = Rx
             SFC = 0.0
 
-        # --- Vitesses ---
-        Vx = TAS
-        Vz = 0.0
+        #Calcul de l'excédent de puissance
+        RRoC = (F_N-Rx)/(self.Masse.getCurrentWeight())*TAS #Excédent de puissance qui permet de déterminer si on peut monter de 2000ft 
+
+        #Calcul du coût économique ECCF et SGR
+        self.aero.CalculateECCF(self.atmosphere) 
+        self.aero.CalculateSRG(self.atmosphere)
+        ECCF = self.aero.getECCF()
+        SGR = self.aero.getSGR()
+
+
+        #Calcul du Mach limite 
+        #self.aero.CalculateCzBuffet()
+        #Cz_Buffet = self.aero.getCzBuffet
+
+        ##Calcul des paramètres 2000ft plus haut pour étudier le coût de monter
+
+        # --- Paramètres 2000 ft plus haut (pour décider la montée) ---
+        delta_h_ft = 2000 #ft
+        delta_h = delta_h_ft * Constantes.conv_ft_m  # convertir en m
+
+        # Altitude “virtuelle”
+        h_up = h + delta_h
+
+        # --- Atmosphère ---
+        self.atmosphere.getRhoPT(h_up)
+        rho_up = self.atmosphere.getRho()
+        P_t_up = self.atmosphere.getP_t()
+        T_t_up = self.atmosphere.getT_t()
+
+        # --- TAS (Mach constant avant montée iso-Mach) ---
+        TAS_up = Mach_cruise * np.sqrt(Constantes.gamma * Constantes.r * T_t_up)
+
+        # --- Aérodynamique ---
+        self.aero.CalculateCz(Mach_cruise)
+        Cz_up = self.aero.getCz()
+
+        self.aero.CalculateCxCruise()
+        Cx_up = self.aero.getCx()
+
+        finesse_up = Cz_up / Cx_up
+
+        # --- Traînée / équivalent résistance ---
+        Rx_up = self.masse.getCurrentWeight() / finesse_up
+
+        # --- Poussée moteur ---
+        if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER QUAND MOTEUR PRET
+            F_N_up, SFC_up = self.moteur.getThrustCruise(Mach_cruise, h_up)
+        else:
+            F_N_up = Rx_up
+            SFC_up = 0.0
+
+        
+        #Calcul du coût économique ECCF et SGR
+        self.aero.CalculateECCF(self.atmosphere) 
+        self.aero.CalculateSRG(self.atmosphere)
+        ECCF_up = self.aero.getECCF()
+        SGR_up = self.aero.getSGR()
+
+
+        # --- RRoC (Rate of Climb virtuel) ---
+        RRoC_up = (F_N_up - Rx_up) / self.masse.getCurrentWeight() * TAS_up #UTILISER LA MONTEE ISO MACH DE LA PHASE DE MONTEE MAINTENANT
+
 
         # --- Intégration ---
         dh = 0.0
@@ -554,6 +613,7 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_crui
             dl = Vx * dt
             h += dh
             l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             t += dt
 
             # --- Fuel burn ---
@@ -648,6 +708,7 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_crui
 
             h += dh
             l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             t += dt
 
             # --- Fuel burn ---
@@ -746,6 +807,7 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_crui
             dl = Vx * dt
 
             l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             t += dt
 
             # --- Fuel burn ---
@@ -835,6 +897,7 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_crui
 
             h += dh
             l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             t += dt
 
             # --- Fuel burn ---
