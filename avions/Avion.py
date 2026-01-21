@@ -86,10 +86,10 @@ class Avion:
         self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
 
     def Add_dl(self, dl):
-        self.l += dl
+        self.l_t += dl
 
     def Add_dh(self, dh):
-        self.h += dh
+        self.h_t += dh
 
 
 
