@@ -9,6 +9,7 @@ class Mission:
         self.masse = masse
         self.aero = aero
         self.atmosphere = Atmosphere() #A DISCUTER DES ATTRIBUTS MISSION QUAND ON AURA FINI
+        self.l_descent = 0 #
 
         # Historique pour suivi de la descente (pour fournir le résultat à chaque pas de temps)
         self.history = {
@@ -392,7 +393,91 @@ class Mission:
             self.history["m"].append(self.masse.getCurrentMass())
 
 
+##
+#Croisière MACH SAR
+##
+def Cruise_Mach_SAR(self, h_start, l_start, l_end, l_descent, t_start, Mach_cruise, dt=1.0):
+    """
+    Phase : croisière en palier à Mach constant
 
+    h_start      : altitude de croisière (UNITE)
+    l_start      : distance initiale
+    t_start      : temps initial
+    l_end        : l fin de mission
+    l_descent : distance prévue pour la descente
+    Mach_cruise  : Mach imposé
+    dt           : pas de temps (s)
+    """
+
+    h = h_start
+    l = l_start
+    t = t_start
+    Gamma = Constantes.gamma
+
+    while l < l_end - l_descent and self.masse.getFuelRemaining() > self.masse.getFuelReserve():
+
+        # --- Atmosphère ---
+        self.atmosphere.getRhoPT(h)
+        rho = self.atmosphere.getRho()
+        P_t = self.atmosphere.getP_t()
+        T_t = self.atmosphere.getT_t()
+
+        # --- Vitesse ---
+        TAS = Mach_cruise * np.sqrt(Gamma * Constantes.r * T_t)
+
+        # --- Aérodynamique ---
+        self.aero.CalculateCz(Mach_cruise)
+        Cz = self.aero.getCz()
+
+        self.aero.CalculateCxCruise()
+        Cx = self.aero.getCx()
+
+        # --- Forces ---
+        W = self.masse.getCurrentWeight()
+        S = self.avion.getSurfaceAile()
+
+        # Portance (vérification cohérence)
+        L = 0.5 * rho * TAS**2 * S * Cz
+
+        # Traînée
+        Rx = 0.5 * rho * TAS**2 * S * Cx
+
+        # --- Poussée moteur ---
+        if self.moteur.get_Reseau_moteur() == 1:
+            F_N, SFC = self.moteur.getThrustCruise(Mach_cruise, h)
+        else:
+            F_N = Rx
+            SFC = 0.0
+
+        # --- Vitesses ---
+        Vx = TAS
+        Vz = 0.0
+
+        # --- Intégration ---
+        dh = 0.0
+        dl = Vx * dt
+
+        h += dh
+        l += dl
+        t += dt
+
+        # --- Fuel burn ---
+        self.masse.burn_fuel(dt, SFC, F_N)
+
+        # --- Historique ---
+        self.history["h"].append(h)
+        self.history["l"].append(l)
+        self.history["t"].append(t)
+        self.history["Mach"].append(Mach_cruise)
+        self.history["V_true"].append(TAS)
+        self.history["Cz"].append(Cz)
+        self.history["Cx"].append(Cx)
+        self.history["Vz"].append(Vz)
+        self.history["Vx"].append(Vx)
+        self.history["F_N"].append(F_N)
+        self.history["SFC"].append(SFC)
+        self.history["FB"].append(self.masse.getFuelBurned())
+        self.history["m"].append(self.masse.getCurrentMass())
 
 
 ##
@@ -403,7 +488,7 @@ class Mission:
 
 
     # --- Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
-    def phase1(self, h_start, l_start, t_start, Mach_start, dt=1.0):
+    def Descente_Phase1(self, h_start, l_start, t_start, Mach_start, dt=1.0):
         """
         Laisse l'avion initier une descente libre pour atteindre la vitesse maximale autorisée en CAS (Vmax_CAS) avant de passer à la phase 2
 
@@ -493,7 +578,7 @@ class Mission:
 
 
     # --- Phase 2 : Descente à V constante jusqu'à 10000 ft ---
-    def phase2(self, h_start, h_end, l_start, t_start, dt=1.0):
+    def Descente_Phase2(self, h_start, h_end, l_start, t_start, dt=1.0):
         """
         Phase 2 : Descente jusqu'à 10000ft à vitesse constante Max CAS
 
@@ -586,7 +671,7 @@ class Mission:
 
 
     # --- Phase 3 : Réduction de vitesse en plateau à 250 kt ---
-    def phase3(self, h_const, l_start, t_start, dt=1.0):
+    def Descente_Phase3(self, h_const, l_start, t_start, dt=1.0):
         """
         Phase 3 : Décélération en palier, on fixe l'altitude à 10000ft et on passe la vitesse à Min CAS
 
@@ -684,7 +769,7 @@ class Mission:
 
 
     # --- Phase 4 : Descente finale jusqu'à h_final ---
-    def phase4(self, h_start, l_start, t_start, h_final, dt=1.0):
+    def Descente_Phase4(self, h_start, l_start, t_start, h_final, dt=1.0):
         """
         Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale de 1500ft
 

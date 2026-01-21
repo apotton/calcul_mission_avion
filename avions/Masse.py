@@ -57,5 +57,8 @@ class Masse:
     
     def getFuelRemaining(self):
         return self.m_fuel_remaining_t
+    
+    def getFuelReserve(self):
+        return self.m_fuel_reserve
 
 
