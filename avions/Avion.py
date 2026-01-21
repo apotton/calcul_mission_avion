@@ -91,6 +91,9 @@ class Avion:
     def Add_dh(self, dh):
         self.h_t += dh
 
+    def setMach_t(self, Mach):
+        self.Mach_t = Mach
+
 
 
 #LISTE DES ATTRIBUTS :

@@ -38,10 +38,10 @@ class Reseau_moteur(Moteur):
         
     
 
-    def Calculate_SFC_cruise(self, mach, h_m, F_engine_N=None):
+    def Calculate_SFC_cruise(self, Avion, F_engine_N=None):
         "Calcule le SFC en croisière"
         
-        h_ft = h_m /Constantes.conv_ft_m  # Conversion m -> ft
+        h_ft = Avion.h_t / Constantes.conv_ft_m  # Conversion m -> ft
 
         # 1. Gestion de la poussée d'entrée
         # Si aucune poussée n'est fournie, on utilise la poussée actuelle de l'objet (self.F)
@@ -86,7 +86,7 @@ class Reseau_moteur(Moteur):
         # On interpole au point (Poussée_Moteur_N, Mach)
         # Note: MATLAB faisait F/2 car F était la poussée avion totale. 
         # Ici, thrust_to_use est déjà censé être pour UN moteur.
-        sfc_lbf_raw = float(interp_func((thrust_to_use, mach)))
+        sfc_lbf_raw = float(interp_func((thrust_to_use, Avion.Mach_t)))  # Résultat en lb/(lbf*h)
 
         # 6. Conversion finale des unités
         # MATLAB: SFC = SFC_lbf / 3600 / g
