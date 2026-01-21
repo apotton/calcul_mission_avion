@@ -1,0 +1,921 @@
+from constantes.Constantes import Constantes
+from atmosphere.Atmosphere import Atmosphere
+import numpy as np
+
+class Mission:
+    def __init__(self, avion, moteur, masse, aero):
+        self.avion = avion
+        self.moteur = moteur
+        self.masse = masse
+        self.aero = aero
+        self.atmosphere = Atmosphere() #A DISCUTER DES ATTRIBUTS MISSION QUAND ON AURA FINI
+        self.l_descent = 0 #Distance nécessaire à la descente
+
+        # Historique pour suivi de la descente (pour fournir le résultat à chaque pas de temps)
+        self.history = {
+            "h": [], #Altitude en UNITE
+            "l": [], #Distance franchie en UNITE
+            "t": [], #Temps en UNITE
+            "V_CAS": [], #Vitesse conventionnelle en UNITE
+            "V_true": [], #Vitesse vraie en UNITE
+            "Mach": [], #Mach
+            "Cz": [], #Coef de portance
+            "Cx": [], #Coef de trainée
+            "F_N": [], #Poussée
+            "SFC": [], #Consommation spécifique
+            "FB": [], #Carburant consommée
+            "m": [] #Masse appareil
+        }
+
+##
+#MONTEE
+##
+
+    # --- Phase 1 : Montée initiale jusqu'à 10 000 ft à CAS constant ---
+    def climb_phase1(self, h_start, h_end, l_start, t_start, dt=1.0): #A DISCUTER DES INPUT DE LA FONCTION
+        """
+        Phase 1 : montée à CAS constant (250 kt) jusqu'à 10 000 ft
+
+        h_start : altitude initiale (UNITE)
+        h_end   : altitude finale (10 000 ft)
+        l_start : distance initiale
+        t_start : temps initial
+        dt      : pas de temps (s)
+        """
+
+        # --- Conditions initiales ---
+        h = h_start
+        l = l_start
+        t = t_start
+
+        Gamma = Constantes.gamma
+
+        # --- CAS imposée ---
+        CAS = 250.0 * Constantes.conv_kt_mps
+
+        Mach = 0.0
+        TAS  = 0.0
+
+        while h < h_end:
+
+            # --- Atmosphère ---
+            self.atmosphere.getRhoPT(h)
+            P_t = self.atmosphere.getP_t()
+            T_t = self.atmosphere.getT_t()
+
+            # --- Conversion CAS -> Mach ---
+            Mach = Constantes.Convert_CAS_to_Mach(CAS, P_t)
+
+            # --- TAS ---
+            TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+
+            # --- Aérodynamique ---
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxClimb_Simplified()
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Résistance ---
+            Rx = self.masse.getCurrentWeight() / finesse
+
+            # --- Poussée moteur ---
+            if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER QUAND ON AURA LA CLASSE MOTEUR FINALISEE
+                # Placeholder : poussée max climb
+                # F_N = self.moteur.getMaxThrustClimb(h, Mach)
+                SFC = self.moteur.getSFC(h, Mach)
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Pente de montée ---
+            pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
+
+            # --- Vitesses ---
+            Vz = TAS * np.sin(pente)
+            Vx = TAS * np.cos(pente)
+
+            # --- Intégration ---
+            dh = Vz * dt
+            dl = Vx * dt
+
+            h += dh
+            l += dl
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt, SFC, F_N)
+
+            # --- Historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+
+# --- Phase 2 : Accélération en palier à 10 000 ft ---
+    def climb_phase2(self, h_const, l_start, t_start, dt=1.0):
+        """
+        Phase 2 : accélération en palier à 10 000 ft
+        CAS : 250 kt -> CAS_climb_target
+
+        h_const : altitude constante (10 000 ft)
+        l_start : distance initiale
+        t_start : temps initial
+        dt      : pas de temps (s)
+        """
+
+        # --- Conditions initiales ---
+        h = h_const
+        l = l_start
+        t = t_start
+
+        Gamma = Constantes.gamma
+
+        # --- CAS initiale ---
+        CAS = 250.0 * Constantes.conv_kt_mps # à mettre dans constantes plus tard
+
+        # --- CAS cible ---
+        CAS_target = self.avion.getKVMO()* Constantes.conv_kt_mps  # à mettre dans constantes plus tard
+
+        # --- Atmosphère (constante en palier) ---
+        self.atmosphere.getRhoPT(h)
+        P_t = self.atmosphere.getP_t()
+        T_t = self.atmosphere.getT_t()
+
+        # --- Initialisation ---
+        Mach = Constantes.Convert_CAS_to_Mach(CAS, P_t)
+        TAS  = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+
+        while CAS < CAS_target:
+
+            # --- Aérodynamique ---
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxClimb_Simplified()
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Traînée ---
+            Rx = self.masse.getCurrentWeight() / finesse
+
+            # --- Poussée moteur ---
+            if self.moteur.get_Reseau_moteur() == 1: #A REVOIR APRES AVOIR LA CLASSE MOTEUR FINALISEE
+                F_N = self.moteur.getMaxThrustClimb(h, Mach)
+                SFC = self.moteur.getSFC(h, Mach)
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Dynamique longitudinale ---
+            ax = (F_N - Rx) / self.masse.getCurrentMass()
+
+            # --- Mise à jour vitesse ---
+            TAS = max(TAS + ax * dt, 0.0)
+
+            # --- Recalcul Mach et CAS ---
+            Mach = TAS / np.sqrt(Gamma * Constantes.r * T_t)
+            CAS  = Constantes.Convert_Mach_to_CAS(Mach, P_t)
+
+            # --- Cinématique ---
+            Vz = 0.0
+            Vx = TAS
+
+            dl = Vx * dt
+            l += dl
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt, SFC, F_N)
+
+            # --- Historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+
+# --- Phase 3 : Montée ISO CAS jusqu'au Mach maximal ---
+
+    def climb_iso_CAS(self, h_start, h_end, l_start, t_start,CAS_const, Mach_target, dt=1.0):
+        """
+        Montée à CAS constant jusqu'à atteindre un Mach cible
+
+        h_start     : altitude initiale
+        h_end       : altitude max de sécurité (optionnelle)
+        l_start     : distance initiale
+        t_start     : temps initial
+        CAS_const   : CAS imposée (m/s)
+        Mach_target : Mach cible de transition
+        dt          : pas de temps
+        """
+
+        h = h_start
+        l = l_start
+        t = t_start
+
+        Gamma = Constantes.gamma
+
+        Mach = 0.0
+        TAS  = 0.0
+
+        while Mach < Mach_target and h < h_end:
+
+            # --- Atmosphère ---
+            self.atmosphere.getRhoPT(h)
+            P_t = self.atmosphere.getP_t()
+            T_t = self.atmosphere.getT_t()
+
+            # --- CAS -> Mach ---
+            Mach = Constantes.Convert_CAS_to_Mach(CAS_const, P_t)
+
+            # --- TAS ---
+            TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+
+            # --- Aérodynamique ---
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxClimb_Simplified()
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Traînée ---
+            Rx = self.masse.getCurrentWeight() / finesse
+
+            # --- Poussée ---
+            if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER APRES FINALISATION DE LA CLASSE MOTEUR 
+                F_N = self.moteur.getMaxThrustClimb(h, Mach)
+                SFC = self.moteur.getSFC(h, Mach)
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Pente ---
+            pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
+
+            # --- Vitesses ---
+            Vz = TAS * np.sin(pente)
+            Vx = TAS * np.cos(pente)
+
+            # --- Intégration ---
+            h += Vz * dt
+            l += Vx * dt
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt, SFC, F_N)
+
+            # --- Historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS_const)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+
+
+# --- Phase 4 : Montée ISO Mach jusqu'à l'altitude de fin de montée et de début de croisière ---
+
+    def climb_iso_Mach(self, h_start, h_target, l_start, t_start, Mach_const, dt=1.0):
+        """
+        Montée à Mach constant jusqu'à une altitude cible
+
+        h_start    : altitude initiale
+        h_target   : altitude finale
+        l_start    : distance initiale
+        t_start    : temps initial
+        Mach_const : Mach imposé
+        dt         : pas de temps
+        """
+
+        h = h_start
+        l = l_start
+        t = t_start
+
+        Gamma = Constantes.gamma
+
+        Mach = Mach_const
+
+        while h < h_target:
+
+            # --- Atmosphère ---
+            self.atmosphere.getRhoPT(h)
+            P_t = self.atmosphere.getP_t()
+            T_t = self.atmosphere.getT_t()
+
+            # --- TAS ---
+            TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+
+            # --- CAS ---
+            CAS = Constantes.Convert_Mach_to_CAS(Mach, P_t)
+
+            # --- Aérodynamique ---
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxClimb_Simplified()
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Traînée ---
+            Rx = self.masse.getCurrentWeight() / finesse
+
+            # --- Poussée ---
+            if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER APRES LA FINALISATION DE LA CLASSE MOTEUR
+                F_N = self.moteur.getMaxThrustClimb(h, Mach)
+                SFC = self.moteur.getSFC(h, Mach)
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Pente ---
+            pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
+
+            # --- Vitesses ---
+            Vz = TAS * np.sin(pente)
+            Vx = TAS * np.cos(pente)
+
+            # --- Intégration ---
+            h += Vz * dt
+            l += Vx * dt
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt, SFC, F_N)
+
+            # --- Historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+
+
+##
+#Croisière MACH SAR
+##
+def Cruise_Mach_SAR(self, h_start, l_start, l_end, t_start, Mach_cruise, dt=1.0):
+    """
+    Phase : croisière en palier à Mach constant
+
+    h_start      : altitude de croisière (UNITE)
+    l_start      : distance initiale
+    t_start      : temps initial
+    l_end        : l fin de mission
+    l_descent : distance prévue pour la descente
+    Mach_cruise  : Mach imposé
+    dt           : pas de temps (s)
+    """
+
+    h = h_start
+    l = l_start
+    t = t_start
+    Gamma = Constantes.gamma
+
+
+    while l < l_end - self.l_descent and self.masse.getFuelRemaining() > self.masse.getFuelReserve():
+
+        # --- Atmosphère ---
+        self.atmosphere.CalculateRhoPT(h)
+        rho = self.atmosphere.getRho()
+        P_t = self.atmosphere.getP_t()
+        T_t = self.atmosphere.getT_t()
+
+        # --- Vitesse ---
+        TAS = Mach_cruise * np.sqrt(Gamma * Constantes.r * T_t)
+
+        # --- Vitesses ---
+        Vx = TAS
+        Vz = 0.0
+
+        # --- Aérodynamique ---
+        self.aero.CalculateCz(Mach_cruise)
+        Cz = self.aero.getCz()
+
+        self.aero.CalculateCxCruise()
+        Cx = self.aero.getCx()
+
+        finesse = Cz/Cx
+
+        # Traînée
+        Rx = self.masse.getCurrentWeight() / finesse
+
+        # --- Poussée moteur ---
+        if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER QUAND MOTEUR PRET
+            F_N, SFC = self.moteur.getThrustCruise(Mach_cruise, h)
+        else:
+            F_N = Rx
+            SFC = 0.0
+
+        #Calcul de l'excédent de puissance
+        RRoC = (F_N-Rx)/(self.Masse.getCurrentWeight())*TAS #Excédent de puissance qui permet de déterminer si on peut monter de 2000ft 
+
+        #Calcul du coût économique ECCF et SGR
+        self.aero.CalculateECCF(self.atmosphere) 
+        self.aero.CalculateSRG(self.atmosphere)
+        ECCF = self.aero.getECCF()
+        SGR = self.aero.getSGR()
+
+
+        #Calcul du Mach limite 
+        #self.aero.CalculateCzBuffet()
+        #Cz_Buffet = self.aero.getCzBuffet
+
+        ##Calcul des paramètres 2000ft plus haut pour étudier le coût de monter
+
+        # --- Paramètres 2000 ft plus haut (pour décider la montée) ---
+        delta_h_ft = 2000 #ft
+        delta_h = delta_h_ft * Constantes.conv_ft_m  # convertir en m
+
+        # Altitude “virtuelle”
+        h_up = h + delta_h
+
+        # --- Atmosphère ---
+        self.atmosphere.getRhoPT(h_up)
+        rho_up = self.atmosphere.getRho()
+        P_t_up = self.atmosphere.getP_t()
+        T_t_up = self.atmosphere.getT_t()
+
+        # --- TAS (Mach constant avant montée iso-Mach) ---
+        TAS_up = Mach_cruise * np.sqrt(Constantes.gamma * Constantes.r * T_t_up)
+
+        # --- Aérodynamique ---
+        self.aero.CalculateCz(Mach_cruise)
+        Cz_up = self.aero.getCz()
+
+        self.aero.CalculateCxCruise()
+        Cx_up = self.aero.getCx()
+
+        finesse_up = Cz_up / Cx_up
+
+        # --- Traînée / équivalent résistance ---
+        Rx_up = self.masse.getCurrentWeight() / finesse_up
+
+        # --- Poussée moteur ---
+        if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER QUAND MOTEUR PRET
+            F_N_up, SFC_up = self.moteur.getThrustCruise(Mach_cruise, h_up)
+        else:
+            F_N_up = Rx_up
+            SFC_up = 0.0
+
+        
+        #Calcul du coût économique ECCF et SGR
+        self.aero.CalculateECCF(self.atmosphere) 
+        self.aero.CalculateSRG(self.atmosphere)
+        ECCF_up = self.aero.getECCF()
+        SGR_up = self.aero.getSGR()
+
+
+        # --- RRoC (Rate of Climb virtuel) ---
+        RRoC_up = (F_N_up - Rx_up) / self.masse.getCurrentWeight() * TAS_up #UTILISER LA MONTEE ISO MACH DE LA PHASE DE MONTEE MAINTENANT
+
+
+        # --- Intégration ---
+        dh = 0.0
+        dl = Vx * dt
+
+        h += dh
+        l += dl
+        t += dt
+
+        # --- Fuel burn ---
+        self.masse.burn_fuel(dt, SFC, F_N)
+
+        # --- Historique ---
+        self.history["h"].append(h)
+        self.history["l"].append(l)
+        self.history["t"].append(t)
+        self.history["Mach"].append(Mach_cruise)
+        self.history["V_true"].append(TAS)
+        self.history["Cz"].append(Cz)
+        self.history["Cx"].append(Cx)
+        self.history["Vz"].append(Vz)
+        self.history["Vx"].append(Vx)
+        self.history["F_N"].append(F_N)
+        self.history["SFC"].append(SFC)
+        self.history["FB"].append(self.masse.getFuelBurned())
+        self.history["m"].append(self.masse.getCurrentMass())
+
+
+##
+#DESCENTE
+##
+
+
+
+
+    # --- Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
+    def Descente_Phase1(self, h_start, l_start, t_start, Mach_start, dt=1.0):
+        """
+        Laisse l'avion initier une descente libre pour atteindre la vitesse maximale autorisée en CAS (Vmax_CAS) avant de passer à la phase 2
+
+        Arguments :
+        h_start : altitude initiale en mètres, récupérée en fin de croisière
+        l_start : position en x initiale à cette phase (unité), récupérée en fin de croisière
+        t_start : temps initiale à cette phase (unité), récupéré en fin de croisière
+        Mach_start : Mach initial à cette phrase, récupéré en fin de croisière
+        dt      : pas de temps pour la simulation en secondes (par défaut 1 s)
+        """
+        h = h_start
+        l = l_start #ATTENTION A PRENDRE DU CALCUL DE CROISIERE PRECEDENT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        t = t_start
+        Gamma = Constantes.gamma #Coefficient de Laplace thermodynamique pour les conversions entre CAS, Mach et TAS 
+
+        # CAS max en m/s
+        CAS_max = self.avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s  Vitesse maximale de descente de l'avion
+        CAS = 0.0  # Initialisation avant calcul à partir du Mach connu
+        Mach = Mach_start #ATTENTION RECUPERER DE LA PHASE DE CROISIERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        TAS = 0.0 # Initialisation avant calcul à partir du Mach connu
+
+
+        while CAS < CAS_max: #On cherche à diminuer l'altitude h jusqu'à atteindre la vitesse CAS Max
+
+            # --- Atmosphère --- Calcule des conditions atm à cet altitude afin d'extraire la température et la pression au temps t
+            self.atmosphere.getRhoPT(h) #ATTENTION TRES MAUVAIS CHOIX DE NOM POUR ATM CE DEVRAIT ETRE CALCULATE RHO PT
+            P_t = self.atmosphere.getP_t() #Pression au temps t, en UNITE
+            T_t = self.atmosphere.getT_t() #Température au temps t, en K
+
+            # --- Mach et TAS --- 
+            CAS = Constantes.Convert_Mach_to_CAS(Mach,P_t) #Calcul du CAS à partir du Mach
+
+            TAS = Mach*np.sqrt(Gamma*Constantes.r*T_t) #Calcul du TAS à partir du Mach
+
+            # --- Cz et Cx --- Calcul des coefs aéro
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxClimb_Simplified()  # ici on peut remplacer par CalculateCx si on veut le modèle complet
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Poussée moteur et SFC ---
+            if self.moteur.get_Reseau_moteur() == 1:
+                # ATTENTION A MODIFIER UNE FOIS QU'ON AURA FAIT LES INTERPOLLATIONS MOTEUR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                F_N = 0.0
+                SFC = 0.0
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Résistance horizontale ---
+            Rx = self.masse.getCurrentWeight() / finesse
+
+            # --- Pente de descente ---
+            pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
+            Vz = TAS * np.sin(pente)
+            Vx = TAS * np.cos(pente)
+
+            # --- Mise à jour des positions ---
+            dh = Vz * dt
+            dl = Vx * dt
+            h += dh
+            l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt) #Carburant consommé à ce pas de temps dt, on met à jour la masse de carburant 
+        
+
+            # --- Stockage historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+
+
+    # --- Phase 2 : Descente à V constante jusqu'à 10000 ft ---
+    def Descente_Phase2(self, h_start, h_end, l_start, t_start, dt=1.0):
+        """
+        Phase 2 : Descente jusqu'à 10000ft à vitesse constante Max CAS
+
+        Arguments :
+        h_start : altitude initiale, après phase 1 (UNITE)
+        h_end   : altitude finale de la phase 2, 10 000ft 
+        l_start : distance initiale, après phase 1 (UNITE)
+        t_start : temps initial, après phase 1 (UNITE)
+        dt      : pas de temps (s)
+        """
+
+        # --- Conditions initiales ---
+        h = h_start
+        l = l_start
+        t = t_start
+        Gamma = Constantes.gamma
+
+        # --- CAS imposée ---
+        CAS = self.avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
+
+        Mach = 0.0 #Initialisation de Mach et de TAS avant calcul à partir du CAS
+        TAS  = 0.0
+
+        while h > h_end:
+
+            # --- Atmosphère ---
+            self.atmosphere.getRhoPT(h) #NOM A CHANGER
+            P_t   = self.atmosphere.getP_t()
+            T_t = self.atmosphere.getT_t()
+
+            # --- Conversion CAS -> Mach ---
+            Mach = Constantes.Convert_CAS_to_Mach(CAS, P_t)
+
+            # --- TAS ---
+            TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+
+            # --- Coefficients aérodynamiques ---
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxClimb_Simplified()
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Poussée moteur (idle en descente) ---
+            if self.moteur.get_Reseau_moteur() == 1:
+                # A MODIFIER PLUS TARD AVEC MODELE MOTEUR
+                F_N = 0.0
+                SFC = 0.0
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Résistance ---
+            Rx = self.masse.getCurrentWeight() / finesse
+
+            # --- Pente de trajectoire ---
+            pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
+
+            Vz = TAS * np.sin(pente)   # négatif car en descente
+            Vx = TAS * np.cos(pente)
+
+            # --- Mise à jour position ---
+            dh = Vz * dt
+            dl = Vx * dt
+
+            h += dh
+            l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt)
+
+            # --- Stockage historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+
+
+    # --- Phase 3 : Réduction de vitesse en plateau à 250 kt ---
+    def Descente_Phase3(self, h_const, l_start, t_start, dt=1.0):
+        """
+        Phase 3 : Décélération en palier, on fixe l'altitude à 10000ft et on passe la vitesse à Min CAS
+
+        Arguments :
+        h_const : altitude constante, après phase 2 (UNITE)
+        l_start : distance initiale, après phase 2 (UNITE)
+        t_start : temps initial, après phase 2 (UNITE)
+        dt      : pas de temps (s)
+        """
+
+        # --- Conditions initiales ---
+        h = h_const
+        l = l_start
+        t = t_start
+        Gamma = Constantes.gamma
+
+        # --- CAS initiale (issue phase 2) ---
+        CAS = self.history["V_CAS"][-1]
+
+        # --- Atmosphère --- #NB : on peut calculer les conditions atm en dehors de la boucle car, l'altitude étant constante, les conditions reste les mêmes à chaque pas de temps
+        self.atmosphere.getRhoPT(h)
+        P_t = self.atmosphere.getP_t()
+        T_t = self.atmosphere.getT_t()
+
+        # --- CAS cible (250 kt) ---
+        CAS_target = 250.0 * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
+
+        Mach = Constantes.Convert_CAS_to_Mach(CAS,P_t)
+        TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+
+        while CAS > CAS_target: #On diminue la vitesse jusqu'à la valeur désirée
+            #A noter que les nouvelles vitesses sont calculées en fin de boucle
+
+            # --- Coefficients aérodynamiques ---
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxClimb_Simplified()
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Forces ---
+            Rx = self.masse.getCurrentWeight() / finesse  # cohérent avec finesse
+
+            # --- Poussée moteur (idle / freinage) ---
+            if self.moteur.get_Reseau_moteur() == 1:
+                # À raffiner plus tard
+                F_N = 0.0
+                SFC = 0.0
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Dynamique longitudinale simplifiée --- #c'est la force qui va faire ralentir l'appareil
+            ax = (F_N - Rx) / self.masse.getCurrentMass()
+
+            # --- Mise à jour des vitesses ---
+            TAS = max(TAS + ax * dt, 0.0) #Calcul de la nouvelle vitesse avec la resistance longitudinale
+
+            # Recalcul CAS depuis Mach/TAS
+
+            Mach = TAS / np.sqrt(Gamma * Constantes.r * T_t)
+
+            CAS = Constantes.Convert_Mach_to_CAS(Mach,P_t)
+
+            # --- Cinématique ---
+            Vz = 0.0 #On vole en palier, donc on ne descend pas
+            Vx = TAS
+
+            dh = 0.0
+            dl = Vx * dt
+
+            l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt)
+
+            # --- Stockage historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+
+
+    # --- Phase 4 : Descente finale jusqu'à h_final ---
+    def Descente_Phase4(self, h_start, l_start, t_start, h_final, dt=1.0):
+        """
+        Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale de 1500ft
+
+        h_start : altitude initiale, récupérée à la fin de la phase 3 en UNITE
+        h_final : altitude finale, fixée par la mission (1500ft)
+        l_start : distance franchie initiale, récupérée à la fin de la phase 3 en UNITE
+        t_start : temps initial, récupérée à la fin de la phase 3 en UNITE
+        dt      : pas de temps (s)
+        """
+
+        h = h_start
+        l = l_start
+        t = t_start
+        Gamma = Constantes.gamma
+
+        # --- CAS imposée ---
+        CAS = 250.0 * Constantes.conv_kt_mps  # kt → m/s Ajouter dans les constantes le 250kt ?
+
+        
+        while h > h_final:
+
+            # --- Atmosphère ---
+            self.atmosphere.getRhoPT(h)
+            P_t = self.atmosphere.getP_t()
+            T_t = self.atmosphere.getT_t()
+
+            # --- Mach depuis CAS ---
+            Mach = Constantes.Convert_CAS_to_Mach(CAS,P_t)
+
+            # --- TAS ---
+            TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+
+            # --- Aérodynamique ---
+            self.aero.CalculateCz(Mach)
+            Cz = self.aero.getCz()
+
+            self.aero.CalculateCxDescent_Simplified()
+            Cx = self.aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Poussée moteur ---
+            if self.moteur.get_Reseau_moteur() == 1:
+                F_N = 0.0  # idle en descente (à affiner plus tard)
+                SFC = 0.0
+            else:
+                F_N = 0.0
+                SFC = 0.0
+
+            # --- Résistance ---
+            Rx = self.masse.getCurrentWeight() / finesse
+
+            # --- Pente ---
+            pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
+
+            # --- Vitesses ---
+            Vz = TAS * np.sin(pente)
+            Vx = TAS * np.cos(pente)
+
+            # --- Intégration ---
+            dh = Vz * dt
+            dl = Vx * dt
+
+            h += dh
+            l += dl
+            self.l_descent += dl #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            t += dt
+
+            # --- Fuel burn ---
+            self.masse.burn_fuel(dt)
+
+            # --- Historique ---
+            self.history["h"].append(h)
+            self.history["l"].append(l)
+            self.history["t"].append(t)
+            self.history["V_CAS"].append(CAS)
+            self.history["V_true"].append(TAS)
+            self.history["Mach"].append(Mach)
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(self.masse.getFuelBurned())
+            self.history["m"].append(self.masse.getCurrentMass())
+

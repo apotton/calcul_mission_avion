@@ -1,19 +1,25 @@
-# code qui crée une fonction d'estimation du fuel à emporter pour un vol donné selon l'équation de Breguet Leduc
+from moteurs.Moteur import Moteur
+from constantes.Constantes import Constantes
+import numpy as np
 
-def estimation_fuel(distance_km, consommation_kg_per_km, poids_initial_kg, poids_final_kg):
-    """
-    Estime la quantité de fuel nécessaire pour un vol donné en utilisant l'équation de Breguet Leduc.
 
-    :param distance_km: Distance du vol en kilomètres
-    :param consommation_kg_per_km: Consommation de fuel par kilomètre en kilogrammes
-    :param poids_initial_kg: Poids initial de l'avion (avec fuel) en kilogrammes
-    :param poids_final_kg: Poids final de l'avion (sans fuel) en kilogrammes
-    :return: Quantité de fuel nécessaire en kilogrammes
-    """
-    # Calculer le ratio de poids
-    ratio_poids = poids_initial_kg / poids_final_kg
-    
-    # Calculer la quantité de fuel nécessaire selon l'équation de Breguet Leduc
-    fuel_necessaire_kg = consommation_kg_per_km * distance_km * (ratio_poids - 1)
-    
-    return fuel_necessaire_kg
+test_moteur = Moteur(BPR=5, OPR=30, choix_reseau=1)
+
+
+h_cruise_step_ft = 3.7012e+04
+Mach_cruise_step = 0.78
+
+test_moteur.Calculate_F_MCL_cruise_step(mach=Mach_cruise_step, h_ft=h_cruise_step_ft)
+print("Poussée moteur à Mach {:.2f} et {:.0f} ft : {:.2f} N".format(Mach_cruise_step, h_cruise_step_ft, test_moteur.get_F_MCL_cruise_step()))
+
+
+
+# 2. Calcul de la SFC pour une poussée donnée
+# Imaginons que pour tenir la croisière, on a besoin de 5000 N par moteur
+poussee_requise = 5000 # Newtons
+sfc = test_moteur.Calculate_SFC_cruise(mach=0.78, h_ft=35000, F_engine_N=poussee_requise)
+
+print(f"SFC à {poussee_requise} N : {sfc:.8f} kg/N/s")
+print(f"SFC \"classique\" (g/kN/s) : {sfc * 1000 * 1000:.4f} g/kN/s")
+
+

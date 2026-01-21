@@ -18,8 +18,9 @@ class Atmosphere:
         self.rho_t = 1.225  # Densité standard au niveau de la mer (kg/m^3)
         self.P_t = 101325.0  # Pression standard au niveau de la mer (Pa)
         self.T_t = 288.15  # Température standard au niveau de la mer (K)
+        self.Vwind_t = 0.0  # Vitesse du vent à l'altitude t (m/s)
 
-    def getRhoPT(self, h_m) :
+    def CalculateRhoPT(self, h_m) : #CHANGER LE NOM EN CalculateRhoPT CAR CE N EST PAS UN GETTER
         if h_m <= 11000:
             # --- Troposphère (Altitude à gradient constant : h <= 11000 m) ---
             
@@ -59,3 +60,6 @@ class Atmosphere:
     
     def getT_t(self):
         return self.T_t
+
+    def getVwind(self):
+        return self.Vwind_t

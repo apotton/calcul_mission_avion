@@ -1,146 +1,23 @@
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
+from moteurs.Reseau_moteur import Reseau_moteur 
 
+from scipy.interpolate import RegularGridInterpolator
 
 class Moteur:
-    def __init__(self, BPR=0, OPR=0, Reseau_moteur=0):
+    def __init__(self, BPR=0, OPR=0, choix_reseau=1):
         self.BPR = BPR        # Bypass ratio
         self.OPR = OPR        # Overall Pressure Ratio
-        self.Reseau_moteur = Reseau_moteur  # choix du modèle
-        self.F = 0            # Poussée actuelle (N)
-        self.SFC = 0          # SFC actuelle (kg/(N.s))
-
-
-    def CalculateSFC(F_max,F,T,Mach,h_m,self):
         
-        # Modèle Elodie Roux
-
-        if h_m<=11000 :
-            a_1=Constantes.a1_troposphere_1*h_m+Constantes.a1_troposphere_2
-            a_2=Constantes.a2_troposphere_1*h_m+Constantes.a2_troposphere_2
-            b_1=Constantes.b1_troposphere_1*h_m+Constantes.b1_troposphere_2
-            b_2=Constantes.b2_troposphere_1*h_m+Constantes.b2_troposphere_2
-            c=Constantes.c_troposphere
-        else :
-            a_1=Constantes.a1_stratosphere
-            a_2=Constantes.a2_stratosphere
-            b_1=Constantes.b1_stratosphere
-            b_2=Constantes.b2_stratosphere
-            c=Constantes.c_stratosphere
-
-        # Calcul de SFC_CLB
-        SFC_CLB = ((a_1 * self.BPR + a_2) * Mach + (b_1 * self.BPR + b_2) * np.sqrt(T / Constantes.T0_K) + (Constantes.coef_SFC1 * (self.OPR - 30) * h_m + c) * (self.OPR - 30)) # *SFC_design/coef_SFC
-
-        # Calcul de SFC_reduced_min
-        SFC_reduced_min = Constantes.coef_alt_SFCmin * h_m + Constantes.const_SFCmin + Constantes.coef_fpr_SFCmin * self.FPR + Constantes.coef_mach_SFCmin * Mach + Constantes.coef_alt_mach_SFCmin * Mach * h_m
-
-        # Calcul de F_i
-        # Note : L'opérateur de puissance '^' en Matlab devient '**' en Python
-        # (h).^1.1 devient h**1.1
-        F_i = Constantes.coef_alt_Fi * h_m + Constantes.const_Fi + Constantes.coef_fpr_Fi * self.FPR + Constantes.coef_mach_Fi * Mach + Constantes.coef_alt_mach_Fi1 * Mach * h_m + Constantes.coef_alt_mach_Fi2 * Mach * (h_m**1.1)
-
-        # Calcul de SFC_reduced
-        SFC_reduced = (1 - SFC_reduced_min) * ((F / F_max - F_i) / (1 - F_i))**2 + SFC_reduced_min
-
-        # Calcul final SFC
-        SFC = SFC_reduced * SFC_CLB
-
-        return
-
-    def CalculateSFCbis(F_max,F,Mach,h_m,avion):
-        h_ft=h_m/Constantes.conv_ft_m
-        rho,p,T = Atmosphere.getRhoPT(avion, h_m)
-
-        if Reseau_moteur == 1:
-    
-            # Sélection des données par bande d'altitude
-            # Utilisation de parenthèses pour le saut de ligne et de & pour le ET logique vectoriel
-            Fn_lbf_CRL = (
-                Fn_lbf_CRL_30000 * ((h_ft < 30200) & (h_ft > 29800)) +
-                Fn_lbf_CRL_31000 * ((h_ft < 31200) & (h_ft > 30800)) +
-                Fn_lbf_CRL_32000 * ((h_ft < 32200) & (h_ft > 31800)) +
-                Fn_lbf_CRL_33000 * ((h_ft < 33200) & (h_ft > 32800)) +
-                Fn_lbf_CRL_34000 * ((h_ft < 34200) & (h_ft > 33800)) +
-                Fn_lbf_CRL_35000 * ((h_ft < 35200) & (h_ft > 34800)) +
-                Fn_lbf_CRL_36000 * ((h_ft < 36200) & (h_ft > 35800)) +
-                Fn_lbf_CRL_37000 * ((h_ft < 37200) & (h_ft > 36800)) +
-                Fn_lbf_CRL_38000 * ((h_ft < 38200) & (h_ft > 37800)) +
-                Fn_lbf_CRL_39000 * ((h_ft < 39200) & (h_ft > 38800)) +
-                Fn_lbf_CRL_40000 * ((h_ft < 40200) & (h_ft > 39800)) +
-                Fn_lbf_CRL_41000 * ((h_ft < 41200) & (h_ft > 40800)) +
-                Fn_lbf_CRL_42000 * ((h_ft < 42200) & (h_ft > 41800))
-            )
-
-            SFC_CRL = (
-                SFC_CRL_30000 * ((h_ft < 30200) & (h_ft > 29800)) +
-                SFC_CRL_31000 * ((h_ft < 31200) & (h_ft > 30800)) +
-                SFC_CRL_32000 * ((h_ft < 32200) & (h_ft > 31800)) +
-                SFC_CRL_33000 * ((h_ft < 33200) & (h_ft > 32800)) +
-                SFC_CRL_34000 * ((h_ft < 34200) & (h_ft > 33800)) +
-                SFC_CRL_35000 * ((h_ft < 35200) & (h_ft > 34800)) +
-                SFC_CRL_36000 * ((h_ft < 36200) & (h_ft > 35800)) +
-                SFC_CRL_37000 * ((h_ft < 37200) & (h_ft > 36800)) +
-                SFC_CRL_38000 * ((h_ft < 38200) & (h_ft > 37800)) +
-                SFC_CRL_39000 * ((h_ft < 39200) & (h_ft > 38800)) +
-                SFC_CRL_40000 * ((h_ft < 40200) & (h_ft > 39800)) +
-                SFC_CRL_41000 * ((h_ft < 41200) & (h_ft > 40800)) +
-                SFC_CRL_42000 * ((h_ft < 42200) & (h_ft > 41800))
-            )
-
-            # --- INTERPOLATION ---
-            # Note: interp2 en Matlab prend (X, Y, V, Xq, Yq).
-            # En Python scipy, il faut construire l'interpolateur d'abord.
-            # ATTENTION : Cela suppose que Mach_table_CRL et Fn_lbf_CRL forment une grille régulière.
-            # Si Fn_lbf_CRL change à chaque pas de temps, il faudra peut-être utiliser griddata 
-            # ou interpoler ligne par ligne. Voici l'implémentation standard pour une grille :
-            
-            # Création des points de requête (couple Mach, Force/2)
-            # pts = np.array([Mach, F/2]).T 
-            # interpolator = RegularGridInterpolator((Mach_table_CRL, Fn_lbf_CRL_Axis), SFC_CRL, bounds_error=False, fill_value=None)
-            # SFC_lbf = interpolator(pts)
-            
-            # SANS connaitre la forme exacte de vos tables (si Fn_lbf_CRL est un vecteur ou une matrice d'axe),
-            # il est difficile de traduire interp2 parfaitement ici.
-            # Je laisse la variable calculée pour l'instant :
-            # SFC_lbf = ... (à adapter selon vos données d'entrée)
-            
-            SFC = SFC_lbf / 3600 / g
-
+        if choix_reseau == 1:
+            self.Reseau_moteur = Reseau_moteur() 
         else:
-            # Modèle Elodie Roux
-            # Coef_SFC_MCL et Coef_SFC_cruise supposés être des fonctions ou scripts importés
-            # En Python, on les appellerait probablement ici s'ce sont des fonctions
-            
-            # Calcul des coefficients selon l'altitude (Troposphère vs Stratosphère)
-            # np.where(condition, valeur_si_vrai, valeur_si_faux) remplace le if/else pour les vecteurs
-            
-            # Condition : est-ce dans la troposphère ?
-            is_trop = (h <= 11000)
+            # Gestion d'un cas par défaut ou d'une erreur si nécessaire
+            self.Reseau_moteur = None
 
-            a_1 = np.where(is_trop, a1_troposphere_1 * h + a1_troposphere_2, a1_stratosphere)
-            a_2 = np.where(is_trop, a2_troposphere_1 * h + a2_troposphere_2, a2_stratosphere)
-            b_1 = np.where(is_trop, b1_troposphere_1 * h + b1_troposphere_2, b1_stratosphere)
-            b_2 = np.where(is_trop, b2_troposphere_1 * h + b2_troposphere_2, b2_stratosphere)
-            c   = np.where(is_trop, c_troposphere, c_stratosphere)
-
-            # Calcul SFC_CLB
-            SFC_CLB = ((a_1 * BPR + a_2) * Mach + (b_1 * BPR + b_2) * np.sqrt(T / T_0) + 
-                    (coef_SFC1 * (OPR - 30) * h + c) * (OPR - 30)) # * SFC_design / coef_SFC
-            
-            # Calcul SFC_reduced_min
-            SFC_reduced_min = (coef_alt_SFCmin * h + const_SFCmin + coef_fpr_SFCmin * FPR + 
-                            coef_mach_SFCmin * Mach + coef_alt_mach_SFCmin * Mach * h)
-            
-            # Calcul F_i
-            F_i = (coef_alt_Fi * h + const_Fi + coef_fpr_Fi * FPR + coef_mach_Fi * Mach + 
-                coef_alt_mach_Fi1 * Mach * h + coef_alt_mach_Fi2 * Mach * (h**1.1))
-            
-            # Calcul SFC_reduced
-            SFC_reduced = (1 - SFC_reduced_min) * ((F / F_max - F_i) / (1 - F_i))**2 + SFC_reduced_min
-            
-            # Calcul Final
-            SFC = SFC_reduced * SFC_CLB
+        self.F_t = 0            # Poussée actuelle (N)
+        self.SFC_t = 0          # SFC actuelle (kg/(N.s))
 
     # Getters
     def get_BPR(self):
@@ -152,8 +29,92 @@ class Moteur:
     def get_Reseau_moteur(self):
         return self.Reseau_moteur
 
-    def get_F(self):
-        return self.F
+    def get_F_t(self):
+        return self.F_t
 
-    def get_SFC(self):
-        return self.SFC
+    def get_SFC_t(self):
+        return self.SFC_t
+    
+    def get_F_MCL_cruise_step(self):
+        return self.F_t
+
+
+    # méthodes de calcul de la poussée et du SFC en croisière
+
+
+    # Cette fonction permet de calculer *F_MCL_cruise_step* et aussi *F_MCL_cruise_step_up* (il suffit de mettre h_ft=h_ft + 2000)
+    # et aussi *F_N_AEO_lbf*
+    def Calculate_F_MCL_cruise_step(self, mach, h_ft):
+        "Calcule la poussée Max Climb"
+        # Création de l'interpolateur
+        interp = RegularGridInterpolator(
+            (self.Reseau_moteur.mach_table, self.Reseau_moteur.alt_table_ft), 
+            self.Reseau_moteur.Fn_MCL_table,
+            bounds_error=False, # Évite le crash si légèrement hors bornes
+            fill_value=None     # Extrapole si nécessaire (optionnel)
+        )
+        
+        # L'interpolateur renvoie un tableau numpy (ex: array([15000.5])), 
+        # on prend la valeur [0] ou .item() pour avoir un float propre.
+        resultat = interp((mach, h_ft)) # résultat pour un moteur en lbf
+        self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
+        
+        
+    
+
+    def Calculate_SFC_cruise(self, mach, h_ft, F_engine_N=None):
+        "Calcule le SFC en croisière"
+        
+
+        # 1. Gestion de la poussée d'entrée
+        # Si aucune poussée n'est fournie, on utilise la poussée actuelle de l'objet (self.F)
+        if F_engine_N is None:
+            thrust_to_use = self.F_t
+        else:
+            thrust_to_use = F_engine_N
+
+    
+        # Conversion lbf -> Newtons : 1 lbf = 0.4535 kg * 9.81 m/s²
+        conv_lbf_N = Constantes.g * Constantes.conv_lb_kg
+
+        # 2. Trouver l'altitude la plus proche dans la base de données (cruise_data)
+        # liste des différentes altitudes disponibles dans le Reseau_moteur
+        available_alts = list(self.Reseau_moteur.cruise_data.keys())
+        
+        closest_h = min(available_alts, key=lambda x: abs(x - h_ft)) # Trouve l'altitude la plus proche de h_ft présente dans le Reseau_moteur
+
+        # (Optionnel) : On pourrait mettre une alerte si l'altitude est trop éloignée d'un niveau standard
+        # if abs(h_ft - closest_h) > 500: print("Attention: Interpolation SFC loin du FL standard")
+
+        # 3. Récupération des tables correspondantes
+        data = self.Reseau_moteur.cruise_data[closest_h]
+        
+        fn_lbf_vector = data['fn']                       # Vecteur Poussée en lbf (vecteur lignes)
+        sfc_matrix = data['sfc']                         # Matrice SFC (Lignes=Fn, Colonnes=Mach)
+        mach_vector = self.Reseau_moteur.mach_table_crl  # Vecteur Mach (vecteur colonnes)
+
+        # 4. Conversion de l'axe Poussée de la table (lbf -> Newtons)
+        # Nécessaire car l'entrée 'thrust_to_use' est en Newtons
+        fn_newton_vector = fn_lbf_vector * conv_lbf_N
+
+        # 5. Interpolation 2D
+        # RegularGridInterpolator attend (x_grid, y_grid). 
+        # Ici la matrice SFC a pour forme (len(Fn), len(Mach)).
+        interp_func = RegularGridInterpolator(
+            (fn_newton_vector, mach_vector), 
+            sfc_matrix,
+            bounds_error=False, # no crash si hors bornes
+            fill_value=None #extrapolation
+        )
+
+        # On interpole au point (Poussée_Moteur_N, Mach)
+        # Note: MATLAB faisait F/2 car F était la poussée avion totale. 
+        # Ici, thrust_to_use est déjà censé être pour UN moteur.
+        sfc_lbf_raw = float(interp_func((thrust_to_use, mach)))
+
+        # 6. Conversion finale des unités
+        # MATLAB: SFC = SFC_lbf / 3600 / g
+        # Cela convertit des [lb/(lbf*h)] ou [kg/(kgf*h)] vers [kg/(N*s)] (SI)
+        self.SFC_t = sfc_lbf_raw / 3600.0 / Constantes.g
+
+         
