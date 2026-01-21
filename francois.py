@@ -16,10 +16,14 @@ print("Poussée moteur à Mach {:.2f} et {:.0f} ft : {:.2f} N".format(Mach_cruis
 
 # 2. Calcul de la SFC pour une poussée donnée
 # Imaginons que pour tenir la croisière, on a besoin de 5000 N par moteur
-poussee_requise = 5000 # Newtons
-sfc = test_moteur.Calculate_SFC_cruise(mach=0.78, h_ft=35000, F_engine_N=poussee_requise)
 
-print(f"SFC à {poussee_requise} N : {sfc:.8f} kg/N/s")
-print(f"SFC \"classique\" (g/kN/s) : {sfc * 1000 * 1000:.4f} g/kN/s")
+# 1. Définition de la variable (C'est cette ligne qui manquait à l'appel)
+F_cruise_step =3.5619e+04
 
+# 2. Calcul (Assurez-vous que test_moteur est bien instancié avant)
+test_moteur.Calculate_SFC_cruise(mach=0.78, h_ft=3.7012e+04, F_engine_N=F_cruise_step/2)
 
+# 3. Affichages
+# Attention : j'ai changé le formatage ici (voir explication plus bas)
+print(f"SFC à {F_cruise_step:.0f} N : {test_moteur.get_SFC_t():.2e} kg/N/s") 
+print(f"SFC \"classique\" (g/kN/s) : {test_moteur.get_SFC_t() * 1e6:.4f} g/kN/s")

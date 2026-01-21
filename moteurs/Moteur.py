@@ -95,7 +95,7 @@ class Moteur:
 
         # 4. Conversion de l'axe Poussée de la table (lbf -> Newtons)
         # Nécessaire car l'entrée 'thrust_to_use' est en Newtons
-        fn_newton_vector = fn_lbf_vector * conv_lbf_N
+        fn_newton_vector = fn_lbf_vector * Constantes.g * Constantes.conv_lb_kg
 
         # 5. Interpolation 2D
         # RegularGridInterpolator attend (x_grid, y_grid). 
