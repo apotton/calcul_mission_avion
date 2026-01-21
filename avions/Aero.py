@@ -11,6 +11,14 @@ class Aero:
         # print("Test" + str(Constantes().a1_stratosphere))
         self.Cz_t = 0 #Uniquement pour l'initialisation 
 
+    def CalculateAll(self, atmosphere):
+        self.CalculateCzBuffet()
+        self.CalculateCz(atmosphere)
+        self.CalculateCx(atmosphere)
+        self.CalculateTAS(atmosphere)
+        self.calculateSGR(atmosphere)
+        self.calculateECCF(atmosphere)
+
     #Calcul du Cz
     def CalculateCz(self, atmosphere):
         self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*atmosphere.getP_t()*self.Avion.getSref()*self.getMach()**2) 
@@ -174,6 +182,29 @@ class Aero:
         # Attention : np.interp prend (x_to_find, x_data, y_data)
         self.CzBuffet_t = np.interp(self.getMach(), M1, CL1)
 
+    def CalculateTAS(self, atmosphere):
+        self.TAS_t = self.getMach() * np.sqrt(1.4 * Constantes.r * atmosphere.getT_t())
+
+    def calculateECCF(self, atmosphere):
+        # Traduire en Python: ECCF=CI/60./(TAS+Vw)+(SFC*m*g)./((TAS+Vw).*finesse);
+        TAS = self.getTAS(atmosphere)
+        Vw = atmosphere.getVwind()
+        finesse = self.getCz()/self.getCx()
+        CI = 1.0  # Constante d'Injection (à définir précisément selon le contexte)
+        m = self.Avion.Masse.getCurrentMass()
+        SFC = self.Avion.moteur.get_SFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
+        self.ECCF_t = (CI / 60.0 / (TAS + Vw) 
+                     + (SFC * m * Constantes.g) 
+                     / ((TAS + Vw) * finesse) )
+        
+    def calculateSGR(self, atmosphere):
+        # Adapter en Python: SGR=(TAS+Vw).*finesse./(SFC*m*g);
+        Vw = atmosphere.getVwind()
+        finesse = self.getCz()/self.getCx()
+        m = self.Avion.Masse.getCurrentMass()
+        SFC = self.Avion.moteur.get_SFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
+        self.SGR_t = (self.TAS_t + Vw) * finesse / (SFC * m * Constantes.g)
+
     #Getters 
     def getCx(self):
         return self.Cx_t
@@ -186,3 +217,12 @@ class Aero:
     
     def getCzBuffet(self):
         return self.CzBuffet_t
+    
+    def getTAS(self):
+        return self.TAS_t
+    
+    def getECCF(self):
+        return self.ECCF_t
+    
+    def getSGR(self):
+        return self.SGR_t

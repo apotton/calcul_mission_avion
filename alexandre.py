@@ -61,4 +61,8 @@ print("Cz buffet calculé : " + str(A320.Aero.getCzBuffet()))
 A320.Aero.CalculateCz(test_atmos)
 print("Cz calculé : " + str(A320.Aero.getCz()))
 
+# Test du calcul de la TAS
+tas = A320.Aero.getTAS(test_atmos)
+print("TAS calculée : " + str(tas) + " m/s")
+
 print("Test complete.")

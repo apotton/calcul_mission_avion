@@ -32,6 +32,7 @@ class Avion:
 
         self.Masse = Masse(self)
         self.Aero = Aero(self) #AJOUTER LE SELF.MOTEUR
+        self.Moteur = None # À initialiser plus tard avec un objet Moteur
 
 #LISTE DES ATTRIBUTS :
 # Name : Nom du modèle d'avion
