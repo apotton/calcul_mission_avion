@@ -16,8 +16,8 @@ class Moteur:
             # Gestion d'un cas par défaut ou d'une erreur si nécessaire
             self.Reseau_moteur = None
 
-        self.F = 0            # Poussée actuelle (N)
-        self.SFC = 0          # SFC actuelle (kg/(N.s))
+        self.F_t = 0            # Poussée actuelle (N)
+        self.SFC_t = 0          # SFC actuelle (kg/(N.s))
 
     # Getters
     def get_BPR(self):
@@ -29,18 +29,21 @@ class Moteur:
     def get_Reseau_moteur(self):
         return self.Reseau_moteur
 
-    def get_F(self):
-        return self.F
+    def get_F_t(self):
+        return self.F_t
 
-    def get_SFC(self):
-        return self.SFC
+    def get_SFC_t(self):
+        return self.SFC_t
     
     def get_F_MCL_cruise_step(self):
-        return self.F
+        return self.F_t
 
 
     # méthodes de calcul de la poussée et du SFC en croisière
 
+
+    # Cette fonction permet de calculer *F_MCL_cruise_step* et aussi *F_MCL_cruise_step_up* (il suffit de mettre h_ft=h_ft + 2000)
+    # et aussi *F_N_AEO_lbf*
     def Calculate_F_MCL_cruise_step(self, mach, h_ft):
         "Calcule la poussée Max Climb"
         # Création de l'interpolateur
@@ -54,9 +57,9 @@ class Moteur:
         # L'interpolateur renvoie un tableau numpy (ex: array([15000.5])), 
         # on prend la valeur [0] ou .item() pour avoir un float propre.
         resultat = interp((mach, h_ft))
-        self.F = float(resultat) 
+        self.F_t = float(resultat) 
         
-        return self.F
+        
     
 
     def Calculate_SFC_cruise(self, mach, h_ft, F_engine_N=None):
@@ -66,7 +69,7 @@ class Moteur:
         # 1. Gestion de la poussée d'entrée
         # Si aucune poussée n'est fournie, on utilise la poussée actuelle de l'objet (self.F)
         if F_engine_N is None:
-            thrust_to_use = self.F
+            thrust_to_use = self.F_t
         else:
             thrust_to_use = F_engine_N
 
@@ -112,6 +115,6 @@ class Moteur:
         # 6. Conversion finale des unités
         # MATLAB: SFC = SFC_lbf / 3600 / g
         # Cela convertit des [lb/(lbf*h)] ou [kg/(kgf*h)] vers [kg/(N*s)] (SI)
-        self.SFC = sfc_lbf_raw / 3600.0 / Constantes.g
+        self.SFC_t = sfc_lbf_raw / 3600.0 / Constantes.g
 
-        return self.SFC   
+         
