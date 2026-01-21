@@ -20,22 +20,22 @@ class Moteur:
         self.SFC_t = 0          # SFC actuelle (kg/(N.s))
 
     # Getters
-    def get_BPR(self):
+    def getBPR(self):
         return self.BPR
 
-    def get_OPR(self):
+    def getOPR(self):
         return self.OPR
 
-    def get_Reseau_moteur(self):
+    def getReseau_moteur(self):
         return self.Reseau_moteur
 
-    def get_F(self):
+    def getF(self):
         return self.F_t
 
-    def get_SFC(self):
+    def getSFC(self):
         return self.SFC_t
     
-    def get_F_MCL_cruise_step(self):
+    def getF_MCL_cruise_step(self):
         return self.F_t
 
 
