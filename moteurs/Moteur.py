@@ -29,10 +29,10 @@ class Moteur:
     def get_Reseau_moteur(self):
         return self.Reseau_moteur
 
-    def get_F_t(self):
+    def get_F(self):
         return self.F_t
 
-    def get_SFC_t(self):
+    def get_SFC(self):
         return self.SFC_t
     
     def get_F_MCL_cruise_step(self):
