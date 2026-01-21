@@ -44,8 +44,10 @@ class Moteur:
 
     # Cette fonction permet de calculer *F_MCL_cruise_step* et aussi *F_MCL_cruise_step_up* (il suffit de mettre h_ft=h_ft + 2000)
     # et aussi *F_N_AEO_lbf*
-    def Calculate_F_MCL_cruise_step(self, mach, h_ft):
+    def Calculate_F_MCL_cruise_step(self, mach, h_m):
         "Calcule la poussée Max Climb"
+
+        h_ft = h_m / Constantes.conv_m_ft  # Conversion m -> ft
         # Création de l'interpolateur
         interp = RegularGridInterpolator(
             (self.Reseau_moteur.mach_table, self.Reseau_moteur.alt_table_ft), 
@@ -62,9 +64,10 @@ class Moteur:
         
     
 
-    def Calculate_SFC_cruise(self, mach, h_ft, F_engine_N=None):
+    def Calculate_SFC_cruise(self, mach, h_m, F_engine_N=None):
         "Calcule le SFC en croisière"
         
+        h_ft = h_m / Constantes.conv_m_ft  # Conversion m -> ft
 
         # 1. Gestion de la poussée d'entrée
         # Si aucune poussée n'est fournie, on utilise la poussée actuelle de l'objet (self.F)
