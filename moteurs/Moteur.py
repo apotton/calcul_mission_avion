@@ -56,8 +56,8 @@ class Moteur:
         
         # L'interpolateur renvoie un tableau numpy (ex: array([15000.5])), 
         # on prend la valeur [0] ou .item() pour avoir un float propre.
-        resultat = interp((mach, h_ft))
-        self.F_t = float(resultat) 
+        resultat = interp((mach, h_ft)) # résultat pour un moteur en lbf
+        self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
         
         
     

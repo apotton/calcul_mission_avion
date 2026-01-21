@@ -5,8 +5,14 @@ import numpy as np
 
 test_moteur = Moteur(BPR=5, OPR=30, choix_reseau=1)
 
-test_moteur.Calculate_F_MCL_cruise_step(mach=0.78, h_ft=35000)
-print("Poussée moteur à Mach 0.78 et 35000 ft : {:.2f} N".format(test_moteur.get_F_MCL_cruise_step()))
+
+h_cruise_step_ft = 3.7012e+04
+Mach_cruise_step = 0.78
+
+test_moteur.Calculate_F_MCL_cruise_step(mach=Mach_cruise_step, h_ft=h_cruise_step_ft)
+print("Poussée moteur à Mach {:.2f} et {:.0f} ft : {:.2f} N".format(Mach_cruise_step, h_cruise_step_ft, test_moteur.get_F_MCL_cruise_step()))
+
+
 
 # 2. Calcul de la SFC pour une poussée donnée
 # Imaginons que pour tenir la croisière, on a besoin de 5000 N par moteur
@@ -15,3 +21,5 @@ sfc = test_moteur.Calculate_SFC_cruise(mach=0.78, h_ft=35000, F_engine_N=poussee
 
 print(f"SFC à {poussee_requise} N : {sfc:.8f} kg/N/s")
 print(f"SFC \"classique\" (g/kN/s) : {sfc * 1000 * 1000:.4f} g/kN/s")
+
+
