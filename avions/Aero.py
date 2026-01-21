@@ -16,8 +16,6 @@ class Aero:
         self.CalculateCz(atmosphere)
         self.CalculateCx(atmosphere)
         self.CalculateTAS(atmosphere)
-        self.calculateSGR(atmosphere)
-        self.calculateECCF(atmosphere)
 
     #Calcul du Cz
     def CalculateCz(self, atmosphere):
@@ -187,12 +185,12 @@ class Aero:
 
     def calculateECCF(self, atmosphere):
         # Traduire en Python: ECCF=CI/60./(TAS+Vw)+(SFC*m*g)./((TAS+Vw).*finesse);
-        TAS = self.getTAS(atmosphere)
+        TAS = self.getTAS()
         Vw = atmosphere.getVwind()
         finesse = self.getCz()/self.getCx()
         CI = 1.0  # Constante d'Injection (à définir précisément selon le contexte)
         m = self.Avion.Masse.getCurrentMass()
-        SFC = self.Avion.moteur.get_SFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
+        SFC = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
         self.ECCF_t = (CI / 60.0 / (TAS + Vw) 
                      + (SFC * m * Constantes.g) 
                      / ((TAS + Vw) * finesse) )
@@ -202,7 +200,7 @@ class Aero:
         Vw = atmosphere.getVwind()
         finesse = self.getCz()/self.getCx()
         m = self.Avion.Masse.getCurrentMass()
-        SFC = self.Avion.moteur.get_SFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
+        SFC = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
         self.SGR_t = (self.TAS_t + Vw) * finesse / (SFC * m * Constantes.g)
 
     #Getters 

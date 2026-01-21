@@ -61,13 +61,11 @@ class Mission:
 
         # --- Atmosphère (constante en palier) ---
         self.atmosphere.CalculateRhoPT(h_t)
-        P_t = self.atmosphere.getP_t()
-        T_t = self.atmosphere.getT_t()
 
         # --- Initialisation ---
         Avion.Convert_CAS_to_Mach(Atmosphere)
         Mach_t = Avion.getMach()
-        Avion.Convert_TAS_to_Mach(Atmosphere)
+        Avion.Convert_Mach_to_TAS(Atmosphere)
         TAS_t  = Avion.getTAS()
 
         while CAS_t < CAS_target:
@@ -82,7 +80,7 @@ class Mission:
             finesse = Cz_t / Cx_t
 
             # --- Traînée ---
-            Rx = self.masse.getCurrentWeight() / finesse
+            Rx = Avion.masse.getCurrentWeight() / finesse
 
             # --- Poussée moteur ---
             if self.moteur.get_Reseau_moteur() == 1: #A REVOIR APRES AVOIR LA CLASSE MOTEUR FINALISEE
@@ -93,7 +91,7 @@ class Mission:
                 SFC = 0.0
 
             # --- Dynamique longitudinale ---
-            ax = (F_N - Rx) / self.masse.getCurrentMass()
+            ax = (F_N - Rx) / Avion.masse.getCurrentMass()
 
             # --- Mise à jour vitesse ---
             TAS_t = max(TAS_t + ax * dt, 0.0)
@@ -110,7 +108,7 @@ class Mission:
             Avion.Add_dl(dl)
 
             # --- Fuel burn ---
-            self.masse.burn_fuel(dt, SFC, F_N)
+            Avion.masse.burn_fuel(dt, SFC, F_N)
 
             # --- Historique ---
             self.history["h"].append(h_t)
