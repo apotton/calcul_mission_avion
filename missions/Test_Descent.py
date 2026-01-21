@@ -35,101 +35,8 @@ class Mission:
 #MONTEE
 ##
 
-    # --- Phase 1 : Montée initiale jusqu'à 10 000 ft à CAS constant ---
-    def climb_phase1(self, h_start, h_end, l_start, t_start, dt=1.0): #A DISCUTER DES INPUT DE LA FONCTION
-        """
-        Phase 1 : montée à CAS constant (250 kt) jusqu'à 10 000 ft
-
-        h_start : altitude initiale (UNITE)
-        h_end   : altitude finale (10 000 ft)
-        l_start : distance initiale
-        t_start : temps initial
-        dt      : pas de temps (s)
-        """
-
-        # --- Conditions initiales ---
-        h = h_start
-        l = l_start
-        t = t_start
-
-        Gamma = Constantes.gamma
-
-        # --- CAS imposée ---
-        CAS = 250.0 * Constantes.conv_kt_mps
-
-        Mach = 0.0
-        TAS  = 0.0
-
-        while h < h_end:
-
-            # --- Atmosphère ---
-            self.atmosphere.getRhoPT(h)
-            P_t = self.atmosphere.getP_t()
-            T_t = self.atmosphere.getT_t()
-
-            # --- Conversion CAS -> Mach ---
-            Mach = Constantes.Convert_CAS_to_Mach(CAS, P_t)
-
-            # --- TAS ---
-            TAS = Mach * np.sqrt(Gamma * Constantes.r * T_t)
-
-            # --- Aérodynamique ---
-            self.aero.CalculateCz(Mach)
-            Cz = self.aero.getCz()
-
-            self.aero.CalculateCxClimb_Simplified()
-            Cx = self.aero.getCx()
-
-            finesse = Cz / Cx
-
-            # --- Résistance ---
-            Rx = self.masse.getCurrentWeight() / finesse
-
-            # --- Poussée moteur ---
-            if self.moteur.get_Reseau_moteur() == 1: #A MODIFIER QUAND ON AURA LA CLASSE MOTEUR FINALISEE
-                # Placeholder : poussée max climb
-                # F_N = self.moteur.getMaxThrustClimb(h, Mach)
-                SFC = self.moteur.getSFC(h, Mach)
-            else:
-                F_N = 0.0
-                SFC = 0.0
-
-            # --- Pente de montée ---
-            pente = np.arcsin((F_N - Rx) / self.masse.getCurrentWeight())
-
-            # --- Vitesses ---
-            Vz = TAS * np.sin(pente)
-            Vx = TAS * np.cos(pente)
-
-            # --- Intégration ---
-            dh = Vz * dt
-            dl = Vx * dt
-
-            h += dh
-            l += dl
-            t += dt
-
-            # --- Fuel burn ---
-            self.masse.burn_fuel(dt, SFC, F_N)
-
-            # --- Historique ---
-            self.history["h"].append(h)
-            self.history["l"].append(l)
-            self.history["t"].append(t)
-            self.history["V_CAS"].append(CAS)
-            self.history["V_true"].append(TAS)
-            self.history["Mach"].append(Mach)
-            self.history["Cz"].append(Cz)
-            self.history["Cx"].append(Cx)
-            self.history["Vz"].append(Vz)
-            self.history["Vx"].append(Vx)
-            self.history["F_N"].append(F_N)
-            self.history["SFC"].append(SFC)
-            self.history["FB"].append(self.masse.getFuelBurned())
-            self.history["m"].append(self.masse.getCurrentMass())
-
-# --- Phase 2 : Accélération en palier à 10 000 ft ---
-    def climb_phase2(self, h_const, l_start, t_start, dt=1.0):
+# --- Accélération en palier à 10 000 ft ---
+    def climb_Palier(self, Avion, dt=1.0):
         """
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
@@ -141,45 +48,46 @@ class Mission:
         """
 
         # --- Conditions initiales ---
-        h = h_const
-        l = l_start
-        t = t_start
+        h_t = Avion.geth()
+        l_t = Avion.getl()
 
         Gamma = Constantes.gamma
 
         # --- CAS initiale ---
-        CAS = 250.0 * Constantes.conv_kt_mps # à mettre dans constantes plus tard
+        CAS_t = Avion.getCAS() * Constantes.conv_kt_mps # à mettre dans constantes plus tard
 
         # --- CAS cible ---
         CAS_target = self.avion.getKVMO()* Constantes.conv_kt_mps  # à mettre dans constantes plus tard
 
         # --- Atmosphère (constante en palier) ---
-        self.atmosphere.getRhoPT(h)
+        self.atmosphere.CalculateRhoPT(h_t)
         P_t = self.atmosphere.getP_t()
         T_t = self.atmosphere.getT_t()
 
         # --- Initialisation ---
-        Mach = Constantes.Convert_CAS_to_Mach(CAS, P_t)
-        TAS  = Mach * np.sqrt(Gamma * Constantes.r * T_t)
+        Avion.Convert_CAS_to_Mach(Atmosphere)
+        Mach_t = Avion.getMach()
+        Avion.Convert_TAS_to_Mach(Atmosphere)
+        TAS_t  = Avion.getTAS()
 
-        while CAS < CAS_target:
+        while CAS_t < CAS_target:
 
             # --- Aérodynamique ---
-            self.aero.CalculateCz(Mach)
-            Cz = self.aero.getCz()
+            self.aero.CalculateCz(Atmosphere)
+            Cz_t = self.aero.getCz()
 
             self.aero.CalculateCxClimb_Simplified()
-            Cx = self.aero.getCx()
+            Cx_t = self.aero.getCx()
 
-            finesse = Cz / Cx
+            finesse = Cz_t / Cx_t
 
             # --- Traînée ---
             Rx = self.masse.getCurrentWeight() / finesse
 
             # --- Poussée moteur ---
             if self.moteur.get_Reseau_moteur() == 1: #A REVOIR APRES AVOIR LA CLASSE MOTEUR FINALISEE
-                F_N = self.moteur.getMaxThrustClimb(h, Mach)
-                SFC = self.moteur.getSFC(h, Mach)
+                F_N = self.moteur.getMaxThrustClimb(h, Mach_t)
+                SFC = self.moteur.getSFC(h_t, Mach_t)
             else:
                 F_N = 0.0
                 SFC = 0.0
@@ -188,34 +96,33 @@ class Mission:
             ax = (F_N - Rx) / self.masse.getCurrentMass()
 
             # --- Mise à jour vitesse ---
-            TAS = max(TAS + ax * dt, 0.0)
+            TAS_t = max(TAS_t + ax * dt, 0.0)
 
             # --- Recalcul Mach et CAS ---
-            Mach = TAS / np.sqrt(Gamma * Constantes.r * T_t)
-            CAS  = Constantes.Convert_Mach_to_CAS(Mach, P_t)
+            Mach_t = Avion.Convert_TAS_to_Mach(Atmosphere)
+            CAS_t  = Avion.Convert_Mach_to_CAS(Atmosphere)
 
             # --- Cinématique ---
-            Vz = 0.0
-            Vx = TAS
+            Vz_t = 0.0
+            Vx_t = TAS_t
 
-            dl = Vx * dt
-            l += dl
-            t += dt
+            dl = Vx_t * dt
+            Avion.Add_dl(dl)
 
             # --- Fuel burn ---
             self.masse.burn_fuel(dt, SFC, F_N)
 
             # --- Historique ---
-            self.history["h"].append(h)
-            self.history["l"].append(l)
-            self.history["t"].append(t)
-            self.history["V_CAS"].append(CAS)
-            self.history["V_true"].append(TAS)
-            self.history["Mach"].append(Mach)
-            self.history["Cz"].append(Cz)
-            self.history["Cx"].append(Cx)
-            self.history["Vz"].append(Vz)
-            self.history["Vx"].append(Vx)
+            self.history["h"].append(h_t)
+            self.history["l"].append(l_t)
+            self.history["t"].append(self.history["t"][-1] + dt)
+            self.history["V_CAS"].append(CAS_t)
+            self.history["V_true"].append(TAS_t)
+            self.history["Mach"].append(Mach_t)
+            self.history["Cz"].append(Cz_t)
+            self.history["Cx"].append(Cx_t)
+            self.history["Vz"].append(Vz_t)
+            self.history["Vx"].append(Vx_t)
             self.history["F_N"].append(F_N)
             self.history["SFC"].append(SFC)
             self.history["FB"].append(self.masse.getFuelBurned())
@@ -517,8 +424,8 @@ def Cruise_Mach_SAR(self, h_start, l_start, l_end, t_start, Mach_cruise, dt=1.0)
 
         # --- Condition de montée iso-Mach ---
         if (
-            RRoC_up > self.RRoC_min and               # RRoC suffisant
-            h_up < self.Pressurisation_Ceiling and  # Pas au plafond
+            RRoC_up > self.RRoC_min*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s
+            h_up < self.Pressurisation_Ceiling*Constantes.conv_ft_m and  # Pas au plafond converti de ft en m
             SGR_up > SGR):                     # Gain SGR positif
 
             self.climb_iso_Mach(self, h_start, h_up, l, t, Mach_cruise, dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
