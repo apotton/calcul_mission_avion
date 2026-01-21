@@ -1,5 +1,7 @@
 import os
 import csv
+
+from moteurs.Moteur import Moteur
 from .Aero import Aero
 from .Masse import Masse
 
@@ -32,7 +34,7 @@ class Avion:
 
         self.Masse = Masse(self)
         self.Aero = Aero(self) #AJOUTER LE SELF.MOTEUR
-        self.Moteur = None # À initialiser plus tard avec un objet Moteur
+        self.Moteur = Moteur(6, 40, 1) # À initialiser plus tard avec un objet Moteur
 
 #LISTE DES ATTRIBUTS :
 # Name : Nom du modèle d'avion
