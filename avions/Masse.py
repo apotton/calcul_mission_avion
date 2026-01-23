@@ -1,7 +1,8 @@
+from avions.Avion import Avion
 from constantes.Constantes import Constantes
 
 class Masse:
-    def __init__(self, avion):
+    def __init__(self, avion: Avion):
         self.Avion = avion
         # self.moteur = moteur
 
@@ -35,7 +36,7 @@ class Masse:
         )
 
     def burn_fuel(self, dt):
-        dm = self.Moteur.get_F * self.Moteur.get_SFC * dt #Débit de carburant consommé pendant dt
+        dm = self.Avion.Moteur.get_F() * self.Avion.Moteur.get_SFC() * dt #Débit de carburant consommé pendant dt
         self.m_fuel_remaining_t -= dm #On soustrait le fuel consommé au fuel restant
         self.m_burned_t += dm #On ajoute le fuel consommé au fuel brulé
 

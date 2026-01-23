@@ -64,3 +64,41 @@ class Constantes:
 
     coef_fpr_SFCmin      = 0      # 0.001739837
     coef_fpr_Fi          = 0      # 0.048060427
+
+    @staticmethod
+    def Convert_CAS_to_Mach(CAS, P_t):
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        delta_p = p0 * (
+            (1 + (gamma - 1) / 2 * CAS**2 / (gamma * r_gp * T0))**(gamma / (gamma - 1)) - 1
+        )
+
+        Mach = np.sqrt(
+            2 / (gamma - 1)
+            * ((1 + delta_p / P_t)**((gamma - 1) / gamma) - 1)
+        )
+
+        return Mach
+    
+    @staticmethod
+    def Convert_Mach_to_CAS(Mach, P_t):
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        # Delta pression compressible
+        Delta_p = P_t * (
+            ((gamma - 1) / 2 * Mach**2 + 1) ** (gamma / (gamma - 1)) - 1
+        )
+
+        # CAS
+        CAS = np.sqrt(
+            2 * gamma * r_gp * T0 / (gamma - 1)
+            * ((1 + Delta_p / p0) ** (0.4 / gamma) - 1)
+        )
+
+        return CAS
