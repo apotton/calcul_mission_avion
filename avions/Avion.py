@@ -94,6 +94,12 @@ class Avion:
     def setMach_t(self, Mach):
         self.Mach_t = Mach
 
+    def setTAS_t(self, TAS):
+        self.TAS_t = TAS
+
+    def setCAS_t(self, CAS):
+        self.CAS_t = CAS
+
 
 
 #LISTE DES ATTRIBUTS :

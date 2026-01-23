@@ -183,7 +183,7 @@ class Aero:
     def CalculateTAS(self, atmosphere):
         self.TAS_t = self.getMach() * np.sqrt(1.4 * Constantes.r * atmosphere.getT_t())
 
-    def calculateECCF(self, atmosphere):
+    def CalculateECCF(self, atmosphere: Atmosphere):
         # Traduire en Python: ECCF=CI/60./(TAS+Vw)+(SFC*m*g)./((TAS+Vw).*finesse);
         TAS = self.getTAS()
         Vw = atmosphere.getVwind()
@@ -195,7 +195,7 @@ class Aero:
                      + (SFC * m * Constantes.g) 
                      / ((TAS + Vw) * finesse) )
         
-    def calculateSGR(self, atmosphere):
+    def CalculateSGR(self, atmosphere: Atmosphere):
         # Adapter en Python: SGR=(TAS+Vw).*finesse./(SFC*m*g);
         Vw = atmosphere.getVwind()
         finesse = self.getCz()/self.getCx()
