@@ -36,7 +36,7 @@ class Masse:
         )
 
     def burn_fuel(self, dt):
-        dm = self.Avion.Moteur.get_F() * self.Avion.Moteur.get_SFC() * dt #Débit de carburant consommé pendant dt
+        dm = self.Avion.Moteur.getF() * self.Avion.Moteur.getSFC() * dt #Débit de carburant consommé pendant dt
         self.m_fuel_remaining_t -= dm #On soustrait le fuel consommé au fuel restant
         self.m_burned_t += dm #On ajoute le fuel consommé au fuel brulé
 
