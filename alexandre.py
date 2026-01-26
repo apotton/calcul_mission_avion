@@ -69,7 +69,7 @@ print("TAS calculée : " + str(tas) + " m/s")
 
 # Test du calcul du SFC
 A320.Moteur.Calculate_SFC_cruise(A320.Aero.getMach(), 15000 / Constantes.conv_ft_m)
-sfc = A320.Moteur.get_SFC()
+sfc = A320.Moteur.getSFC()
 print("SFC actuel : " + str(sfc) + " kg/(N.s)")
 
 print("Test complete.")

@@ -2,11 +2,11 @@
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
-from .Avion import Avion
+# from .Avion import Avion
 # from .Masse import Masse
 
 class Aero:
-    def __init__(self, avion: Avion):
+    def __init__(self, avion):
         '''
         Initialisation de la classe Aero pour un avion donné.
         

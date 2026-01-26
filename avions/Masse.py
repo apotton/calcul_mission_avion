@@ -1,8 +1,8 @@
-from avions.Avion import Avion
+# from avions.Avion import Avion
 from constantes.Constantes import Constantes
 
 class Masse:
-    def __init__(self, avion: Avion):
+    def __init__(self, avion):
         self.Avion = avion
         # self.moteur = moteur
 
