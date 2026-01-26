@@ -1,14 +1,20 @@
+# from avions import Avion
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
-# from .Avion import Avion
+from .Avion import Avion
 # from .Masse import Masse
 
 class Aero:
-    def __init__(self, avion):
+    def __init__(self, avion: Avion):
+        '''
+        Initialisation de la classe Aero pour un avion donné.
+        
+        :param self: Instance de la classe Aero
+        :param avion: Instance de la classe Avion
+        '''
         self.Avion = avion
         self.Cx_t = self.Avion.getCx0Climb()
-        # print("Test" + str(Constantes().a1_stratosphere))
         self.Cz_t = 0 #Uniquement pour l'initialisation 
 
     def CalculateAll(self, atmosphere):
@@ -18,7 +24,13 @@ class Aero:
         self.CalculateTAS(atmosphere)
 
     #Calcul du Cz
-    def CalculateCz(self, atmosphere):
+    def CalculateCz(self, atmosphere: Atmosphere):
+        '''
+        Calcule le coefficient de portance (Cz) à l'instant t en fonction de la masse actuelle de l'avion et des conditions atmosphériques.
+
+        :param self: Instance de la classe Aero
+        :param atmosphere: Instance de la classe Atmosphere
+        '''
         self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*atmosphere.getP_t()*self.Avion.getSref()*self.getMach()**2) 
     
 
@@ -35,10 +47,15 @@ class Aero:
     
 
     #Calcul avancé du Cx
-    def CalculateCx(self, atmosphere):
-        #Calcul du Cx0
-        ################################################################
-        #va falloir convertir plein d'angles donc :
+    def CalculateCx(self, atmosphere: Atmosphere):
+        '''
+        Calcule le coefficient de traînée (Cx) à l'instant t en fonction des conditions atmosphériques et des caractéristiques de l'avion.
+        
+        :param self: Instance de la classe Aero
+        :param atmosphere: Instance de la classe Atmosphere
+        '''
+
+        # Pré-calculs
         phi_rad = np.radians(self.Avion.getPhi25deg())
         cos_phi = np.cos(phi_rad)
         cos_phi_c = np.cos(phi_rad)**2
@@ -56,31 +73,29 @@ class Aero:
         K_c = 2.859*(self.getCz()/cos_phi_c)**3 - 1.849*(self.getCz()/cos_phi_c)**2 + 0.382*(self.getCz()/cos_phi_c)+0.06
         K_phi = 1 - 0.000178*(phi_rad)**2 - 0.00065*phi_rad
 
-        # ??? Trouver origine constantes
+        # Quelques constantes
         K_i = 0.04
         Delta_Cx_0 = 0.0115
         Cx_0_wing = 2*Cf*((K_e+K_c)*K_phi+K_i+1)
         Cx_0 = Cx_0_wing + Delta_Cx_0
-        #################################################################
 
-        #Calcul du Cx_i
-
+        # Calcul du Cx_i
         delta_e = 0.233*self.Avion.getTaperRatio()**2-0.068*self.Avion.getTaperRatio()+0.012
         delta_to_delta_0 = (0.7/self.getCz())**2
         Cx_i = (1.03+delta_e*delta_to_delta_0+(self.Avion.getDFuselage()
                /self.Avion.getEnvergure())**2)/(np.pi*self.Avion.getAspectRatio())*self.getCz()**2
 
-        #Calcul du Cx_trim
+        # Calcul du Cx_trim
         Cx_trim = (5.89*10**(-4))*self.getCz()
 
-        #Calcul du Cx_compressibility
+        # Calcul du Cx_compressibility
         MDD = 0.95/cos_phi - self.Avion.getTtoCref()/cos_phi_c - self.getCz()/(10*cos_phi**3)
         M_cr = MDD - (0.1/80)**(1/3)
 
-        #Maintenant c'est la boucle :
-        if self.getMach()>M_cr :
+        # Maintenant c'est la boucle :
+        if self.getMach() > M_cr :
             Cx_compressibility = 20 * (self.getMach()-M_cr)**4
-        else :
+        else:
             Cx_compressibility = 0
         
         #Calcul final
@@ -88,8 +103,9 @@ class Aero:
     
     def CalculateCzBuffet(self):
         """
-        Calcule le Cz d'apparition du buffeting pour un Mach donné.
-        Basé sur une méthode de scaling depuis un avion de référence (A320).
+        Calcule le Cz d'apparition du buffeting pour un Mach donné. Basé sur une méthode de scaling depuis un avion de référence (A320).
+
+        :param self: Instance de la classe Aero
         """
         
         # Récupération des paramètres géométriques de l'avion CIBLE
@@ -180,11 +196,23 @@ class Aero:
         # Attention : np.interp prend (x_to_find, x_data, y_data)
         self.CzBuffet_t = np.interp(self.getMach(), M1, CL1)
 
-    def CalculateTAS(self, atmosphere):
+    def CalculateTAS(self, atmosphere: Atmosphere):
+        '''
+        Calcule la True Air Speed (TAS) à l'instant t en fonction du Mach et des conditions atmosphériques.
+        
+        :param self: Instance de la classe Aero
+        :param atmosphere: Instance de la classe Atmosphere
+        '''
         self.TAS_t = self.getMach() * np.sqrt(1.4 * Constantes.r * atmosphere.getT_t())
 
     def CalculateECCF(self, atmosphere: Atmosphere):
-        # Traduire en Python: ECCF=CI/60./(TAS+Vw)+(SFC*m*g)./((TAS+Vw).*finesse);
+        '''
+        Calcule l'Economic Cruise Climb Fuel (ECCF) à l'instant t en fonction des conditions atmosphériques et des caractéristiques de l'avion.
+        
+        :param self: Instance de la classe Aero
+        :param atmosphere: Instance de la classe Atmosphere
+        '''
+        
         TAS = self.getTAS()
         Vw = atmosphere.getVwind()
         finesse = self.getCz()/self.getCx()
@@ -196,7 +224,13 @@ class Aero:
                      / ((TAS + Vw) * finesse) )
         
     def CalculateSGR(self, atmosphere: Atmosphere):
-        # Adapter en Python: SGR=(TAS+Vw).*finesse./(SFC*m*g);
+        '''
+        Calcule le Specific Ground Range (SGR) à l'instant t en fonction des conditions atmosphériques et des caractéristiques de l'avion.
+        
+        :param self: Instance de la classe Aero
+        :param atmosphere: Instance de la classe Atmosphere
+        '''
+
         Vw = atmosphere.getVwind()
         finesse = self.getCz()/self.getCx()
         m = self.Avion.Masse.getCurrentMass()

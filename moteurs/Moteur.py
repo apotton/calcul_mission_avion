@@ -6,7 +6,7 @@ from moteurs.Donnees_moteur import Donnees_moteur
 
 
 class Moteur:
-    def __init__(self, BPR=0, OPR=0, choix_reseau=1):
+    def __init__(self, BPR=0., OPR=0., choix_reseau=1):
         self.BPR = BPR        # Bypass ratio
         self.OPR = OPR        # Overall Pressure Ratio
         self.F_t = 0          # Poussée actuelle (N)

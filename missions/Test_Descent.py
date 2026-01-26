@@ -194,7 +194,6 @@ class Mission:
             # --- Historique ---
             self.history["h"].append(h)
             self.history["l"].append(l)
-            self.history["t"].append(t)
             self.history["V_CAS"].append(self.CAS_const)
             self.history["V_true"].append(TAS)
             self.history["Mach"].append(Mach)
@@ -280,7 +279,6 @@ class Mission:
             # --- Historique ---
             self.history["h"].append(h)
             self.history["l"].append(l)
-            self.history["t"].append(t)
             self.history["V_CAS"].append(CAS)
             self.history["V_true"].append(TAS)
             self.history["Mach"].append(Mach)

@@ -67,6 +67,13 @@ class Constantes:
 
     @staticmethod
     def Convert_CAS_to_Mach(CAS, P_t):
+        '''
+        Convertit le Calibrated Air Speed (CAS) en Mach en fonction de la pression.
+
+        :param CAS: Calibrated Air Speed (m/s)
+        :param P_t: Pression actuelle (Pa)
+        '''
+
         gamma = Constantes.gamma
         r_gp = Constantes.r
         T0 = Constantes.T0_K
@@ -84,7 +91,13 @@ class Constantes:
         return Mach
     
     @staticmethod
-    def Convert_Mach_to_CAS(Mach, P_t):
+    def Convert_Mach_to_CAS(Mach: float, P_t: float):
+        '''
+        Convertit le Mach en Calibrated Air Speed (CAS) en fonction de la pression.
+
+        :param Mach: Mach
+        :param P_t: Pression actuelle (Pa)
+        '''
         gamma = Constantes.gamma
         r_gp = Constantes.r
         T0 = Constantes.T0_K
