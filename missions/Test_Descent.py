@@ -419,7 +419,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             self.history["l"].append(l_t)
             self.history["t"].append(t)
             self.history["Mach"].append(Mach_cruise)
-            self.history["V_true"].append(TAS)
+            self.history["V_true"].append(TAS_t)
             self.history["Cz"].append(Cz)
             self.history["Cx"].append(Cx)
             self.history["Vz"].append(Vz)
