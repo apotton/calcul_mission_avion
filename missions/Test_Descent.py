@@ -412,7 +412,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             Avion.Add_dl(dl)
             Avion.setTAS_t(TAS_t)
             Avion.setMach_t(Mach_cruise)
-            Avion.setCAS_t(Avion.Convert_Mach_to_CAS(Atmosphere))
+            Avion.setCAS_t(CAS_t)
             # Pas de changement d'altitude en croisière
 
             # --- Historique ---
