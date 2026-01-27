@@ -75,8 +75,10 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée moteur ---
-            F_N = Avion.Moteur.getMaxThrustClimb(h_t, Mach_t)
-            SFC = Avion.Moteur.getSFC(h_t, Mach_t)
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
 
             # --- Dynamique longitudinale ---
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
@@ -164,8 +166,10 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            F_N = Avion.Moteur.getMaxThrustClimb(h_t, Avion.getMach())
-            SFC = Avion.Moteur.getSFC(h_t, Avion.getMach())
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
 
             # --- Pente ---
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
@@ -245,8 +249,10 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            F_N = Avion.Moteur.getMaxThrustClimb(h_t, Avion.getMach())
-            SFC = Avion.Moteur.getSFC(h_t, Avion.getMach())
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
 
             # --- Pente ---
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
@@ -330,7 +336,10 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
         Rx = Avion.Masse.getCurrentWeight() / finesse
 
         # --- Poussée moteur ---
-        F_N, SFC = Avion.Moteur.getThrustCruise(Mach_cruise, h_t)
+        Avion.Moteur.Calculate_F(Avion)
+        F_N = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC = Avion.Moteur.getSFC()
 
         #Calcul de l'excédent de puissance
         RRoC = (F_N-Rx)/(Avion.Masse.getCurrentWeight())*Avion.getTAS() #Excédent de puissance qui permet de déterminer si on peut monter de 2000ft 
@@ -354,6 +363,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
 
         # Altitude “virtuelle”
         h_up = h_t + delta_h
+        Avion.Add_dh(delta_h)
 
         # --- Atmosphère ---
         Atmosphere.CalculateRhoPT(h_up)
@@ -374,8 +384,11 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
         # --- Traînée / équivalent résistance ---
         Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
 
-        # --- Poussée moteur ---
-        F_N_up, SFC_up = Avion.Moteur.getThrustCruise(Mach_cruise, h_up)
+        # --- Poussée moteur --- #ATTENTION A VOIR CE QU'UTILISE F ET SFC CAR ICI ON MODIFIE QUELQUES CARACTERISTIQUES AVIONS POUR MONTER EN ALTITUDE
+        Avion.Moteur.Calculate_F(Avion)
+        F_N_up = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC_up = Avion.Moteur.getSFC()
 
         
         #Calcul du coût économique ECCF et SGR
@@ -409,6 +422,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             Avion.Masse.burn_fuel(dt)
 
             # --- Mise à jour avion ---
+            Avion.Add_dh(-delta_h) #On annule la montée en h
             Avion.Add_dl(dl)
             Avion.setTAS_t(TAS_t)
             Avion.setMach_t(Mach_cruise)
@@ -484,8 +498,10 @@ def Descente_Phase1(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         # --- Poussée moteur et SFC ---
         if self.moteur.get_Reseau_moteur() == 1:
             # ATTENTION A MODIFIER UNE FOIS QU'ON AURA FAIT LES INTERPOLLATIONS MOTEUR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            F_N = 0.0
-            SFC = 0.0
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
         else:
             F_N = 0.0
             SFC = 0.0
@@ -570,8 +586,10 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
         finesse = Cz / Cx
 
         # --- Poussée moteur (idle en descente) ---
-        F_N = 0.0
-        SFC = 0.0
+        Avion.Moteur.Calculate_F(Avion)
+        F_N = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC = Avion.Moteur.getSFC()
 
         # --- Résistance ---
         Rx = Avion.Masse.getCurrentWeight() / finesse
@@ -664,8 +682,10 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
         # --- Poussée moteur (idle / freinage) ---
         if self.moteur.get_Reseau_moteur() == 1:
             # À raffiner plus tard
-            F_N = 0.0
-            SFC = 0.0
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
         else:
             F_N = 0.0
             SFC = 0.0
@@ -754,8 +774,10 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, h_final, dt=1.0)
         finesse = Cz / Cx
 
         # --- Poussée moteur ---
-        F_N = 0.0  # idle en descente (à affiner plus tard)
-        SFC = 0.0
+        Avion.Moteur.Calculate_F(Avion)
+        F_N = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC = Avion.Moteur.getSFC()
 
         # --- Résistance ---
         Rx = Avion.Masse.getCurrentWeight() / finesse
