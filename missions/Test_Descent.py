@@ -83,10 +83,13 @@ class Mission:
 
             # --- Mise à jour vitesse ---
             TAS_t = max(TAS_t + ax * dt, 0.0)
+            Avion.setTAS_t(TAS_t)
 
             # --- Recalcul Mach et CAS ---
-            Mach_t = Avion.Convert_TAS_to_Mach(Atmosphere)
-            CAS_t  = Avion.Convert_Mach_to_CAS(Atmosphere)
+            Avion.Convert_TAS_to_Mach(Atmosphere)
+            Avion.Convert_Mach_to_CAS(Atmosphere)
+            CAS_t = Avion.getCAS()
+            Mach_t = Avion.getMach()
 
             # --- Cinématique ---
             Vz_t = 0.0
@@ -98,9 +101,7 @@ class Mission:
 
             # --- Mise à jour avion ---
             Avion.Add_dl(dl)
-            Avion.setTAS_t(TAS_t)
-            Avion.setMach_t(Mach_t)
-            Avion.setCAS_t(CAS_t)
+            
             # Pas de changement d'altitude en palier
 
             # --- Historique ---
