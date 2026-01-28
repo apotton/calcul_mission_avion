@@ -313,6 +313,79 @@ tk.Label(frame_Block_performance_table, text="Use tab separator").grid(row=4, co
 
 #-----//------------Fin du frame du "Block performance table"-----------------------------------------------------
 
+#----------------------------Frame du "Takeoff/Landing Field Lengths"-------------------------
+frame_Takeoff= tk.Frame(frame_bas_de_page, bd = 1, relief = "sunken", padx=10, pady=10)
+
+tk.Label(frame_Takeoff, text="Takeoff").grid(row=18, column=1, padx=(5, 5))
+tk.Label(frame_Takeoff, text="Landing").grid(row=18, column=2, padx=(5, 5))
+tk.Label(frame_Takeoff, text="Weight (kg)").grid(row=19, column=0, padx=(5, 5))
+tk.Entry(frame_Takeoff, width=10).grid(row=19, column=1)
+tk.Entry(frame_Takeoff, width=10).grid(row=19, column=2)
+tk.Label(frame_Takeoff, text="Altitude (ft)").grid(row=20, column=0, padx=(5, 5))
+tk.Entry(frame_Takeoff, width=10).grid(row=20, column=1)
+tk.Entry(frame_Takeoff, width=10).grid(row=20, column=2)
+tk.Label(frame_Takeoff, text="Temp Deviation").grid(row=21, column=0, padx=(5, 5))
+tk.Entry(frame_Takeoff, width=10).grid(row=21, column=1)
+tk.Entry(frame_Takeoff, width=10).grid(row=21, column=2)
+
+#----------------------------Fin du frame du "Takeoff/Landing Field Lengths"-------------------------
+
+#-----------------------Frame du Point Performance-----------------------------------------------------
+frame_Point_Performance=tk.Frame(frame_bas_de_page)
+frame_Point_Performance.grid_forget()
+liste_choix_Point_Performance= ["Mach", "KCAS", "KEAS", "KTAS"]
+menu_deroulant_choix_Point_Performance = ttk.Combobox(frame_Point_Performance, values=liste_choix_Point_Performance, state="readonly")
+menu_deroulant_choix_Point_Performance.grid(row=0, column=1, sticky="w")
+
+
+ 
+frame_Point_Performance_Mach=tk.Frame(frame_Point_Performance)
+tk.Entry(frame_Point_Performance_Mach, **COMMUN).grid(row=0, column=0)
+frame_Point_Performance_KCAS=tk.Frame(frame_Point_Performance)
+tk.Entry(frame_Point_Performance_KCAS, **COMMUN).grid(row=0, column=0)
+frame_Point_Performance_KEAS=tk.Frame(frame_Point_Performance)
+tk.Entry(frame_Point_Performance_KEAS, **COMMUN).grid(row=0, column=0)
+frame_Point_Performance_KTAS=tk.Frame(frame_Point_Performance)
+tk.Entry(frame_Point_Performance_KTAS, **COMMUN).grid(row=0, column=0)
+
+
+ 
+def affichage_Point_Performance(event):
+    if menu_deroulant_choix_Point_Performance.get() == "Mach":
+        frame_Point_Performance_Mach.grid(row=0, column=2, sticky="ew")
+    else :
+        frame_Point_Performance_Mach.grid_forget()
+    if menu_deroulant_choix_Point_Performance.get() == "KCAS":
+        frame_Point_Performance_KCAS.grid(row=0, column=2, sticky="ew")
+    else :
+        frame_Point_Performance_KCAS.grid_forget()
+    if menu_deroulant_choix_Point_Performance.get() == "KEAS":
+        frame_Point_Performance_KEAS.grid(row=0, column=2, sticky="ew")
+    else :
+        frame_Point_Performance_KEAS.grid_forget()
+    if menu_deroulant_choix_Point_Performance.get() == "KTAS":
+        frame_Point_Performance_KTAS.grid(row=0, column=2, sticky="ew")
+    else :
+        frame_Point_Performance_KTAS.grid_forget()
+
+
+ 
+menu_deroulant_choix_Point_Performance.bind("<<ComboboxSelected>>", affichage_Point_Performance)
+menu_deroulant_choix_Point_Performance.current(0) 
+frame_Point_Performance_Mach.grid(row=0, column=2, sticky="ew")
+
+
+ 
+tk.Label(frame_Point_Performance, text="Altitude (ft)").grid(row=1, column=1)
+tk.Entry(frame_Point_Performance, **COMMUN).grid(row=1, column=2)
+
+
+ 
+tk.Label(frame_Point_Performance, text="Weight (kg)").grid(row=2, column=1)
+tk.Entry(frame_Point_Performance, **COMMUN).grid(row=2, column=2)
+
+#-----------------------------------------------
+
 def affichage_du_bas(event):
     if menu_deroulant.get() == "Block Range Summary":
 
@@ -329,6 +402,18 @@ def affichage_du_bas(event):
         frame_Detailed_flight_profile.grid(row=18, column=0, columnspan=6, sticky="ew")
     else :
         frame_Detailed_flight_profile.grid_forget()
+    if menu_deroulant.get() == "Takeoff/Landing Field Lengths":
+
+        frame_Takeoff.grid(row=18, column=0, columnspan=6, sticky="ew")
+    else :
+        frame_Takeoff.grid_forget()
+
+    if menu_deroulant.get() == "Point Performance":
+
+        frame_Point_Performance.grid(row=18, column=0, columnspan=6, sticky="ew")
+    else :
+        frame_Point_Performance.grid_forget()
+
 
 menu_deroulant.bind("<<ComboboxSelected>>", affichage_du_bas)
 
