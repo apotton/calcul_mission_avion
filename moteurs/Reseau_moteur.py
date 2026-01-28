@@ -39,7 +39,7 @@ class Reseau_moteur(Moteur):
         
     
 
-    def Calculate_SFC_cruise(self, Avion: Avion, F_engine_N=None):
+    def Calculate_SFC_cruise(self, Avion, F_engine_N=None):
         "Calcule le SFC en croisière"
         
         h_ft = Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
