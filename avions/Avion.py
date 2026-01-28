@@ -2,7 +2,8 @@ import os
 import csv
 import numpy as np
 
-from moteurs.Moteur import Moteur
+from moteurs.Reseau_moteur import Reseau_moteur
+# from moteurs.Moteur import Moteur
 from .Aero import Aero
 from .Masse import Masse
 from constantes.Constantes import Constantes
@@ -43,7 +44,7 @@ class Avion:
 
         self.Masse = Masse(self)
         self.Aero = Aero(self)
-        self.Moteur = Moteur(BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
+        self.Moteur = Reseau_moteur(BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
 
         self.Mach_t = 0
         self.CAS_t = 0

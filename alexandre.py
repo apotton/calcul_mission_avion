@@ -68,8 +68,13 @@ tas = A320.Aero.getTAS()
 print("TAS calculée : " + str(tas) + " m/s")
 
 # Test du calcul du SFC
-A320.Moteur.Calculate_SFC_cruise(A320.Aero.getMach(), 15000 / Constantes.conv_ft_m)
+A320.Moteur.Calculate_SFC_cruise(A320, 15000 / Constantes.conv_ft_m)
 sfc = A320.Moteur.getSFC()
 print("SFC actuel : " + str(sfc) + " kg/(N.s)")
+
+# Test du calcul de la poussée maximale en montée
+A320.Moteur.Calculate_F_MCL_cruise_step(A320)
+thrust = A320.Moteur.getF()
+print("Poussée maximale en montée : " + str(thrust) + " N")
 
 print("Test complete.")

@@ -1,4 +1,5 @@
 # classe qui hérite de la classe Moteur et qui utilise les Donnees_moteur pour calculer la poussée et le SFC
+# from avions.Avion import Avion
 from moteurs.Moteur import Moteur
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
@@ -38,10 +39,10 @@ class Reseau_moteur(Moteur):
         
     
 
-    def Calculate_SFC_cruise(self, Avion, F_engine_N=None):
+    def Calculate_SFC_cruise(self, Avion: Avion, F_engine_N=None):
         "Calcule le SFC en croisière"
         
-        h_ft = Avion.h_t / Constantes.conv_ft_m  # Conversion m -> ft
+        h_ft = Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
 
         # 1. Gestion de la poussée d'entrée
         # Si aucune poussée n'est fournie, on utilise la poussée actuelle de l'objet (self.F)
