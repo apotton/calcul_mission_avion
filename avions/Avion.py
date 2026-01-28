@@ -1,10 +1,22 @@
 import os
 import csv
+import numpy as np
+
+from moteurs.Reseau_moteur import Reseau_moteur
+# from moteurs.Moteur import Moteur
 from .Aero import Aero
 from .Masse import Masse
+from constantes.Constantes import Constantes
+from atmosphere.Atmosphere import Atmosphere
 
 class Avion:
-    def __init__(self, nom_fichier_csv):
+    def __init__(self, nom_fichier_csv: str):
+        '''
+        Initialise un objet Avion en lisant les paramètres depuis un fichier CSV.
+        
+        :param self: Instance de la classe Avion
+        :param nom_fichier_csv: Nom du fichier CSV contenant les paramètres de l'avion
+        '''
 
         # Dossier de ce fichier Avion.py
         base_dir = os.path.dirname(os.path.abspath(__file__)) #Renvoie le Directory du fichier actuel et remonte d'un cran
@@ -31,8 +43,128 @@ class Avion:
                     setattr(self, cle, valeur) #On crée les attributs à partir des clés du csv et on leur associe les valeurs du fichiers
 
         self.Masse = Masse(self)
-        self.Aero = Aero(self) #AJOUTER LE SELF.MOTEUR
-        self.Moteur = None # À initialiser plus tard avec un objet Moteur
+        self.Aero = Aero(self)
+        self.Moteur = Reseau_moteur(BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
+
+        self.Mach_t = 0
+        self.CAS_t = 0
+        self.TAS_t = 0
+        self.h_t = 0
+        self.l_t = 0
+
+
+    ##Calcul des vitesses
+
+    def Convert_Mach_to_CAS(self, Atmosphere: Atmosphere):
+        '''
+        Convertit la vitesse Mach en vitesse CAS en utilisant les propriétés de l'atmosphère.
+        
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        # Delta pression compressible
+        Delta_p = Atmosphere.getP_t() * (
+            ((gamma - 1) / 2 * self.Mach_t**2 + 1) ** (gamma / (gamma - 1)) - 1
+        )
+
+        # CAS
+        self.CAS_t = np.sqrt(
+            2 * gamma * r_gp * T0 / (gamma - 1)
+            * ((1 + Delta_p / p0) ** (0.4 / gamma) - 1)
+        )
+    
+
+    def Convert_CAS_to_Mach(self, Atmosphere: Atmosphere):
+        '''
+        Convertit la vitesse CAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
+        
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        delta_p = p0 * (
+            (1 + (gamma - 1) / 2 * self.CAS_t**2 / (gamma * r_gp * T0))**(gamma / (gamma - 1)) - 1
+        )
+
+        self.Mach_t = np.sqrt(
+            2 / (gamma - 1)
+            * ((1 + delta_p / Atmosphere.getP_t())**((gamma - 1) / gamma) - 1)
+        )
+
+    def Convert_TAS_to_Mach(self, Atmosphere: Atmosphere):
+        '''
+        Convertit la vitesse TAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
+        
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+        self.Mach_t = self.TAS_t / np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
+
+    def Convert_Mach_to_TAS(self, Atmosphere: Atmosphere):
+        '''
+        Convertit la vitesse Mach en vitesse TAS en utilisant les propriétés de l'atmosphère.
+        
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+        self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
+
+    def Add_dl(self, dl: float):
+        '''
+        Ajoute une distance dl à la distance totale parcourue par l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param dl: Distance à ajouter (m)
+        '''
+        self.l_t += dl
+
+    def Add_dh(self, dh: float):
+        '''
+        Ajoute une variation d'altitude dh à l'altitude actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param dh: Variation d'altitude à ajouter (m)
+        '''
+        self.h_t += dh
+
+    def setMach_t(self, Mach: float):
+        '''
+        Définit la vitesse Mach actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param Mach: Vitesse Mach à définir
+        '''
+        self.Mach_t = Mach
+
+    def setTAS_t(self, TAS: float):
+        '''
+        Définit la vitesse TAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param TAS: Vitesse TAS à définir (m/s)
+        '''
+        self.TAS_t = TAS
+
+    def setCAS_t(self, CAS: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.CAS_t = CAS
+
+
 
 #LISTE DES ATTRIBUTS :
 # Name : Nom du modèle d'avion
@@ -158,5 +290,20 @@ class Avion:
     
     def getOswaldDescent(self):
         return self.OswaldDescent
+    
+    def geth(self):
+        return self.h_t
+    
+    def getl(self):
+        return self.l_t
+    
+    def getMach(self):
+        return self.Mach_t
+    
+    def getCAS(self):
+        return self.CAS_t
+    
+    def getTAS(self):
+        return self.TAS_t
     
    

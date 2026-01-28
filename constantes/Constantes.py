@@ -25,46 +25,6 @@ class Constantes:
     conv_NM_m   = 1852          # Conversion Nm en m
     conv_lb_kg  = 0.453592      # Conversion lb en kg
 
-    # Conversion des vitesses 
-
-    def Convert_Mach_to_CAS(Mach, press):##A VOIR SI QUI ON MET EN ENTREE GENRE LES CONSTANTES
-        gamma = Constantes.gamma
-        r_gp = Constantes.r
-        T0 = Constantes.T0_K
-        p0 = Constantes.p0_Pa
-
-        # Delta pression compressible
-        Delta_p = press * (
-            ((gamma - 1) / 2 * Mach**2 + 1) ** (gamma / (gamma - 1)) - 1
-        )
-
-        # CAS
-        CAS = np.sqrt(
-            2 * gamma * r_gp * T0 / (gamma - 1)
-            * ((1 + Delta_p / p0) ** (0.4 / gamma) - 1)
-        )
-
-        return CAS
-
-
-    def Convert_CAS_to_Mach(CAS, press):
-        gamma = Constantes.gamma
-        r_gp = Constantes.r
-        T0 = Constantes.T0_K
-        p0 = Constantes.p0_Pa
-
-        delta_p = p0 * (
-            (1 + (gamma - 1) / 2 * CAS**2 / (gamma * r_gp * T0))**(gamma / (gamma - 1)) - 1
-        )
-
-        Mach = np.sqrt(
-            2 / (gamma - 1)
-            * ((1 + delta_p / press)**((gamma - 1) / gamma) - 1)
-        )
-
-        return Mach
-
-
 
     # Coefficients pour le calcul de la SFC
 
@@ -104,3 +64,54 @@ class Constantes:
 
     coef_fpr_SFCmin      = 0      # 0.001739837
     coef_fpr_Fi          = 0      # 0.048060427
+
+    @staticmethod
+    def Convert_CAS_to_Mach(CAS, P_t):
+        '''
+        Convertit le Calibrated Air Speed (CAS) en Mach en fonction de la pression.
+
+        :param CAS: Calibrated Air Speed (m/s)
+        :param P_t: Pression actuelle (Pa)
+        '''
+
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        delta_p = p0 * (
+            (1 + (gamma - 1) / 2 * CAS**2 / (gamma * r_gp * T0))**(gamma / (gamma - 1)) - 1
+        )
+
+        Mach = np.sqrt(
+            2 / (gamma - 1)
+            * ((1 + delta_p / P_t)**((gamma - 1) / gamma) - 1)
+        )
+
+        return Mach
+    
+    @staticmethod
+    def Convert_Mach_to_CAS(Mach: float, P_t: float):
+        '''
+        Convertit le Mach en Calibrated Air Speed (CAS) en fonction de la pression.
+
+        :param Mach: Mach
+        :param P_t: Pression actuelle (Pa)
+        '''
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        # Delta pression compressible
+        Delta_p = P_t * (
+            ((gamma - 1) / 2 * Mach**2 + 1) ** (gamma / (gamma - 1)) - 1
+        )
+
+        # CAS
+        CAS = np.sqrt(
+            2 * gamma * r_gp * T0 / (gamma - 1)
+            * ((1 + Delta_p / p0) ** (0.4 / gamma) - 1)
+        )
+
+        return CAS
