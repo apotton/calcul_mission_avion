@@ -259,7 +259,7 @@ menu_deroulant_1.bind("<<ComboboxSelected>>", affichage)
 tk.Button(root, text = "Sauvegarder").grid(row=12, column=0, columnspan = 3)
 tk.Button(root, text = "Charger").grid(row=12, column =3, columnspan = 3)
 root.rowconfigure(13, minsize=20)
-tk.Frame(root, height=2, bg="black").grid(row=14, column=0, columnspan=6, sticky="ew")
+frame_bas_de_page= tk.Frame(root, height=2, bg="black").grid(row=14, column=0, columnspan=6, sticky="ew")
 root.rowconfigure(15, minsize=20)
 tk.Label(root, text="output:").grid(row=16, column=0, sticky="w")
 variable_choisie = tk.StringVar()
@@ -269,15 +269,71 @@ menu_deroulant.grid(row=16, column =1,columnspan = 3, sticky= "ew")
 menu_deroulant.current(0) 
 
 tk.Button(root, text ="OK", command = lambda : print ("Sélection :", variable_choisie.get())).grid(row=16, column=4, sticky="w", padx=5)
+
+#----------------------------Frame du "Block Range Summary"-------------------------
+frame_Block_range_summary = tk.Frame(frame_bas_de_page, bd = 1, relief = "sunken", padx=10, pady=10)
 case_var = tk.IntVar()
 case_var.set(1)
-tk.Radiobutton(root, variable=case_var, value = 1).grid(row=17, column=1, sticky="w")
-tk.Label(root, text="Design range with Standard Payload").grid(row=17, column=2, columnspan=2, sticky="w", padx=(20, 0))
-tk.Radiobutton(root, variable=case_var, value = 2).grid(row=18, column=1, sticky="w")
-tk.Label(root, text="Range (nm)").grid(row=18, column=2, sticky="w", padx=(20, 0))
-tk.Label(root, text="with Payload(kg)").grid(row=18, column=3, sticky="w", padx=(20, 0))
-tk.Entry(root, **COMMUN).grid(row=19, column =2)
-tk.Entry(root, **COMMUN).grid(row=19, column =3)
+tk.Radiobutton(frame_Block_range_summary, variable=case_var, value = 1).grid(row=17, column=1, sticky="w")
+tk.Label(frame_Block_range_summary, text="Design range with Standard Payload").grid(row=17, column=2, columnspan=2, sticky="w", padx=(20, 0))
+tk.Radiobutton(frame_Block_range_summary, variable=case_var, value = 2).grid(row=18, column=1, sticky="w")
+tk.Label(frame_Block_range_summary, text="Range (nm)").grid(row=18, column=2, sticky="w", padx=(20, 0))
+tk.Label(frame_Block_range_summary, text="with Payload(kg)").grid(row=18, column=3, sticky="w", padx=(20, 0))
+tk.Entry(frame_Block_range_summary, **COMMUN).grid(row=19, column =2)
+tk.Entry(frame_Block_range_summary, **COMMUN).grid(row=19, column =3)
+
+#----------------------------Fin du frame du "Block Range Summary"-------------------------
+
+#----------------------------Frame du "Detailed flight profile"-------------------------
+frame_Detailed_flight_profile= tk.Frame(frame_bas_de_page, bd = 1, relief = "sunken", padx=10, pady=10)
+flight_var = tk.IntVar()
+flight_var.set(1)
+tk.Radiobutton(frame_Detailed_flight_profile, variable=flight_var, value = 1).grid(row=17, column=1, sticky="w")
+tk.Label(frame_Detailed_flight_profile, text="Design range with Standard Payload").grid(row=17, column=2, columnspan=2, sticky="w", padx=(20, 0))
+tk.Radiobutton(frame_Detailed_flight_profile, variable=flight_var, value = 2).grid(row=18, column=1, sticky="w")
+tk.Label(frame_Detailed_flight_profile, text="Range (nm)").grid(row=18, column=2, sticky="w", padx=(20, 0))
+tk.Label(frame_Detailed_flight_profile, text="with Payload(kg)").grid(row=18, column=3, sticky="w", padx=(20, 0))
+tk.Entry(frame_Detailed_flight_profile, **COMMUN).grid(row=19, column =2)
+tk.Entry(frame_Detailed_flight_profile, **COMMUN).grid(row=19, column =3)
+
+#----------------------------Fin du frame du "Detailed flight profile"-------------------------
+
+
+#-----//------------Frame du "Block performance table"-----------------------------------------------------
+frame_Block_performance_table = tk.Frame(frame_bas_de_page, bd=1, relief="sunken", padx=10, pady=10)
+
+tk.Label(frame_Block_performance_table, text="Range(nm)").grid(row=2,column=1, sticky="e")
+tk.Entry(frame_Block_performance_table, width=10).grid(row=2,column=2, columnspan = 3)
+tk.Label(frame_Block_performance_table, text="Payload(kg)").grid(row=3,column=1, sticky="e")
+tk.Entry(frame_Block_performance_table, width=10).grid(row=3,column=2, columnspan = 3)
+
+variable_separator = tk.IntVar()
+tk.Checkbutton(frame_Block_performance_table, variable=variable_separator).grid(row=4, column=1)
+tk.Label(frame_Block_performance_table, text="Use tab separator").grid(row=4, column=2, padx=(0, 5),  sticky="w")
+
+#-----//------------Fin du frame du "Block performance table"-----------------------------------------------------
+
+def affichage_du_bas(event):
+    if menu_deroulant.get() == "Block Range Summary":
+
+        frame_Block_range_summary.grid(row=18, column=0, columnspan=6, sticky="ew")
+    else :
+        frame_Block_range_summary.grid_forget()
+    if menu_deroulant.get() == "Block Performance Tables":
+
+        frame_Block_performance_table.grid(row=18, column=0, columnspan=6, sticky="ew")
+    else :
+        frame_Block_performance_table.grid_forget()
+    if menu_deroulant.get() == "Detailed Flight Profile":
+
+        frame_Detailed_flight_profile.grid(row=18, column=0, columnspan=6, sticky="ew")
+    else :
+        frame_Detailed_flight_profile.grid_forget()
+
+menu_deroulant.bind("<<ComboboxSelected>>", affichage_du_bas)
+
+frame_Block_range_summary.grid(row=18, column=0, columnspan=6, sticky="ew")
+
 #-----------------------Fin de la partie Fixe en bas de la page-----------------------------------------------------
 
 root.mainloop()
