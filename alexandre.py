@@ -43,7 +43,7 @@ print(Cx_Descent)
 A320.Aero.CalculateAll(test_atmos)
 
 # Test de l'obtention de l'envergure dans la classe avion
-env = A320.Envergure
+env = A320.getEnvergure()
 print("Envergure de l'avion : " + str(env) + " m")
 
 # Test de l'obtention de l'envergure via la méthode getEnvergure()
@@ -68,12 +68,12 @@ tas = A320.Aero.getTAS()
 print("TAS calculée : " + str(tas) + " m/s")
 
 # Test du calcul du SFC
-A320.Moteur.Calculate_SFC_cruise(A320, 15000 / Constantes.conv_ft_m)
+A320.Moteur.Calculate_SFC(A320, 15000 / Constantes.conv_ft_m)
 sfc = A320.Moteur.getSFC()
 print("SFC actuel : " + str(sfc) + " kg/(N.s)")
 
 # Test du calcul de la poussée maximale en montée
-A320.Moteur.Calculate_F_MCL_cruise_step(A320)
+A320.Moteur.Calculate_F(A320)
 thrust = A320.Moteur.getF()
 print("Poussée maximale en montée : " + str(thrust) + " N")
 
