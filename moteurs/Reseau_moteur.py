@@ -19,7 +19,7 @@ class Reseau_moteur(Moteur):
 
    # Cette fonction permet de calculer *F_MCL_cruise_step* et aussi *F_MCL_cruise_step_up* (il suffit de mettre h_ft=h_ft + 2000)
     # et aussi *F_N_AEO_lbf*
-    def Calculate_F_MCL_cruise_step(self, Avion):
+    def Calculate_F(self, Avion):
         "Calcule la poussée Max Climb"
 
         h_ft = Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
@@ -33,13 +33,13 @@ class Reseau_moteur(Moteur):
         
         # L'interpolateur renvoie un tableau numpy (ex: array([15000.5])), 
         # on prend la valeur [0] ou .item() pour avoir un float propre.
-        resultat = interp((Avion.Mach_t, h_ft)) # résultat pour un moteur en lbf
+        resultat = interp((Avion.getMach(), h_ft)) # résultat pour un moteur en lbf
         self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
         
         
     
 
-    def Calculate_SFC_cruise(self, Avion, F_engine_N=None):
+    def Calculate_SFC(self, Avion, F_engine_N=None):
         "Calcule le SFC en croisière"
         
         h_ft = Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
@@ -87,7 +87,7 @@ class Reseau_moteur(Moteur):
         # On interpole au point (Poussée_Moteur_N, Mach)
         # Note: MATLAB faisait F/2 car F était la poussée avion totale. 
         # Ici, thrust_to_use est déjà censé être pour UN moteur.
-        sfc_lbf_raw = float(interp_func((thrust_to_use, Avion.Mach_t)))  # Résultat en lb/(lbf*h)
+        sfc_lbf_raw = float(interp_func((thrust_to_use, Avion.getMach())))  # Résultat en lb/(lbf*h)
 
         # 6. Conversion finale des unités
         # MATLAB: SFC = SFC_lbf / 3600 / g

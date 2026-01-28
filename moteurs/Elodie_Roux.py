@@ -14,3 +14,15 @@ class Elodie_roux(Moteur):
         print("Calcul SFC via méthode analytique (Elodie Roux)")
         # Ici tu mets tes équations mathématiques
         # self.SFC_t = ... formule mathématique ...
+
+
+
+# Dans cruise_mach_SAR.py
+# 
+# else % mode analytique
+#     F_MCL_cruise_step=2*CalculateFmax(F_0_uni_ref*dx_MCL,Mach_cruise,h_cruise_step);
+# end
+
+# else % Modèle Elodie Roux
+#     F_MCL_cruise_step_up=2*CalculateFmax(F_0_uni_ref*dx_MCL,Mach_cruise,h_cruise_step+2000*conv_ft_m);
+# end
