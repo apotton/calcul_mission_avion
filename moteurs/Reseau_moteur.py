@@ -10,7 +10,7 @@ from scipy.interpolate import RegularGridInterpolator
 
 
 class Reseau_moteur(Moteur):
-    def __init__(self, BPR=0, OPR=0):
+    def __init__(self, BPR=0., OPR=0.):
         super().__init__(BPR, OPR) # On force choix_reseau=1 pour utiliser Donnees_moteur
         # Spécifique à cette classe :
         self.Donnees_moteur = Donnees_moteur()
