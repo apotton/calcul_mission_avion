@@ -1,7 +1,8 @@
 from constantes.Constantes import Constantes
 from avions.Avion import Avion
 from atmosphere.Atmosphere import Atmosphere
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 A320 = Avion("Airbus_A320.csv")
 
@@ -76,5 +77,47 @@ print("SFC actuel : " + str(sfc) + " kg/(N.s)")
 A320.Moteur.Calculate_F(A320)
 thrust = A320.Moteur.getF()
 print("Poussée maximale en montée : " + str(thrust) + " N")
+
+# Test du moteur un peu plus en détail: poussée à différentes altitudes et Mach (figure 2D)
+valeurs_mach = [i/100 for i in range(0, 90)]  # Mach de 0.0 à 0.8
+altitudes_ft = range(0, 40000, 1000)  # Altitudes en pieds
+
+# tableau 2D des poussées
+poussees_2D = []
+
+
+# Boucle 2D sur les altitudes et Mach, indéxée sur les indices des tableaux
+
+for h_ft in altitudes_ft:
+    poussees_ligne = []
+    for mach in valeurs_mach:
+        A320.set_h(h_ft * Constantes.conv_ft_m)  # Met à jour l'altitude de l'avion en mètres
+        A320.Mach_t = mach                       # Met à jour le Mach de l'avion
+        A320.Moteur.Calculate_SFC(A320)            # Calcule la poussée
+        poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
+    poussees_2D.append(poussees_ligne)
+# Convertir en numpy array pour faciliter le tracé
+poussees_2D = np.array(poussees_2D)
+# Tracé de la figure 2D
+plt.figure(figsize=(10, 6))
+X, Y = np.meshgrid(valeurs_mach, altitudes_ft)
+plt.contourf(X, Y, poussees_2D, levels=20, cmap='viridis')
+plt.colorbar(label='Consommation spécifique (kg/(N.s))')
+plt.title('Consommation spécifique moteur en fonction de l\'altitude et du Mach')
+plt.xlabel('Mach')
+plt.ylabel('Altitude (ft)')
+plt.show()
+
+# Tracé d'une figure en 3D (Mach, altitude, poussée)
+from mpl_toolkits.mplot3d import Axes3D
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
+X, Y = np.meshgrid(valeurs_mach, altitudes_ft)
+ax.plot_surface(X, Y, poussees_2D, cmap='viridis')
+ax.set_title('Consommation spécifique du moteur en fonction de l\'altitude et du Mach')
+ax.set_xlabel('Mach')
+ax.set_ylabel('Altitude (ft)')
+plt.show()
+
 
 print("Test complete.")
