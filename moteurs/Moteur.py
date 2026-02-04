@@ -33,13 +33,13 @@ class Moteur:
         return self.F_t
 
 
-    def calculate_F(self, Avion):
+    def calculate_F(self):
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC(self, Avion, F_engine_N=None):
+    def Calculate_SFC(self, F_engine_N=None):
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC_climb(self, Avion):
+    def Calculate_SFC_climb(self):
         pass  # Méthode à implémenter dans les classes filles
 
 
