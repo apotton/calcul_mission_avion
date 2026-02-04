@@ -46,78 +46,9 @@ class Avion:
         self.Aero = Aero(self)
         self.Moteur = Reseau_moteur(BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
 
-        self.Mach_t = 0
-        self.CAS_t = 0
-        self.TAS_t = 0
         self.h_t = 0
         self.l_t = 0
 
-
-    ##Calcul des vitesses
-
-    def Convert_Mach_to_CAS(self, Atmosphere: Atmosphere):
-        '''
-        Convertit la vitesse Mach en vitesse CAS en utilisant les propriétés de l'atmosphère.
-        
-        :param self: Instance de la classe Avion
-        :param Atmosphere: Instance de la classe Atmosphere
-        '''
-        gamma = Constantes.gamma
-        r_gp = Constantes.r
-        T0 = Constantes.T0_K
-        p0 = Constantes.p0_Pa
-
-        # Delta pression compressible
-        Delta_p = Atmosphere.getP_t() * (
-            ((gamma - 1) / 2 * self.Mach_t**2 + 1) ** (gamma / (gamma - 1)) - 1
-        )
-
-        # CAS
-        self.CAS_t = np.sqrt(
-            2 * gamma * r_gp * T0 / (gamma - 1)
-            * ((1 + Delta_p / p0) ** (0.4 / gamma) - 1)
-        )
-    
-
-    def Convert_CAS_to_Mach(self, Atmosphere: Atmosphere):
-        '''
-        Convertit la vitesse CAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
-        
-        :param self: Instance de la classe Avion
-        :param Atmosphere: Instance de la classe Atmosphere
-        '''
-
-        gamma = Constantes.gamma
-        r_gp = Constantes.r
-        T0 = Constantes.T0_K
-        p0 = Constantes.p0_Pa
-
-        delta_p = p0 * (
-            (1 + (gamma - 1) / 2 * self.CAS_t**2 / (gamma * r_gp * T0))**(gamma / (gamma - 1)) - 1
-        )
-
-        self.Mach_t = np.sqrt(
-            2 / (gamma - 1)
-            * ((1 + delta_p / Atmosphere.getP_t())**((gamma - 1) / gamma) - 1)
-        )
-
-    def Convert_TAS_to_Mach(self, Atmosphere: Atmosphere):
-        '''
-        Convertit la vitesse TAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
-        
-        :param self: Instance de la classe Avion
-        :param Atmosphere: Instance de la classe Atmosphere
-        '''
-        self.Mach_t = self.TAS_t / np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
-
-    def Convert_Mach_to_TAS(self, Atmosphere: Atmosphere):
-        '''
-        Convertit la vitesse Mach en vitesse TAS en utilisant les propriétés de l'atmosphère.
-        
-        :param self: Instance de la classe Avion
-        :param Atmosphere: Instance de la classe Atmosphere
-        '''
-        self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
 
     def Add_dl(self, dl: float):
         '''
@@ -306,13 +237,6 @@ class Avion:
     def getl(self):
         return self.l_t
     
-    def getMach(self):
-        return self.Mach_t
-    
-    def getCAS(self):
-        return self.CAS_t
-    
-    def getTAS(self):
-        return self.TAS_t
+
     
    
