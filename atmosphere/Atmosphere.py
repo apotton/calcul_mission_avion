@@ -1,5 +1,6 @@
 import numpy as np
 from constantes.Constantes import Constantes
+from inputs.Inputs import Inputs
 
 class Atmosphere:
 
@@ -18,14 +19,20 @@ class Atmosphere:
         self.rho_t = 1.225  # Densité standard au niveau de la mer (kg/m^3)
         self.P_t = 101325.0  # Pression standard au niveau de la mer (Pa)
         self.T_t = 288.15  # Température standard au niveau de la mer (K)
-        self.Vwind_t = 0.0  # Vitesse du vent à l'altitude t (m/s)
+        self.Vwind_t = Inputs.Vw*Constantes.conv_kt_mps  # Vitesse du vent à l'altitude t (m/s)
 
     def CalculateRhoPT(self, h_m) : #CHANGER LE NOM EN CalculateRhoPT CAR CE N EST PAS UN GETTER
+        if h_m < Inputs.h_cruise_init:
+            DISA = Inputs.DISA_sub_Cruise
+        else:
+            DISA = Inputs.DISA_Cruise
+
+            
         if h_m <= 11000:
             # --- Troposphère (Altitude à gradient constant : h <= 11000 m) ---
             
             # Température (T = T0 + T_h*h + DISA)
-            T = self.T0_K + self.Th_Kparm * h_m + self.DISA
+            T = self.T0_K + self.Th_Kparm * h_m + DISA
             
             # Pression (Formule de pression pour gradient constant)
             exponent_p = -Constantes.g / (self.r * self.Th_Kparm)
@@ -39,7 +46,7 @@ class Atmosphere:
             p_11 = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * 11000) ** (-Constantes.g / (self.r * self.Th_Kparm))
             
             # 2. Calcul des conditions actuelles (T est constante au-dessus de 11 km, corrigée par DISA)
-            T = T_11_ISA_0 + self.DISA
+            T = T_11_ISA_0 + DISA
             
             # Pression (Formule de pression pour couche isotherme)
             exponent_p_strato = -Constantes.g / (self.r * T_11_ISA_0) * (h_m - 11000)

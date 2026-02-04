@@ -6,13 +6,13 @@ from inputs.Inputs import Inputs
 import numpy as np
 
 class Mission:
-    def __init__(self, Inputs: Inputs):
+    def __init__(self):
         # Ajouter les attributs nécessaires pour la mission
         # Exemples : Vitesse phases montée, hauteur palier...
 
         #Je mets ce qui suit en attribut pour l'instant en attendant de décier ce qu'on en fait
         self.l_descent = 0 #Distance nécessaire à la descente
-        self.Inputs = Inputs #Récupérer tous les inputs de début de mission
+        
 
         # Historique pour suivi de la descente (pour fournir le résultat à chaque pas de temps)
         self.history = {
@@ -52,9 +52,9 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.Aero.setCAS_t(self.Inputs.get_CAS_below_10000_mont_kt())
+        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt)
 
-        while h_t < self.Inputs.get_h_accel_ft() :
+        while h_t < Inputs.h_accel_ft :
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
 
@@ -225,7 +225,7 @@ class Mission:
 
         Avion.Aero.setCAS_t(Avion.getKVMO())
 
-        while Avion.Aero.getMach() < self.Inputs.get_Mach_climb() and h_t < self.Inputs.get_h_cruise_init():
+        while Avion.Aero.getMach() < Inputs.Mach_climb and h_t < Inputs.h_cruise_init:
 
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
@@ -306,9 +306,9 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.Aero.setMach_t(self.Inputs.get_Mach_cruise())
+        Avion.Aero.setMach_t(Inputs.Mach_cruise)
 
-        while h_t < self.Inputs.get_h_cruise_init():
+        while h_t < Inputs.h_cruise_init:
 
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
@@ -403,7 +403,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
         CAS_t = Avion.Aero.getCAS()
 
         # --- Vitesses ---
-        Vx = Avion.Aero.getTAS()
+        Vx = Avion.Aero.getTAS() + Atmosphere.getVwind()
         Vz = 0.0
 
         # --- Aérodynamique ---
@@ -490,7 +490,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
             h_up < self.Pressurisation_Ceiling*Constantes.conv_ft_m and  # Pas au plafond converti de ft en m
             SGR_up > SGR):                     # Gain SGR positif
 
-            self.climb_iso_Mach(h_t, h_up, l_t, t, self.Inputs.get_Mach_cruise() , dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
+            self.climb_iso_Mach(h_t, h_up, l_t, t, Inputs.Mach_cruise , dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
 
         else : 
             # --- Intégration ---
@@ -508,7 +508,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
             Avion.Add_dh(-delta_h) #On annule la montée en h
             Avion.Add_dl(dl)
             Avion.Aero.setTAS_t(TAS_t)
-            Avion.Aero.setMach_t(self.Inputs.get_Mach_cruise())
+            Avion.Aero.setMach_t(Inputs.Mach_cruise)
             Avion.Aero.setCAS_t(CAS_t)
             # Pas de changement d'altitude en croisière
 
@@ -645,7 +645,7 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
     CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
     Avion.Aero.setCAS_t(CAS_t)
 
-    while h_t > self.Inputs.get_h_decel_ft():
+    while h_t > Inputs.h_decel_ft:
 
         # --- Atmosphère ---
         Atmosphere.CalculateRhoPT(h_t)
@@ -740,7 +740,7 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
     Atmosphere.CalculateRhoPT(h_t)
 
     # --- CAS cible (250 kt) ---
-    CAS_target = self.Inputs.get_CAS_below_10000_desc_kt() * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
+    CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
 
     Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
     Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
@@ -834,9 +834,9 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
     l_t = Avion.getl()
 
     # --- CAS imposée ---
-    CAS = self.Inputs.get_CAS_below_10000_desc_kt() * Constantes.conv_kt_mps  # kt → m/s Ajouter dans les constantes le 250kt ?
+    CAS = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps  # kt → m/s Ajouter dans les constantes le 250kt ?
 
-    while h_t > self.Inputs.get_h_final_ft():
+    while h_t > Inputs.h_final_ft:
 
         # --- Atmosphère ---
         Atmosphere.CalculateRhoPT(h_t)
