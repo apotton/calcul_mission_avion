@@ -77,9 +77,9 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            Avion.Moteur.Calculate_F(Avion)
+            Avion.Moteur.Calculate_F()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC(Avion)
+            Avion.Moteur.Calculate_SFC_climb()
             SFC = Avion.Moteur.getSFC()
 
             # --- Pente ---
@@ -158,9 +158,9 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée moteur ---
-            Avion.Moteur.Calculate_F(Avion)
+            Avion.Moteur.Calculate_F()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC(Avion)
+            Avion.Moteur.Calculate_SFC_climb()
             SFC = Avion.Moteur.getSFC()
 
             # --- Dynamique longitudinale ---
@@ -249,9 +249,9 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            Avion.Moteur.Calculate_F(Avion)
+            Avion.Moteur.Calculate_F()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC(Avion)
+            Avion.Moteur.Calculate_SFC_climb()
             SFC = Avion.Moteur.getSFC()
 
             # --- Pente ---
@@ -332,9 +332,9 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            Avion.Moteur.Calculate_F(Avion)
+            Avion.Moteur.Calculate_F()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC(Avion)
+            Avion.Moteur.Calculate_SFC_climb()
             SFC = Avion.Moteur.getSFC()
 
             # --- Pente ---
@@ -419,9 +419,9 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
         Rx = Avion.Masse.getCurrentWeight() / finesse
 
         # --- Poussée moteur ---
-        Avion.Moteur.Calculate_F(Avion)
+        Avion.Moteur.Calculate_F()
         F_N = Avion.Moteur.getF()
-        Avion.Moteur.Calculate_SFC(Avion)
+        Avion.Moteur.Calculate_SFC()
         SFC = Avion.Moteur.getSFC()
 
         #Calcul de l'excédent de puissance
@@ -468,9 +468,9 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
         Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
 
         # --- Poussée moteur --- #ATTENTION A VOIR CE QU'UTILISE F ET SFC CAR ICI ON MODIFIE QUELQUES CARACTERISTIQUES AVIONS POUR MONTER EN ALTITUDE
-        Avion.Moteur.Calculate_F(Avion)
+        Avion.Moteur.Calculate_F()
         F_N_up = Avion.Moteur.getF()
-        Avion.Moteur.Calculate_SFC(Avion)
+        Avion.Moteur.Calculate_SFC()
         SFC_up = Avion.Moteur.getSFC()
 
         
@@ -581,9 +581,9 @@ def Descente_Phase1(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         # --- Poussée moteur et SFC ---
         if self.moteur.get_Reseau_moteur() == 1:
             # ATTENTION A MODIFIER UNE FOIS QU'ON AURA FAIT LES INTERPOLLATIONS MOTEUR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            Avion.Moteur.Calculate_F(Avion)
+            Avion.Moteur.Calculate_F()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC(Avion)
+            Avion.Moteur.Calculate_SFC()
             SFC = Avion.Moteur.getSFC()
         else:
             F_N = 0.0
@@ -669,9 +669,9 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
         finesse = Cz / Cx
 
         # --- Poussée moteur (idle en descente) ---
-        Avion.Moteur.Calculate_F(Avion)
+        Avion.Moteur.Calculate_F()
         F_N = Avion.Moteur.getF()
-        Avion.Moteur.Calculate_SFC(Avion)
+        Avion.Moteur.Calculate_SFC()
         SFC = Avion.Moteur.getSFC()
 
         # --- Résistance ---
@@ -765,9 +765,9 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         # --- Poussée moteur (idle / freinage) ---
         if self.moteur.get_Reseau_moteur() == 1:
             # À raffiner plus tard
-            Avion.Moteur.Calculate_F(Avion)
+            Avion.Moteur.Calculate_F()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC(Avion)
+            Avion.Moteur.Calculate_SFC()
             SFC = Avion.Moteur.getSFC()
         else:
             F_N = 0.0
@@ -857,9 +857,9 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         finesse = Cz / Cx
 
         # --- Poussée moteur ---
-        Avion.Moteur.Calculate_F(Avion)
+        Avion.Moteur.Calculate_F()
         F_N = Avion.Moteur.getF()
-        Avion.Moteur.Calculate_SFC(Avion)
+        Avion.Moteur.Calculate_SFC()
         SFC = Avion.Moteur.getSFC()
 
         # --- Résistance ---
