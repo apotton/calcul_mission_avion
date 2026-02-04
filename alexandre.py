@@ -69,12 +69,12 @@ tas = A320.Aero.getTAS()
 print("TAS calculée : " + str(tas) + " m/s")
 
 # Test du calcul du SFC
-A320.Moteur.Calculate_SFC(A320, 15000 / Constantes.conv_ft_m)
+A320.Moteur.Calculate_SFC(15000 / Constantes.conv_ft_m)
 sfc = A320.Moteur.getSFC()
 print("SFC actuel : " + str(sfc) + " kg/(N.s)")
 
 # Test du calcul de la poussée maximale en montée
-A320.Moteur.Calculate_F(A320)
+A320.Moteur.Calculate_F()
 thrust = A320.Moteur.getF()
 print("Poussée maximale en montée : " + str(thrust) + " N")
 
@@ -92,21 +92,14 @@ for h_ft in altitudes_ft:
     poussees_ligne = []
     for mach in valeurs_mach:
         A320.set_h(h_ft * Constantes.conv_ft_m)  # Met à jour l'altitude de l'avion en mètres
-        A320.Mach_t = mach                       # Met à jour le Mach de l'avion
-        A320.Moteur.Calculate_SFC(A320)            # Calcule la poussée
+        A320.Aero.Mach_t = mach                       # Met à jour le Mach de l'avion
+        A320.Moteur.Calculate_F()            # Calcule la poussée
+        # poussees_ligne.append(A320.Moteur.getF() / 1000)  # Stocke la poussée en kN
+        A320.Moteur.Calculate_SFC_climb() #(A320.Moteur.getF()/2)            # Calcule la poussée
         poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
     poussees_2D.append(poussees_ligne)
 # Convertir en numpy array pour faciliter le tracé
 poussees_2D = np.array(poussees_2D)
-# Tracé de la figure 2D
-plt.figure(figsize=(10, 6))
-X, Y = np.meshgrid(valeurs_mach, altitudes_ft)
-plt.contourf(X, Y, poussees_2D, levels=20, cmap='viridis')
-plt.colorbar(label='Consommation spécifique (kg/(N.s))')
-plt.title('Consommation spécifique moteur en fonction de l\'altitude et du Mach')
-plt.xlabel('Mach')
-plt.ylabel('Altitude (ft)')
-plt.show()
 
 # Tracé d'une figure en 3D (Mach, altitude, poussée)
 from mpl_toolkits.mplot3d import Axes3D

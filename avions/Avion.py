@@ -45,7 +45,7 @@ class Avion:
 
         self.Masse = Masse(self)
         self.Aero = Aero(self)
-        self.Moteur = Reseau_moteur(BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
+        self.Moteur = Reseau_moteur(self, BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
 
         self.h_t = 0
         self.l_t = 0
