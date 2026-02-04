@@ -86,7 +86,7 @@ class Mission:
 
             # --- Mise à jour vitesse ---
             TAS_t = max(TAS_t + ax * dt, 0.0)
-            Avion.setTAS_t(TAS_t)
+            Avion.Aero.setTAS_t(TAS_t)
 
             # --- Recalcul Mach et CAS ---
             Avion.Aero.Convert_TAS_to_Mach(Atmosphere)
@@ -141,7 +141,7 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.setCAS_t(CAS_const)
+        Avion.Aero.setCAS_t(CAS_const)
 
         while Avion.Aero.getMach() < Mach_target and h_t < h_end:
 
@@ -224,7 +224,7 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.setMach_t(Mach_const)
+        Avion.Aero.setMach_t(Mach_const)
 
         while h_t < h_target:
 
@@ -425,9 +425,9 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             # --- Mise à jour avion ---
             Avion.Add_dh(-delta_h) #On annule la montée en h
             Avion.Add_dl(dl)
-            Avion.setTAS_t(TAS_t)
-            Avion.setMach_t(Mach_cruise)
-            Avion.setCAS_t(CAS_t)
+            Avion.Aero.setTAS_t(TAS_t)
+            Avion.Aero.setMach_t(Mach_cruise)
+            Avion.Aero.setCAS_t(CAS_t)
             # Pas de changement d'altitude en croisière
 
             # --- Historique ---
@@ -561,7 +561,7 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
 
     # --- CAS imposée ---
     CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
-    Avion.setCAS_t(CAS_t)
+    Avion.Aero.setCAS_t(CAS_t)
 
     while h_t > h_end:
 
@@ -695,7 +695,7 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
         ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
         # --- Mise à jour des vitesses ---
-        Avion.setTAS_t(max(TAS_t + ax * dt, 0.0))
+        Avion.Aero.setTAS_t(max(TAS_t + ax * dt, 0.0))
         TAS_t = Avion.Aero.getTAS() #Calcul de la nouvelle vitesse avec la resistance longitudinale
 
         # Recalcul CAS depuis Mach/TAS

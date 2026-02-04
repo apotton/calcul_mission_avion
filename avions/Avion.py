@@ -68,32 +68,6 @@ class Avion:
         '''
         self.h_t += dh
 
-    def setMach_t(self, Mach: float):
-        '''
-        Définit la vitesse Mach actuelle de l'avion.
-        
-        :param self: Instance de la classe Avion
-        :param Mach: Vitesse Mach à définir
-        '''
-        self.Mach_t = Mach
-
-    def setTAS_t(self, TAS: float):
-        '''
-        Définit la vitesse TAS actuelle de l'avion.
-        
-        :param self: Instance de la classe Avion
-        :param TAS: Vitesse TAS à définir (m/s)
-        '''
-        self.TAS_t = TAS
-
-    def setCAS_t(self, CAS: float):
-        '''
-        Définit la vitesse CAS actuelle de l'avion.
-        
-        :param self: Instance de la classe Avion
-        :param CAS: Vitesse CAS à définir (m/s)
-        '''
-        self.CAS_t = CAS
 
 
 
