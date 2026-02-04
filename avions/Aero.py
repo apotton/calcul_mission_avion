@@ -13,15 +13,20 @@ class Aero:
         :param self: Instance de la classe Aero
         :param avion: Instance de la classe Avion
         '''
+        #Coef aero
         self.Avion = avion
         self.Cx_t = self.Avion.getCx0Climb()
         self.Cz_t = 0 #Uniquement pour l'initialisation 
+
+        #Vitesses
+        self.Mach_t = 0
+        self.CAS_t = 0
+        self.TAS_t = 0
 
     def CalculateAll(self, atmosphere):
         self.CalculateCzBuffet()
         self.CalculateCz(atmosphere)
         self.CalculateCx(atmosphere)
-        self.CalculateTAS(atmosphere)
 
     #Calcul du Cz
     def CalculateCz(self, atmosphere: Atmosphere):
@@ -196,14 +201,104 @@ class Aero:
         # Attention : np.interp prend (x_to_find, x_data, y_data)
         self.CzBuffet_t = np.interp(self.getMach(), M1, CL1)
 
-    def CalculateTAS(self, atmosphere: Atmosphere):
+
+
+
+    ##Calcul des vitesses
+
+    def Convert_Mach_to_CAS(self, Atmosphere: Atmosphere):
         '''
-        Calcule la True Air Speed (TAS) à l'instant t en fonction du Mach et des conditions atmosphériques.
+        Convertit la vitesse Mach en vitesse CAS en utilisant les propriétés de l'atmosphère.
         
-        :param self: Instance de la classe Aero
-        :param atmosphere: Instance de la classe Atmosphere
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
         '''
-        self.TAS_t = self.getMach() * np.sqrt(1.4 * Constantes.r * atmosphere.getT_t())
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        # Delta pression compressible
+        Delta_p = Atmosphere.getP_t() * (
+            ((gamma - 1) / 2 * self.Mach_t**2 + 1) ** (gamma / (gamma - 1)) - 1
+        )
+
+        # CAS
+        self.CAS_t = np.sqrt(
+            2 * gamma * r_gp * T0 / (gamma - 1)
+            * ((1 + Delta_p / p0) ** (0.4 / gamma) - 1)
+        )
+    
+
+    def Convert_CAS_to_Mach(self, Atmosphere: Atmosphere):
+        '''
+        Convertit la vitesse CAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
+        
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+
+        gamma = Constantes.gamma
+        r_gp = Constantes.r
+        T0 = Constantes.T0_K
+        p0 = Constantes.p0_Pa
+
+        delta_p = p0 * (
+            (1 + (gamma - 1) / 2 * self.CAS_t**2 / (gamma * r_gp * T0))**(gamma / (gamma - 1)) - 1
+        )
+
+        self.Mach_t = np.sqrt(
+            2 / (gamma - 1)
+            * ((1 + delta_p / Atmosphere.getP_t())**((gamma - 1) / gamma) - 1)
+        )
+
+    def Convert_TAS_to_Mach(self, Atmosphere: Atmosphere):
+        '''
+        Convertit la vitesse TAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
+        
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+        self.Mach_t = self.TAS_t / np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
+
+    def Convert_Mach_to_TAS(self, Atmosphere: Atmosphere):
+        '''
+        Convertit la vitesse Mach en vitesse TAS en utilisant les propriétés de l'atmosphère.
+        
+        :param self: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+        self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
+
+    def setMach_t(self, Mach: float):
+        '''
+        Définit la vitesse Mach actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param Mach: Vitesse Mach à définir
+        '''
+        self.Mach_t = Mach
+
+    def setTAS_t(self, TAS: float):
+        '''
+        Définit la vitesse TAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param TAS: Vitesse TAS à définir (m/s)
+        '''
+        self.TAS_t = TAS
+
+    def setCAS_t(self, CAS: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.CAS_t = CAS
+
+
+
 
     def CalculateECCF(self, atmosphere: Atmosphere):
         '''
@@ -241,8 +336,6 @@ class Aero:
     def getCx(self):
         return self.Cx_t
     
-    def getMach(self):
-        return 0.5 # self.Mach_T #ATTENTION ATTRIBUT MACH A AJOUTER APRES CALCULS MOTEURS
     
     def getCz(self):
         return self.Cz_t
@@ -250,11 +343,17 @@ class Aero:
     def getCzBuffet(self):
         return self.CzBuffet_t
     
-    def getTAS(self):
-        return self.TAS_t
-    
     def getECCF(self):
         return self.ECCF_t
     
     def getSGR(self):
         return self.SGR_t
+    
+    def getMach(self):
+        return self.Mach_t
+    
+    def getCAS(self):
+        return self.CAS_t
+    
+    def getTAS(self):
+        return self.TAS_t

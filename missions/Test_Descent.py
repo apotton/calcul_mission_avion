@@ -1,6 +1,7 @@
 from avions.Avion import Avion
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
+from enregistrement.Enregistrement import Enregistrement
 import numpy as np
 
 class Mission:
@@ -47,7 +48,7 @@ class Mission:
         l_t = Avion.getl()
 
         # --- CAS initiale ---
-        CAS_t = Avion.getCAS() * Constantes.conv_kt_mps # à mettre dans constantes plus tard
+        CAS_t = Avion.Aero.getCAS() * Constantes.conv_kt_mps # à mettre dans constantes plus tard
 
         # --- CAS cible --- A CHANGER
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps  # à mettre dans constantes plus tard
@@ -56,10 +57,10 @@ class Mission:
         Atmosphere.CalculateRhoPT(h_t)
 
         # --- Initialisation ---
-        Avion.Convert_CAS_to_Mach(Atmosphere)
-        Mach_t = Avion.getMach()
-        Avion.Convert_Mach_to_TAS(Atmosphere)
-        TAS_t  = Avion.getTAS()
+        Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
+        Mach_t = Avion.Aero.getMach()
+        Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+        TAS_t  = Avion.Aero.getTAS()
 
         while CAS_t < CAS_target:
 
@@ -75,21 +76,23 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée moteur ---
-            F_N = Avion.Moteur.getMaxThrustClimb(h_t, Mach_t)
-            SFC = Avion.Moteur.getSFC(h_t, Mach_t)
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
 
             # --- Dynamique longitudinale ---
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
             # --- Mise à jour vitesse ---
             TAS_t = max(TAS_t + ax * dt, 0.0)
-            Avion.setTAS_t(TAS_t)
+            Avion.Aero.setTAS_t(TAS_t)
 
             # --- Recalcul Mach et CAS ---
-            Avion.Convert_TAS_to_Mach(Atmosphere)
-            Avion.Convert_Mach_to_CAS(Atmosphere)
-            CAS_t = Avion.getCAS()
-            Mach_t = Avion.getMach()
+            Avion.Aero.Convert_TAS_to_Mach(Atmosphere)
+            Avion.Aero.Convert_Mach_to_CAS(Atmosphere)
+            CAS_t = Avion.Aero.getCAS()
+            Mach_t = Avion.Aero.getMach()
 
             # --- Cinématique ---
             Vz_t = 0.0
@@ -138,18 +141,18 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.setCAS_t(CAS_const)
+        Avion.Aero.setCAS_t(CAS_const)
 
-        while Avion.getMach() < Mach_target and h_t < h_end:
+        while Avion.Aero.getMach() < Mach_target and h_t < h_end:
 
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
 
             # --- CAS -> Mach ---
-            Avion.Convert_CAS_to_Mach(Atmosphere)
+            Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
 
             # --- TAS ---
-            Avion.Convert_Mach_to_TAS(Atmosphere)
+            Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
 
             # --- Aérodynamique ---
             Avion.Aero.CalculateCz(Atmosphere)
@@ -164,15 +167,17 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            F_N = Avion.Moteur.getMaxThrustClimb(h_t, Avion.getMach())
-            SFC = Avion.Moteur.getSFC(h_t, Avion.getMach())
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
 
             # --- Pente ---
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
             # --- Vitesses ---
-            Vz = Avion.getTAS() * np.sin(pente)
-            Vx = Avion.getTAS() * np.cos(pente)
+            Vz = Avion.Aero.getTAS() * np.sin(pente)
+            Vx = Avion.Aero.getTAS() * np.cos(pente)
 
             # --- Intégration ---
             h_t += Vz * dt
@@ -189,9 +194,9 @@ class Mission:
             # --- Historique ---
             self.history["h"].append(h_t)
             self.history["l"].append(l_t)
-            self.history["V_CAS"].append(Avion.getCAS())
-            self.history["V_true"].append(Avion.getTAS())
-            self.history["Mach"].append(Avion.getMach())
+            self.history["V_CAS"].append(Avion.Aero.getCAS())
+            self.history["V_true"].append(Avion.Aero.getTAS())
+            self.history["Mach"].append(Avion.Aero.getMach())
             self.history["Cz"].append(Cz)
             self.history["Cx"].append(Cx)
             self.history["Vz"].append(Vz)
@@ -219,7 +224,7 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.setMach_t(Mach_const)
+        Avion.Aero.setMach_t(Mach_const)
 
         while h_t < h_target:
 
@@ -227,10 +232,10 @@ class Mission:
             Atmosphere.CalculateRhoPT(h_t)
 
             # --- TAS ---
-            Avion.Convert_Mach_to_TAS(Atmosphere)
+            Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
 
             # --- CAS ---
-            Avion.Convert_Mach_to_CAS(Atmosphere)
+            Avion.Aero.Convert_Mach_to_CAS(Atmosphere)
 
             # --- Aérodynamique ---
             Avion.Aero.CalculateCz(Atmosphere)
@@ -245,15 +250,17 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            F_N = Avion.Moteur.getMaxThrustClimb(h_t, Avion.getMach())
-            SFC = Avion.Moteur.getSFC(h_t, Avion.getMach())
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
 
             # --- Pente ---
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
             # --- Vitesses ---
-            Vz = Avion.getTAS() * np.sin(pente)
-            Vx = Avion.getTAS() * np.cos(pente)
+            Vz = Avion.Aero.getTAS() * np.sin(pente)
+            Vx = Avion.Aero.getTAS() * np.cos(pente)
 
             # --- Intégration ---
             h_t += Vz * dt
@@ -269,9 +276,9 @@ class Mission:
             # --- Historique ---
             self.history["h"].append(h_t)
             self.history["l"].append(l_t)
-            self.history["V_CAS"].append(Avion.getCAS())
-            self.history["V_true"].append(Avion.getTAS())
-            self.history["Mach"].append(Avion.getMach())
+            self.history["V_CAS"].append(Avion.Aero.getCAS())
+            self.history["V_true"].append(Avion.Aero.getTAS())
+            self.history["Mach"].append(Avion.Aero.getMach())
             self.history["Cz"].append(Cz)
             self.history["Cx"].append(Cx)
             self.history["Vz"].append(Vz)
@@ -308,13 +315,13 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
         Atmosphere.CalculateRhoPT(h_t)
 
         # --- Vitesse ---
-        Avion.Convert_Mach_to_TAS(Atmosphere)
-        TAS_t = Avion.getTAS()
-        Avion.Convert_Mach_to_CAS(Atmosphere)
-        CAS_t = Avion.getCAS()
+        Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+        TAS_t = Avion.Aero.getTAS()
+        Avion.Aero.Convert_Mach_to_CAS(Atmosphere)
+        CAS_t = Avion.Aero.getCAS()
 
         # --- Vitesses ---
-        Vx = Avion.getTAS()
+        Vx = Avion.Aero.getTAS()
         Vz = 0.0
 
         # --- Aérodynamique ---
@@ -330,10 +337,13 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
         Rx = Avion.Masse.getCurrentWeight() / finesse
 
         # --- Poussée moteur ---
-        F_N, SFC = Avion.Moteur.getThrustCruise(Mach_cruise, h_t)
+        Avion.Moteur.Calculate_F(Avion)
+        F_N = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC = Avion.Moteur.getSFC()
 
         #Calcul de l'excédent de puissance
-        RRoC = (F_N-Rx)/(Avion.Masse.getCurrentWeight())*Avion.getTAS() #Excédent de puissance qui permet de déterminer si on peut monter de 2000ft 
+        RRoC = (F_N-Rx)/(Avion.Masse.getCurrentWeight())*Avion.Aero.getTAS() #Excédent de puissance qui permet de déterminer si on peut monter de 2000ft 
 
         #Calcul du coût économique ECCF et SGR
         Avion.Aero.CalculateECCF(Atmosphere)
@@ -354,13 +364,14 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
 
         # Altitude “virtuelle”
         h_up = h_t + delta_h
+        Avion.Add_dh(delta_h)
 
         # --- Atmosphère ---
         Atmosphere.CalculateRhoPT(h_up)
 
         # --- TAS (Mach constant avant montée iso-Mach) ---
-        Avion.Convert_Mach_to_TAS(Atmosphere)
-        TAS_up = Avion.getTAS()
+        Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+        TAS_up = Avion.Aero.getTAS()
 
         # --- Aérodynamique ---
         Avion.Aero.CalculateCz(Atmosphere)
@@ -374,8 +385,11 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
         # --- Traînée / équivalent résistance ---
         Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
 
-        # --- Poussée moteur ---
-        F_N_up, SFC_up = Avion.Moteur.getThrustCruise(Mach_cruise, h_up)
+        # --- Poussée moteur --- #ATTENTION A VOIR CE QU'UTILISE F ET SFC CAR ICI ON MODIFIE QUELQUES CARACTERISTIQUES AVIONS POUR MONTER EN ALTITUDE
+        Avion.Moteur.Calculate_F(Avion)
+        F_N_up = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC_up = Avion.Moteur.getSFC()
 
         
         #Calcul du coût économique ECCF et SGR
@@ -409,10 +423,11 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             Avion.Masse.burn_fuel(dt)
 
             # --- Mise à jour avion ---
+            Avion.Add_dh(-delta_h) #On annule la montée en h
             Avion.Add_dl(dl)
-            Avion.setTAS_t(TAS_t)
-            Avion.setMach_t(Mach_cruise)
-            Avion.setCAS_t(CAS_t)
+            Avion.Aero.setTAS_t(TAS_t)
+            Avion.Aero.setMach_t(Mach_cruise)
+            Avion.Aero.setCAS_t(CAS_t)
             # Pas de changement d'altitude en croisière
 
             # --- Historique ---
@@ -455,9 +470,9 @@ def Descente_Phase1(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
 
     # CAS max en m/s
     CAS_max = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s  Vitesse maximale de descente de l'avion
-    CAS_t = Avion.getCAS()   
-    Mach_t = Avion.getMach() 
-    TAS_t = Avion.getTAS() 
+    CAS_t = Avion.Aero.getCAS()   
+    Mach_t = Avion.Aero.getMach() 
+    TAS_t = Avion.Aero.getTAS() 
 
 
     while CAS_t < CAS_max: #On cherche à diminuer l'altitude h jusqu'à atteindre la vitesse CAS Max
@@ -466,11 +481,11 @@ def Descente_Phase1(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         Atmosphere.CalculateRhoPT(h_t)
 
         # --- Mach et TAS --- 
-        Avion.Convert_Mach_to_CAS(Atmosphere) #Calcul du CAS à partir du Mach
-        Avion.Convert_TAS_to_Mach(Atmosphere) #Calcul du TAS à partir du Mach
+        Avion.Aero.Convert_Mach_to_CAS(Atmosphere) #Calcul du CAS à partir du Mach
+        Avion.Aero.Convert_TAS_to_Mach(Atmosphere) #Calcul du TAS à partir du Mach
 
-        CAS_t = Avion.getCAS()   
-        TAS_t = Avion.getTAS() 
+        CAS_t = Avion.Aero.getCAS()   
+        TAS_t = Avion.Aero.getTAS() 
 
         # --- Cz et Cx --- Calcul des coefs aéro
         Avion.Aero.CalculateCz(Atmosphere)
@@ -484,8 +499,10 @@ def Descente_Phase1(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         # --- Poussée moteur et SFC ---
         if self.moteur.get_Reseau_moteur() == 1:
             # ATTENTION A MODIFIER UNE FOIS QU'ON AURA FAIT LES INTERPOLLATIONS MOTEUR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            F_N = 0.0
-            SFC = 0.0
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
         else:
             F_N = 0.0
             SFC = 0.0
@@ -544,7 +561,7 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
 
     # --- CAS imposée ---
     CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
-    Avion.setCAS_t(CAS_t)
+    Avion.Aero.setCAS_t(CAS_t)
 
     while h_t > h_end:
 
@@ -552,13 +569,13 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
         Atmosphere.CalculateRhoPT(h_t)
 
         # --- Conversion CAS -> Mach ---
-        Avion.Convert_CAS_to_Mach(Atmosphere)
+        Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
 
         # --- TAS ---
-        Avion.Convert_Mach_to_TAS(Atmosphere)
+        Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
 
-        Mach_t = Avion.getMach()
-        TAS_t  = Avion.getTAS()
+        Mach_t = Avion.Aero.getMach()
+        TAS_t  = Avion.Aero.getTAS()
 
         # --- Coefficients aérodynamiques ---
         Avion.Aero.CalculateCz(Atmosphere)
@@ -570,8 +587,10 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
         finesse = Cz / Cx
 
         # --- Poussée moteur (idle en descente) ---
-        F_N = 0.0
-        SFC = 0.0
+        Avion.Moteur.Calculate_F(Avion)
+        F_N = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC = Avion.Moteur.getSFC()
 
         # --- Résistance ---
         Rx = Avion.Masse.getCurrentWeight() / finesse
@@ -633,7 +652,7 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
     l_t = Avion.getl()
 
     # --- CAS initiale (issue phase 2) ---
-    CAS_t = Avion.getCAS() # * Constantes.conv_kt_mps  # kt -> m/s
+    CAS_t = Avion.Aero.getCAS() # * Constantes.conv_kt_mps  # kt -> m/s
 
     # --- Atmosphère --- #NB : on peut calculer les conditions atm en dehors de la boucle car, l'altitude étant constante, les conditions reste les mêmes à chaque pas de temps
     Atmosphere.CalculateRhoPT(h_t)
@@ -641,10 +660,10 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
     # --- CAS cible (250 kt) ---
     CAS_target = 250.0 * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
 
-    Avion.Convert_CAS_to_Mach(Atmosphere)
-    Avion.Convert_Mach_to_TAS(Atmosphere)
-    Mach_t = Avion.getMach()
-    TAS_t = Avion.getTAS()
+    Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
+    Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+    Mach_t = Avion.Aero.getMach()
+    TAS_t = Avion.Aero.getTAS()
 
     while CAS_t > CAS_target: #On diminue la vitesse jusqu'à la valeur désirée
         #A noter que les nouvelles vitesses sont calculées en fin de boucle
@@ -664,8 +683,10 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
         # --- Poussée moteur (idle / freinage) ---
         if self.moteur.get_Reseau_moteur() == 1:
             # À raffiner plus tard
-            F_N = 0.0
-            SFC = 0.0
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
         else:
             F_N = 0.0
             SFC = 0.0
@@ -674,15 +695,15 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
         ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
         # --- Mise à jour des vitesses ---
-        Avion.setTAS_t(max(TAS_t + ax * dt, 0.0))
-        TAS_t = Avion.getTAS() #Calcul de la nouvelle vitesse avec la resistance longitudinale
+        Avion.Aero.setTAS_t(max(TAS_t + ax * dt, 0.0))
+        TAS_t = Avion.Aero.getTAS() #Calcul de la nouvelle vitesse avec la resistance longitudinale
 
         # Recalcul CAS depuis Mach/TAS
 
-        Avion.Convert_TAS_to_Mach(Atmosphere)
-        Avion.Convert_Mach_to_CAS(Atmosphere)
-        CAS_t = Avion.getCAS()
-        Mach_t = Avion.getCAS()
+        Avion.Aero.Convert_TAS_to_Mach(Atmosphere)
+        Avion.Aero.Convert_Mach_to_CAS(Atmosphere)
+        CAS_t = Avion.Aero.getCAS()
+        Mach_t = Avion.Aero.getCAS()
 
         # --- Cinématique ---
         Vz = 0.0 #On vole en palier, donc on ne descend pas
@@ -739,10 +760,10 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, h_final, dt=1.0)
         Atmosphere.CalculateRhoPT(h_t)
 
         # --- Mach depuis CAS ---
-        Avion.Convert_CAS_to_Mach(Atmosphere)
+        Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
 
         # --- TAS ---
-        Avion.Convert_Mach_to_TAS(Atmosphere)
+        Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
 
         # --- Aérodynamique ---
         Avion.Aero.CalculateCz(Atmosphere)
@@ -754,8 +775,10 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, h_final, dt=1.0)
         finesse = Cz / Cx
 
         # --- Poussée moteur ---
-        F_N = 0.0  # idle en descente (à affiner plus tard)
-        SFC = 0.0
+        Avion.Moteur.Calculate_F(Avion)
+        F_N = Avion.Moteur.getF()
+        Avion.Moteur.Calculate_SFC(Avion)
+        SFC = Avion.Moteur.getSFC()
 
         # --- Résistance ---
         Rx = Avion.Masse.getCurrentWeight() / finesse
@@ -764,7 +787,7 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, h_final, dt=1.0)
         pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
         # --- Vitesses ---
-        TAS_t = Avion.getTAS()
+        TAS_t = Avion.Aero.getTAS()
         Vz = TAS_t * np.sin(pente)
         Vx = TAS_t * np.cos(pente)
 
@@ -784,9 +807,9 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, h_final, dt=1.0)
         self.history["h"].append(h)
         self.history["l"].append(l)
         self.history["t"].append(t)
-        self.history["V_CAS"].append(Avion.getCAS())
-        self.history["V_true"].append(Avion.getTAS())
-        self.history["Mach"].append(Avion.getMach())
+        self.history["V_CAS"].append(Avion.Aero.getCAS())
+        self.history["V_true"].append(Avion.Aero.getTAS())
+        self.history["Mach"].append(Avion.Aero.getMach())
         self.history["Cz"].append(Cz)
         self.history["Cx"].append(Cx)
         self.history["Vz"].append(Vz)
