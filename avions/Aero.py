@@ -36,6 +36,9 @@ class Aero:
         :param self: Instance de la classe Aero
         :param atmosphere: Instance de la classe Atmosphere
         '''
+        # print("Mach: " + str(self.getMach()))
+        # print("P_t: " + str(atmosphere.getP_t()))
+        # print("Sref: " + str(self.Avion.getSref()))
         self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*atmosphere.getP_t()*self.Avion.getSref()*self.getMach()**2) 
     
 

@@ -19,9 +19,15 @@ class Mission:
             "h": [], #Altitude en UNITE
             "l": [], #Distance franchie en UNITE
             "t": [], #Temps en UNITE
+            "P": [], #Pression en Pa
+            "f": [], #Finesse
+            "R_X": [], #Résistance équivalente en N
+            "pente": [], #Pente de l'avion en radian
             "V_CAS": [], #Vitesse conventionnelle en UNITE
             "V_true": [], #Vitesse vraie en UNITE
             "Mach": [], #Mach
+            "Vz": [], #Vitesse verticale
+            "Vx": [], #Vitesse horizontale
             "Cz": [], #Coef de portance
             "Cx": [], #Coef de trainée
             "F_N": [], #Poussée
@@ -48,13 +54,13 @@ class Mission:
         Mach_target : Mach cible de transition
         dt          : pas de temps
         """
-
+        Avion.set_h(Inputs.h_initial_ft*Constantes.conv_ft_m) #On initialise l'altitude de l'avion
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt)
+        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps) #On initialise la CAS de l'avion)
 
-        while h_t < Inputs.h_accel_ft :
+        while h_t < Inputs.h_accel_ft * Constantes.conv_ft_m:
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
 
@@ -103,6 +109,10 @@ class Mission:
 
             # --- Historique ---
             self.history["h"].append(h_t)
+            self.history["R_X"].append(Rx)
+            self.history["pente"].append(pente)
+            self.history["P"].append(Atmosphere.getP_t())
+            self.history["f"].append(finesse)
             self.history["l"].append(l_t)
             self.history["V_CAS"].append(Avion.Aero.getCAS())
             self.history["V_true"].append(Avion.Aero.getTAS())
@@ -192,7 +202,7 @@ class Mission:
             # --- Historique ---
             self.history["h"].append(h_t)
             self.history["l"].append(l_t)
-            self.history["t"].append(self.history["t"][-1] + dt)
+            # self.history["t"].append(self.history["t"][-1] + dt)
             self.history["V_CAS"].append(CAS_t)
             self.history["V_true"].append(TAS_t)
             self.history["Mach"].append(Mach_t)
@@ -223,7 +233,7 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.Aero.setCAS_t(Avion.getKVMO())
+        Avion.Aero.setCAS_t(Avion.getKVMO() * Constantes.conv_kt_mps) #On initialise la CAS de l'avion)
 
         while Avion.Aero.getMach() < Inputs.Mach_climb and h_t < Inputs.h_cruise_init:
 
@@ -308,7 +318,7 @@ class Mission:
 
         Avion.Aero.setMach_t(Inputs.Mach_cruise)
 
-        while h_t < Inputs.h_cruise_init:
+        while h_t < Inputs.h_cruise_init * Constantes.conv_ft_m:
 
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
