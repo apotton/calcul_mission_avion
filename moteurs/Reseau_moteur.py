@@ -38,7 +38,7 @@ class Reseau_moteur(Moteur):
         
         
     
-    # calcule la SFC en croisière
+    # calcule la SFC en croisière, utilise la partie data de Donnes_moteur.py
     def Calculate_SFC(self, F_engine_N=None): # F_engine correspond à F_cruise_step pour 2 moteurs (poussée totale actuelle)
         "Calcule le SFC en croisière"
         
@@ -95,6 +95,8 @@ class Reseau_moteur(Moteur):
 
 
 
+
+    # Utilise la SFC_MCL tables pour la montée
     def Calculate_SFC_climb(self): 
         "Calcule la SFC en montée"
         h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
