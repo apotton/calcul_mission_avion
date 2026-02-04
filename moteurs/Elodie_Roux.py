@@ -1,16 +1,16 @@
 from moteurs.Moteur import Moteur
 
 class Elodie_roux(Moteur):
-    def __init__(self, BPR=0, OPR=0):
-        super().__init__(BPR, OPR)
+    def __init__(self, Avion, BPR=0, OPR=0):
+        super().__init__(Avion, BPR, OPR)
         # Pas de Donnees_moteur ici, peut-être d'autres constantes spécifiques
 
-    def Calculate_F(self, Avion):
+    def Calculate_F(self):
         print("Calcul Poussée via méthode analytique (Elodie Roux)")
         # Ici tu mets tes équations mathématiques
         # self.F_t = ... formule mathématique ...
 
-    def Calculate_SFC(self, Avion, F_engine_N=None):
+    def Calculate_SFC(self, F_engine_N=None):
         print("Calcul SFC via méthode analytique (Elodie Roux)")
         # Ici tu mets tes équations mathématiques
         # self.SFC_t = ... formule mathématique ...
