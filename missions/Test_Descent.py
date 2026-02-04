@@ -77,7 +77,7 @@ class Mission:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # --- Poussée ---
-            Avion.Moteur.Calculate_F()
+            Avion.Moteur.Calculate_F() #Test
             F_N = Avion.Moteur.getF()
             Avion.Moteur.Calculate_SFC_climb()
             SFC = Avion.Moteur.getSFC()
