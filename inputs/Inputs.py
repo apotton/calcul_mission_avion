@@ -26,6 +26,7 @@ class Inputs:
         # =====================
         # CROISIERE
         # =====================
+        self.h_cruise_init = 35000       #ft
         self.Mach_cruise = 0.78
         self.step_climb_ft = 2000.0      # ft
         self.RRoC_min_ft_min = 300.0     # ft/min
@@ -77,6 +78,9 @@ class Inputs:
         return self.Mach_climb
 
     # Croisière
+    def get_h_cruise_init(self):  
+        return self.h_cruise_init
+
     def get_Mach_cruise(self):
         return self.Mach_cruise
 

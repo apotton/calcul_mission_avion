@@ -34,7 +34,89 @@ class Mission:
 #MONTEE
 ##
 
-# --- Accélération en palier à 10 000 ft ---
+# --- Phase 1 : Montée ISO CAS jusqu'au Mach maximal ---
+
+    def climb_sub_h_1500(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+        """
+        Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en pallier
+
+        h_start     : altitude initiale
+        h_end       : altitude max de sécurité (optionnelle)
+        l_start     : distance initiale
+        t_start     : temps initial
+        CAS_const   : CAS imposée (m/s)
+        Mach_target : Mach cible de transition
+        dt          : pas de temps
+        """
+
+        h_t = Avion.geth()
+        l_t = Avion.getl()
+
+        Avion.Aero.setCAS_t(self.Inputs.get_CAS_below_10000_mont_kt())
+
+        while h_t < self.Inputs.get_h_accel_ft() :
+            # --- Atmosphère ---
+            Atmosphere.CalculateRhoPT(h_t)
+
+            # --- CAS -> Mach ---
+            Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
+
+            # --- TAS ---
+            Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+
+            # --- Aérodynamique ---
+            Avion.Aero.CalculateCz(Atmosphere)
+            Cz = Avion.Aero.getCz()
+
+            Avion.Aero.CalculateCxClimb_Simplified()
+            Cx = Avion.Aero.getCx()
+
+            finesse = Cz / Cx
+
+            # --- Traînée ---
+            Rx = Avion.Masse.getCurrentWeight() / finesse
+
+            # --- Poussée ---
+            Avion.Moteur.Calculate_F(Avion)
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC(Avion)
+            SFC = Avion.Moteur.getSFC()
+
+            # --- Pente ---
+            pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
+
+            # --- Vitesses ---
+            Vz = Avion.Aero.getTAS() * np.sin(pente)
+            Vx = Avion.Aero.getTAS() * np.cos(pente)
+
+            # --- Intégration ---
+            h_t += Vz * dt
+            l_t += Vx * dt
+
+            # --- Fuel burn ---
+            Avion.Masse.burn_fuel(dt)
+
+            # --- Mise à jour avion ---
+            Avion.Add_dh(Vz * dt) #Un peu redondant, à voir comment modifier
+            Avion.Add_dl(Vx * dt)
+
+
+            # --- Historique ---
+            self.history["h"].append(h_t)
+            self.history["l"].append(l_t)
+            self.history["V_CAS"].append(Avion.Aero.getCAS())
+            self.history["V_true"].append(Avion.Aero.getTAS())
+            self.history["Mach"].append(Avion.Aero.getMach())
+            self.history["Cz"].append(Cz)
+            self.history["Cx"].append(Cx)
+            self.history["Vz"].append(Vz)
+            self.history["Vx"].append(Vx)
+            self.history["F_N"].append(F_N)
+            self.history["SFC"].append(SFC)
+            self.history["FB"].append(Avion.Masse.getFuelBurned())
+            self.history["m"].append(Avion.Masse.getCurrentMass())
+
+# --- Phase 2 : Accélération en palier à 10 000 ft ---
     def climb_Palier(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
         Phase 2 : accélération en palier à 10 000 ft
@@ -125,7 +207,7 @@ class Mission:
 
 # --- Phase 3 : Montée ISO CAS jusqu'au Mach maximal ---
 
-    def climb_iso_CAS(self, Avion: Avion, Atmosphere: Atmosphere, CAS_const, Mach_target, h_end, dt=1.0):
+    def climb_iso_CAS(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
         Montée à CAS constant jusqu'à atteindre un Mach cible
 
@@ -141,9 +223,9 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.Aero.setCAS_t(CAS_const)
+        Avion.Aero.setCAS_t(Avion.getKVMO())
 
-        while Avion.Aero.getMach() < Mach_target and h_t < h_end:
+        while Avion.Aero.getMach() < self.Inputs.get_Mach_climb() and h_t < self.Inputs.get_h_cruise_init():
 
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
@@ -209,7 +291,7 @@ class Mission:
 
 # --- Phase 4 : Montée ISO Mach jusqu'à l'altitude de fin de montée et de début de croisière ---
 
-    def climb_iso_Mach(self, Avion: Avion, Atmosphere: Atmosphere, h_target, Mach_const, dt=1.0):
+    def climb_iso_Mach(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
         Montée à Mach constant jusqu'à une altitude cible
 
@@ -224,9 +306,9 @@ class Mission:
         h_t = Avion.geth()
         l_t = Avion.getl()
 
-        Avion.Aero.setMach_t(Mach_const)
+        Avion.Aero.setMach_t(self.Inputs.get_Mach_cruise())
 
-        while h_t < h_target:
+        while h_t < self.Inputs.get_h_cruise_init():
 
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(h_t)
@@ -292,7 +374,7 @@ class Mission:
 ##
 #Croisière MACH SAR
 ##
-def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_cruise, dt=60.0):
+def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
     """
     Phase : croisière en palier à Mach constant
 
@@ -408,7 +490,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             h_up < self.Pressurisation_Ceiling*Constantes.conv_ft_m and  # Pas au plafond converti de ft en m
             SGR_up > SGR):                     # Gain SGR positif
 
-            self.climb_iso_Mach(h_t, h_up, l_t, t, Mach_cruise, dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
+            self.climb_iso_Mach(h_t, h_up, l_t, t, self.Inputs.get_Mach_cruise() , dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
 
         else : 
             # --- Intégration ---
@@ -426,7 +508,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             Avion.Add_dh(-delta_h) #On annule la montée en h
             Avion.Add_dl(dl)
             Avion.Aero.setTAS_t(TAS_t)
-            Avion.Aero.setMach_t(Mach_cruise)
+            Avion.Aero.setMach_t(self.Inputs.get_Mach_cruise())
             Avion.Aero.setCAS_t(CAS_t)
             # Pas de changement d'altitude en croisière
 
@@ -434,7 +516,7 @@ def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, Mach_crui
             self.history["h"].append(h_t)
             self.history["l"].append(l_t)
             self.history["t"].append(t)
-            self.history["Mach"].append(Mach_cruise)
+            self.history["Mach"].append(self.Avion.Aero.getMach())
             self.history["V_true"].append(TAS_t)
             self.history["Cz"].append(Cz)
             self.history["Cx"].append(Cx)
