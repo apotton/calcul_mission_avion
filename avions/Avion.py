@@ -45,7 +45,7 @@ class Avion:
 
         self.Masse = Masse(self)
         self.Aero = Aero(self)
-        self.Moteur = Reseau_moteur(BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
+        self.Moteur = Reseau_moteur(self, BPR=6, OPR=1.5) # À initialiser plus tard avec un objet Moteur
 
         self.h_t = 0
         self.l_t = 0
@@ -59,6 +59,15 @@ class Avion:
         :param dl: Distance à ajouter (m)
         '''
         self.l_t += dl
+
+    def set_h(self, h: float):
+        '''
+        Définit l'altitude actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param h: Altitude à définir (m)
+        '''
+        self.h_t = h
 
     def Add_dh(self, dh: float):
         '''
