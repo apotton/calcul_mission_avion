@@ -8,6 +8,7 @@ from .Aero import Aero
 from .Masse import Masse
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
+from inputs.Inputs import Inputs
 
 class Avion:
     def __init__(self, nom_fichier_csv: str):

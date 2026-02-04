@@ -2,17 +2,17 @@ from avions.Avion import Avion
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 from enregistrement.Enregistrement import Enregistrement
+from inputs.Inputs import Inputs
 import numpy as np
 
 class Mission:
-    def __init__(self):
+    def __init__(self, Inputs: Inputs):
         # Ajouter les attributs nécessaires pour la mission
         # Exemples : Vitesse phases montée, hauteur palier...
 
         #Je mets ce qui suit en attribut pour l'instant en attendant de décier ce qu'on en fait
         self.l_descent = 0 #Distance nécessaire à la descente
-        self.RRoC_min = 300 #Excédent de puissance minimale pour monter en croisière en ft/min
-        self.Pressurisation_Ceiling = 40000 #Valeur du plafond de précurisation en ft qui dépend de chaque avions peut être à ajouter aux fichiers de csv avion 
+        self.Inputs = Inputs #Récupérer tous les inputs de début de mission
 
         # Historique pour suivi de la descente (pour fournir le résultat à chaque pas de temps)
         self.history = {
@@ -563,7 +563,7 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
     CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
     Avion.Aero.setCAS_t(CAS_t)
 
-    while h_t > h_end:
+    while h_t > self.Inputs.get_h_decel_ft():
 
         # --- Atmosphère ---
         Atmosphere.CalculateRhoPT(h_t)
@@ -636,7 +636,7 @@ def Descente_Phase2(self, Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
 
 
 # --- Phase 3 : Réduction de vitesse en plateau à 250 kt ---
-def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0):
+def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
     """
     Phase 3 : Décélération en palier, on fixe l'altitude à 10000ft et on passe la vitesse à Min CAS
 
@@ -658,7 +658,7 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
     Atmosphere.CalculateRhoPT(h_t)
 
     # --- CAS cible (250 kt) ---
-    CAS_target = 250.0 * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
+    CAS_target = self.Inputs.get_CAS_below_10000_desc_kt() * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
 
     Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
     Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
@@ -737,7 +737,7 @@ def Descente_Phase3(self, Avion: Avion, Atmosphere: Atmosphere, h_const, dt=1.0)
 
 
 # --- Phase 4 : Descente finale jusqu'à h_final ---
-def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, h_final, dt=1.0):
+def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
     """
     Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale de 1500ft
 
@@ -752,9 +752,9 @@ def Descente_Phase4(self, Avion: Avion, Atmosphere: Atmosphere, h_final, dt=1.0)
     l_t = Avion.getl()
 
     # --- CAS imposée ---
-    CAS = 250.0 * Constantes.conv_kt_mps  # kt → m/s Ajouter dans les constantes le 250kt ?
+    CAS = self.Inputs.get_CAS_below_10000_desc_kt() * Constantes.conv_kt_mps  # kt → m/s Ajouter dans les constantes le 250kt ?
 
-    while h_t > h_final:
+    while h_t > self.Inputs.get_h_final_ft():
 
         # --- Atmosphère ---
         Atmosphere.CalculateRhoPT(h_t)
