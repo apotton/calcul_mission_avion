@@ -1,5 +1,6 @@
 # classe qui hérite de la classe Moteur et qui utilise les Donnees_moteur pour calculer la poussée et le SFC
 # from avions.Avion import Avion
+from avions.Avion import Avion
 from moteurs.Moteur import Moteur
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
@@ -10,8 +11,8 @@ from scipy.interpolate import RegularGridInterpolator
 
 
 class Reseau_moteur(Moteur):
-    def __init__(self, BPR=0., OPR=0.):
-        super().__init__(BPR, OPR) # On force choix_reseau=1 pour utiliser Donnees_moteur
+    def __init__(self, Avion, BPR=0, OPR=0):
+        super().__init__(Avion, BPR, OPR) # On force choix_reseau=1 pour utiliser Donnees_moteur
         # Spécifique à cette classe :
         self.Donnees_moteur = Donnees_moteur()
 
@@ -19,10 +20,10 @@ class Reseau_moteur(Moteur):
 
    # Cette fonction permet de calculer *F_MCL_cruise_step* et aussi *F_MCL_cruise_step_up* (il suffit de mettre h_ft=h_ft + 2000)
     # et aussi *F_N_AEO_lbf*
-    def Calculate_F(self, Avion):
+    def Calculate_F(self):
         "Calcule la poussée Max Climb"
 
-        h_ft = Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
+        h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
         # Création de l'interpolateur
         interp = RegularGridInterpolator(
             (self.Donnees_moteur.mach_table, self.Donnees_moteur.alt_table_ft), 
@@ -38,11 +39,11 @@ class Reseau_moteur(Moteur):
         
         
     
-
-    def Calculate_SFC(self, Avion, F_engine_N=None):
+    # calcule la SFC en croisière
+    def Calculate_SFC(self, F_engine_N=None): # F_engine correspond à F_cruise_step pour 2 moteurs (poussée totale actuelle)
         "Calcule le SFC en croisière"
         
-        h_ft = Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
+        h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
 
         # 1. Gestion de la poussée d'entrée
         # Si aucune poussée n'est fournie, on utilise la poussée actuelle de l'objet (self.F)
@@ -87,9 +88,29 @@ class Reseau_moteur(Moteur):
         # On interpole au point (Poussée_Moteur_N, Mach)
         # Note: MATLAB faisait F/2 car F était la poussée avion totale. 
         # Ici, thrust_to_use est déjà censé être pour UN moteur.
-        sfc_lbf_raw = float(interp_func((thrust_to_use, Avion.getMach())))  # Résultat en lb/(lbf*h)
+        sfc_lbf_raw = float(interp_func((thrust_to_use, self.Avion.getMach())))  # Résultat en lb/(lbf*h)
 
         # 6. Conversion finale des unités
         # MATLAB: SFC = SFC_lbf / 3600 / g
         # Cela convertit des [lb/(lbf*h)] ou [kg/(kgf*h)] vers [kg/(N*s)] (SI)
         self.SFC_t = sfc_lbf_raw / 3600.0 / Constantes.g
+
+
+
+    def Calculate_SFC_climb(self): 
+        "Calcule la SFC en montée"
+        h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
+        # Création de l'interpolateur
+        interp = RegularGridInterpolator(
+            (self.Donnees_moteur.mach_table, self.Donnees_moteur.alt_table_ft), 
+            self.Donnees_moteur.SFC_MCL_table,
+            bounds_error=False, # Évite le crash si légèrement hors bornes
+            fill_value=None     # Extrapole si nécessaire (optionnel)
+            )
+            
+        # L'interpolateur renvoie un tableau numpy (ex: array([15000.5])), 
+        # on prend la valeur [0] ou .item() pour avoir un float propre.
+        SFC_lbf = interp((self.Avion.getMach(), h_ft)) # résultat pour un moteur en lbf, mettre les données Matlab correspondant à Mach_climb_ops et h_climb_ops
+        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        
+            
