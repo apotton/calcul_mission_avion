@@ -6,10 +6,22 @@ from inputs.Inputs import Inputs
 import numpy as np
 
 class Montee:
-    def __init__(self):
-        self.rien = 0
+    @staticmethod
+    def Monter(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
+        """
+        Réalise toute la montée jusqu'à la croisière
 
-    def climb_sub_h_1500_ft(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+        Avion       : instance de la classe Avion
+        Atmosphere  : instance de la classe Atmosphere
+        dt          : pas de temps (s)
+        """
+        Montee.climb_sub_h_1500_ft(Avion, Atmosphere, dt)
+        Montee.climb_Palier(Avion, Atmosphere, dt)
+        Montee.climb_iso_CAS(Avion, Atmosphere, dt)
+        Montee.climb_iso_Mach(Avion, Atmosphere, dt)
+
+    @staticmethod
+    def climb_sub_h_1500_ft(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
         Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en palier
 
@@ -62,8 +74,8 @@ class Montee:
 
             Enregistrement.save(Avion, Atmosphere, dt)
 
-
-    def climb_Palier(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    @staticmethod
+    def climb_Palier(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
@@ -130,8 +142,8 @@ class Montee:
             # Pas de changement d'altitude en palier            
             Enregistrement.save(Avion, Atmosphere, dt)
 
-
-    def climb_iso_CAS(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    @staticmethod
+    def climb_iso_CAS(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
         Montée à CAS constant jusqu'à atteindre un Mach cible
 
@@ -184,8 +196,8 @@ class Montee:
 
             Enregistrement.save(Avion, Atmosphere, dt)
 
-
-    def climb_iso_Mach(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    @staticmethod
+    def climb_iso_Mach(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
         Montée à Mach constant jusqu'à une altitude cible
 

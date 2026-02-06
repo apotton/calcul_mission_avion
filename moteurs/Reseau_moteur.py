@@ -33,6 +33,17 @@ class Reseau_moteur(Moteur):
         i = np.searchsorted(x, xq) - 1
         j = np.searchsorted(y, yq) - 1
 
+        # Gère les cas où xq ou yq sont en dehors des bornes de x ou y
+        if i < 0:
+            i = 0
+        elif i > x.shape[0] - 2:
+            i = x.shape[0] - 2
+
+        if j < 0:
+            j = 0
+        elif j > y.shape[0] - 2:
+            j = y.shape[0] - 2
+
         # Construit les poids d'interpolation
         tx = (xq - x[i]) / (x[i + 1] - x[i])
         ty = (yq - y[j]) / (y[j + 1] - y[j])

@@ -2,14 +2,12 @@ from constantes.Constantes import Constantes
 from avions.Avion import Avion
 from atmosphere.Atmosphere import Atmosphere
 from enregistrement.Enregistrement import Enregistrement
-from missions.Mission import Mission
+from missions.Montee import Montee
 import matplotlib.pyplot as plt
 import numpy as np
 import timeit
 
 A320 = Avion()
-
-
 test_atmos  = Atmosphere()
 
 
@@ -29,9 +27,9 @@ test_atmos  = Atmosphere()
 #         A320.set_h(h_ft * Constantes.conv_ft_m)  # Met à jour l'altitude de l'avion en mètres
 #         A320.Aero.Mach_t = mach                       # Met à jour le Mach de l'avion
 #         A320.Moteur.Calculate_F()            # Calcule la poussée
-#         # poussees_ligne.append(A320.Moteur.getF() / 1000)  # Stocke la poussée en kN
-#         A320.Moteur.Calculate_SFC_climb() #(A320.Moteur.getF()/2)            # Calcule la poussée
-#         poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
+#         poussees_ligne.append(A320.Moteur.getF() / 1000)  # Stocke la poussée en kN
+#         # A320.Moteur.Calculate_SFC_climb() #(A320.Moteur.getF()/2)            # Calcule la poussée
+#         # poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
 #     poussees_2D.append(poussees_ligne)
 # # Convertir en numpy array pour faciliter le tracé
 # poussees_2D = np.array(poussees_2D)
@@ -47,30 +45,22 @@ test_atmos  = Atmosphere()
 # ax.set_ylabel('Altitude (ft)')
 # plt.show()
 
-mission = Mission()
-dt = 1  # Pas de temps en secondes
+# mission = Mission()
 
 def f():
     Enregistrement.reset()
-    mission.Montee.climb_sub_h_1500_ft(A320, test_atmos, dt)
-    mission.Montee.climb_Palier(A320, test_atmos, dt)
-    mission.Montee.climb_iso_CAS(A320, test_atmos, dt)
-    mission.Montee.climb_iso_Mach(A320, test_atmos, dt)
+    Montee.Monter(A320, test_atmos)
 
 print(timeit.timeit(f, number=1))
 
-
-# mission.Montee.climb_sub_h_1500_ft(A320, test_atmos, dt)
-# mission.Montee.climb_Palier(A320, test_atmos, dt)
-# mission.Montee.climb_iso_CAS(A320, test_atmos, dt)
-# mission.Montee.climb_iso_Mach(A320, test_atmos, dt)
 print("Taille tableau: " + str(Enregistrement.counter))
 
 Enregistrement.cut()
 
 plt.figure()
 
-plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"]) 
+# plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
+plt.plot(Enregistrement.data["t"], Enregistrement.data["h"])
 
 plt.show()
 

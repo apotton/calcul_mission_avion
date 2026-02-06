@@ -3,17 +3,36 @@ from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 from enregistrement.Enregistrement import Enregistrement
 from inputs.Inputs import Inputs
-import numpy as np
 
 class Croisiere:
-    def __init__(self):
-        self.rien = 0
-        self.l_descent = 1000000
+    @staticmethod
+    def Croisiere(Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
+        ''' Réalise toute la croisière
+        
+        Avion : instance de la classe Avion
+        Atmosphere : instance de la classe Atmosphere
+        l_end : distance à parcourir en croisière avant de commencer la descente (UNITE)
+        dt : pas de temps (s)
+        '''
+        Croisiere.Cruise_Mach_SAR(Avion, Atmosphere, l_end, dt)
 
+    @staticmethod
+    def climb_iso_Mach(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+        '''
+        Montée iso-Mach à Mach constant jusqu'à ce que les critères de montée ne soient plus vérifiés
+
+        Avion : instance de la classe Avion
+        Atmosphere : instance de la classe Atmosphere
+        dt : pas de temps (s)
+        '''
+        # À implémenter plus tard, pour l'instant on reste en croisière à Mach constant
+        pass
+    
     ##
     #Croisière MACH SAR
     ##
-    def Cruise_Mach_SAR(self, Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
+    @staticmethod
+    def Cruise_Mach_SAR(Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
         """
         Phase : croisière en palier à Mach constant
 
@@ -26,7 +45,7 @@ class Croisiere:
         l_t = Avion.getl()
 
 
-        while (l_t < l_end - self.l_descent) and Avion.Masse.getFuelRemaining() > Avion.Masse.getFuelReserve():
+        while (l_t < l_end - Avion.getl_descent()) and Avion.Masse.getFuelRemaining() > Avion.Masse.getFuelReserve():
 
             # --- Atmosphère ---
             Atmosphere.CalculateRhoPT(Avion.geth())
@@ -121,11 +140,11 @@ class Croisiere:
 
             # --- Condition de montée iso-Mach ---
             if (
-                RRoC_up > self.RRoC_min*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s
-                h_up < self.Pressurisation_Ceiling*Constantes.conv_ft_m and  # Pas au plafond converti de ft en m
+                RRoC_up > QUELQUECHOSE.RRoC_min*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s
+                h_up < Avion.getPressurisationCeilingFt()*Constantes.conv_ft_m and  # Pas au plafond converti de ft en m
                 SGR_up > SGR):                     # Gain SGR positif
 
-                self.climb_iso_Mach(h_t, h_up, l_t, t, Inputs.Mach_cruise , dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
+                Croisiere.climb_iso_Mach(Avion, Atmosphere , dt=1.0) #CALCUL D ATM DANS LA FONCTION, PEUT ETRE ARRANGER
 
             else : 
                 # --- Intégration ---
@@ -148,5 +167,4 @@ class Croisiere:
                 # Pas de changement d'altitude en croisière
 
                 Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement à chaque pas de temps pour la croisière
-
 

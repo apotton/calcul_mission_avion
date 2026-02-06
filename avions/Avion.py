@@ -35,6 +35,7 @@ class Avion:
 
     l_t                     = 0.     # Distance totale parcourue (m)    
     h_t                     = 0.     # Altitude actuelle (m)
+    l_descent               = 0.     # Distance nécessaire pour la descente (m)
 
     def __init__(self):
         '''
@@ -69,6 +70,23 @@ class Avion:
         self.h_t = 0
         self.l_t = 0
 
+    def setl_descent(self, l_descent: float):
+        '''
+        Définit la distance nécessaire pour la descente.
+
+        :param self: Instance de la classe Avion
+        :param l_descent: Distance nécessaire pour la descente (m)
+        '''
+        self.l_descent = l_descent
+
+    def Add_l_descent(self, dl_descent: float):
+        '''
+        Ajoute une distance dl_descent à la distance nécessaire pour la descente.
+
+        :param self: Instance de la classe Avion
+        :param dl_descent: Distance à ajouter à la distance de descente (m)
+        '''
+        self.l_descent += dl_descent
 
     def Add_dl(self, dl: float):
         '''
@@ -180,6 +198,9 @@ class Avion:
     
     def getOswaldDescent(self):
         return self.OswaldDescent
+    
+    def getl_descent(self):
+        return self.l_descent
     
     
 
