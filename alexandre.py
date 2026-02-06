@@ -5,7 +5,7 @@ from enregistrement.Enregistrement import Enregistrement
 from missions.Mission import Mission
 import matplotlib.pyplot as plt
 import numpy as np
-import time
+import timeit
 
 A320 = Avion()
 
@@ -48,26 +48,29 @@ test_atmos  = Atmosphere()
 # plt.show()
 
 mission = Mission()
-
-debut = time.time()
-
 dt = 1  # Pas de temps en secondes
 
-mission.Montee.climb_sub_h_1500_ft(A320, test_atmos, dt)
-mission.Montee.climb_Palier(A320, test_atmos, dt)
-mission.Montee.climb_iso_CAS(A320, test_atmos, dt)
-mission.Montee.climb_iso_Mach(A320, test_atmos, dt)
+def f():
+    Enregistrement.reset()
+    mission.Montee.climb_sub_h_1500_ft(A320, test_atmos, dt)
+    mission.Montee.climb_Palier(A320, test_atmos, dt)
+    mission.Montee.climb_iso_CAS(A320, test_atmos, dt)
+    mission.Montee.climb_iso_Mach(A320, test_atmos, dt)
 
-fin = time.time()
+print(timeit.timeit(f, number=1))
 
-print("Temps de calcul montée: " + str(fin - debut) + " s")
+
+# mission.Montee.climb_sub_h_1500_ft(A320, test_atmos, dt)
+# mission.Montee.climb_Palier(A320, test_atmos, dt)
+# mission.Montee.climb_iso_CAS(A320, test_atmos, dt)
+# mission.Montee.climb_iso_Mach(A320, test_atmos, dt)
 print("Taille tableau: " + str(Enregistrement.counter))
 
 Enregistrement.cut()
 
 plt.figure()
 
-plt.plot(Enregistrement.data["t"], Enregistrement.data["Mach"]) 
+plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"]) 
 
 plt.show()
 

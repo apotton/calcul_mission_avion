@@ -89,3 +89,9 @@ class Enregistrement:
 
         for key in Enregistrement.data:
             Enregistrement.data[key] = Enregistrement.data[key][:Enregistrement.counter]
+
+    @staticmethod
+    def reset():
+        Enregistrement.counter = 0
+        for key in Enregistrement.data:
+            Enregistrement.data[key] = np.zeros(Enregistrement.default_size, dtype=np.float32)
