@@ -20,8 +20,8 @@ class Moteur:
     def getOPR(self):
         return self.OPR
 
-    def getDonnees_moteur(self):
-        return self.Donnees_moteur
+    # def getDonnees_moteur(self):
+    #     return self.Donnees_moteur
 
     def getF(self):
         return self.F_t

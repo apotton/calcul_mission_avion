@@ -1,12 +1,7 @@
 Name;Airbus A350
 Manufacturer;Airbus
-Wingspan;64.75
-Length;66.8
-Height;17.05
 MaxTakeoffWeight;280000
 EmptyWeight;140000
-WingArea;442
-MaxPassengers;440
 MaxFuelWeight;141000
 MaxPLWeight;68000
 Sref;442

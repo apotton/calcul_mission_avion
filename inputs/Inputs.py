@@ -1,9 +1,10 @@
-class Inputs:
+import os
 
+class Inputs:
     # =====================
     # Fichiers des paramètres avions
     # =====================
-    csv_folder = "csv_avions" #Dossier de stockage des fichiers csv
+    csv_folder = "avions" #Dossier de stockage des fichiers csv
     nom_fichier_csv = "Airbus_A320.csv" #Fichier csv des paramètres avions
 
     # =====================
@@ -57,4 +58,12 @@ class Inputs:
         assert Inputs.CAS_below_10000_mont_kt < 250, "Vitesse de montée sous 10 000ft trop élevée"
         assert Inputs.CAS_below_10000_desc_kt < 250, "Vitesse de descente sous 10 000ft trop élevée"
 
-    
+    @staticmethod
+    def getAirplaneFile():
+        ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe '''
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
+        data_folder = os.path.join(base_dir, "data") #Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
+        csv_folder = os.path.join(data_folder, Inputs.csv_folder) #Ajoute le terme "csv_avions" au Directory précédent pour se rendre dans le Directory des fichiers csv à lire
+        full_path = os.path.join(csv_folder, Inputs.nom_fichier_csv) #Ajoute le nom du fichier csv au Directory afin de le compléter
+        
+        return full_path
