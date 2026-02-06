@@ -1,10 +1,3 @@
-from constantes.Constantes import Constantes
-from atmosphere.Atmosphere import Atmosphere
-import numpy as np
-from moteurs.Donnees_moteur import Donnees_moteur 
-
-
-
 class Moteur:
     def __init__(self, Avion, BPR=0., OPR=0., choix_reseau=1):
         self.Avion = Avion

@@ -7,8 +7,8 @@ from .Masse import Masse
 from inputs.Inputs import Inputs
 
 class Avion:
-    Name                    = 0.     # Nom du modèle d'avion
-    Manufacturer            = 0.     # Nom du constructeur
+    Name                    = ''     # Nom du modèle d'avion
+    Manufacturer            = ''     # Nom du constructeur
     MaxTakeoffWeight        = 0.     # MTOW (kg)
     EmptyWeight             = 0.     # Masse à vide (kg)
     MaxFuelWeight           = 0.     # Masse carburant maximale (kg)
