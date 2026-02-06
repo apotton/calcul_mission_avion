@@ -9,9 +9,9 @@ class Montee:
     def __init__(self):
         self.rien = 0
 
-    def climb_sub_h_1500(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    def climb_sub_h_1500_ft(self, Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
-        Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en pallier
+        Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en palier
 
         Avion       : instance de la classe Avion
         Atmosphere  : instance de la classe Atmosphere
@@ -19,7 +19,7 @@ class Montee:
         """
         # Initialisations
         Avion.set_h(Inputs.h_initial_ft*Constantes.conv_ft_m)
-        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps) #On initialise la CAS de l'avion)
+        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps) #On initialise la CAS de l'avion
 
         while Avion.geth() < Inputs.h_accel_ft * Constantes.conv_ft_m:
             # Atmosphère
