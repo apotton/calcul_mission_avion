@@ -2,6 +2,7 @@ from constantes.Constantes import Constantes
 from avions.Avion import Avion
 from atmosphere.Atmosphere import Atmosphere
 from enregistrement.Enregistrement import Enregistrement
+from missions.Descente import Descente
 from missions.Montee import Montee
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,28 +48,36 @@ test_atmos  = Atmosphere()
 
 # mission = Mission()
 
-print("Taille des tableaux: " + str(len(Enregistrement.data["t"])))
 
-def f():
-    Enregistrement.reset()
-    Montee.Monter(A320, test_atmos)
+# def f():
+#     Enregistrement.reset()
+#     A320.Aero.setMach_t(0.78)
+#     A320.set_h(11000)
+#     Descente.Descendre(A320, test_atmos)
 
-print(timeit.timeit(f, number=1))
+# print(timeit.timeit(f, number=1))
+
+Enregistrement.reset()
+
+Enregistrement.enregistrement_descente = False
 
 for i in range(1):
-    A320.Masse.initialize_mission(19000)
-    Montee.Monter(A320, test_atmos)
+    A320.setupDescente()
+    Descente.Descendre(A320, test_atmos)
+
+print("Distance de descente: " + str(A320.l_descent / 1000) + " km")
 
 print("Taille tableau: " + str(Enregistrement.counter))
 
-# Enregistrement.cut()
 
-# plt.figure()
+Enregistrement.cut()
 
-# # plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
-# plt.plot(Enregistrement.data["t"], Enregistrement.data["m"])
+plt.figure()
 
-# plt.show()
+# plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
+plt.plot(Enregistrement.data["t"], Enregistrement.data["l"])
+
+plt.show()
 
 
 print("Test complete.")

@@ -20,7 +20,7 @@ class Descente:
         Descente.Descente_Phase3(Avion, Atmosphere, dt)
         Descente.Descente_Phase4(Avion, Atmosphere, dt)
 
-    # --- Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
+    # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod
     def Descente_Phase1(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
@@ -45,17 +45,17 @@ class Descente:
 
         while CAS_t < CAS_max: #On cherche à diminuer l'altitude h jusqu'à atteindre la vitesse CAS Max
 
-            # --- Atmosphère --- Calcule des conditions atm à cet altitude afin d'extraire la température et la pression au temps t
+            # Atmosphère Calcule des conditions atm à cet altitude afin d'extraire la température et la pression au temps t
             Atmosphere.CalculateRhoPT(Avion.geth())
 
-            # --- Mach et TAS --- 
+            # Mach et TAS 
             Avion.Aero.Convert_Mach_to_CAS(Atmosphere) #Calcul du CAS à partir du Mach
-            Avion.Aero.Convert_TAS_to_Mach(Atmosphere) #Calcul du TAS à partir du Mach
+            Avion.Aero.Convert_Mach_to_TAS(Atmosphere) #Calcul du TAS à partir du Mach
 
             CAS_t = Avion.Aero.getCAS()   
             TAS_t = Avion.Aero.getTAS() 
 
-            # --- Cz et Cx --- Calcul des coefs aéro
+            # Cz et Cx Calcul des coefs aéro
             Avion.Aero.CalculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
@@ -64,38 +64,34 @@ class Descente:
 
             finesse = Cz / Cx
 
-            # --- Poussée moteur et SFC ---
-            if Avion.Moteur.get_Reseau_moteur() == 1:
-                # ATTENTION A MODIFIER UNE FOIS QU'ON AURA FAIT LES INTERPOLLATIONS MOTEUR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                Avion.Moteur.Calculate_F()
-                F_N = Avion.Moteur.getF()
-                Avion.Moteur.Calculate_SFC()
-                # SFC = Avion.Moteur.getSFC()
-            else:
-                F_N = 0.0
-                # SFC = 0.0
+            # Poussée moteur et SFC
+            Avion.Moteur.Calculate_F_Descent()
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC_Descent()
 
-            # --- Résistance horizontale ---
+            # Résistance horizontale
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
-            # --- Pente de descente ---
+            # Pente de descente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
             Vz = TAS_t * np.sin(pente)
             Vx = TAS_t * np.cos(pente)
 
-            # --- Mise à jour des positions ---
+            # Mise à jour des positions
             Avion.Add_dh(Vz * dt) #On met à jour l'altitude de l'avion en fonction de la vitesse verticale et du pas de temps
             Avion.Add_dl(Vx * dt) #On met à jour la distance parcourue en fonction de la vitesse horizontale et du pas de temps
         
-            Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
-            # --- Fuel burn ---
+            # Fuel burn
             Avion.Masse.burn_fuel(dt) #Carburant consommé à ce pas de temps dt, on met à jour la masse de carburant 
-        
-            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+
+            if Enregistrement.enregistrement_descente:
+                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            else:
+                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
 
-    # --- Phase 2 : Descente à V constante jusqu'à 10000 ft ---
+    # Phase 2 : Descente à V constante jusqu'à 10000 ft
     @staticmethod
     def Descente_Phase2(Avion: Avion, Atmosphere: Atmosphere, h_end, dt=1.0):
         """
@@ -109,25 +105,25 @@ class Descente:
         dt      : pas de temps (s)
         """
 
-        # --- CAS imposée ---
+        # CAS imposée
         CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
         Avion.Aero.setCAS_t(CAS_t)
 
         while Avion.geth() > Inputs.h_decel_ft:
 
-            # --- Atmosphère ---
+            # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
-            # --- Conversion CAS -> Mach ---
+            # Conversion CAS -> Mach
             Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
 
-            # --- TAS ---
+            # TAS
             Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
 
             # Mach_t = Avion.Aero.getMach()
             TAS_t  = Avion.Aero.getTAS()
 
-            # --- Coefficients aérodynamiques ---
+            # Coefficients aérodynamiques
             Avion.Aero.CalculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
@@ -136,33 +132,34 @@ class Descente:
 
             finesse = Cz / Cx
 
-            # --- Poussée moteur (idle en descente) ---
-            Avion.Moteur.Calculate_F()
+            # Poussée moteur (idle en descente)
+            Avion.Moteur.Calculate_F_Descent()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC()
-            # SFC = Avion.Moteur.getSFC()
+            Avion.Moteur.Calculate_SFC_Descent()
 
-            # --- Résistance ---
+            # Résistance
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
-            # --- Pente de trajectoire ---
+            # Pente de trajectoire
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
             Vz = TAS_t * np.sin(pente)   # négatif car en descente
             Vx = TAS_t * np.cos(pente)
 
-            # --- Mise à jour position ---
+            # Mise à jour position
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
-            Avion.Add_l_descent(Vx * dt) # Calcul  de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
-            # --- Fuel burn ---
+            # Fuel burn
             Avion.Masse.burn_fuel(dt)
 
-            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            if Enregistrement.enregistrement_descente:
+                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            else:
+                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
 
-    # --- Phase 3 : Réduction de vitesse en plateau à 250 kt ---
+    # Phase 3 : Réduction de vitesse en plateau à 250 kt
     @staticmethod
     def Descente_Phase3(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
@@ -175,13 +172,13 @@ class Descente:
         dt      : pas de temps (s)
         """
 
-        # --- CAS initiale (issue phase 2) ---
+        # CAS initiale (issue phase 2)
         CAS_t = Avion.Aero.getCAS() # * Constantes.conv_kt_mps  # kt -> m/s
 
-        # --- Atmosphère --- #NB : on peut calculer les conditions atm en dehors de la boucle car, l'altitude étant constante, les conditions restent les mêmes à chaque pas de temps
+        # Atmosphère #NB : on peut calculer les conditions atm en dehors de la boucle car, l'altitude étant constante, les conditions restent les mêmes à chaque pas de temps
         Atmosphere.CalculateRhoPT(Avion.geth())
 
-        # --- CAS cible (250 kt) ---
+        # CAS cible (250 kt)
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
 
         Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
@@ -193,7 +190,7 @@ class Descente:
             # A noter que les nouvelles vitesses sont calculées en fin de boucle
             # Atmosphere.CalculateRhoPT(Avion.geth())
 
-            # --- Coefficients aérodynamiques ---
+            # Coefficients aérodynamiques
             Avion.Aero.CalculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
@@ -202,24 +199,18 @@ class Descente:
 
             finesse = Cz / Cx
 
-            # --- Forces ---
+            # Forces
             Rx = Avion.Masse.getCurrentWeight() / finesse  # cohérent avec finesse
 
-            # --- Poussée moteur (idle / freinage) ---
-            if Avion.Moteur.get_Reseau_moteur() == 1:
-                # À raffiner plus tard
-                Avion.Moteur.Calculate_F()
-                F_N = Avion.Moteur.getF()
-                Avion.Moteur.Calculate_SFC()
-                # SFC = Avion.Moteur.getSFC()
-            else:
-                F_N = 0.0
-                # SFC = 0.0
+            # Poussée moteur (idle / freinage)
+            Avion.Moteur.Calculate_F_Descent()
+            F_N = Avion.Moteur.getF()
+            Avion.Moteur.Calculate_SFC_Descent()
 
-            # --- Dynamique longitudinale simplifiée --- #c'est la force qui va faire ralentir l'appareil
+            # Dynamique longitudinale simplifiée #c'est la force qui va faire ralentir l'appareil
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
-            # --- Mise à jour des vitesses ---
+            # Mise à jour des vitesses
             Avion.Aero.setTAS_t(max(TAS_t + ax * dt, 0.0))
             TAS_t = Avion.Aero.getTAS() #Calcul de la nouvelle vitesse avec la resistance longitudinale
 
@@ -230,19 +221,20 @@ class Descente:
             CAS_t = Avion.Aero.getCAS()
             # Mach_t = Avion.Aero.getCAS()
 
-            # --- Cinématique ---
+            # Cinématique
             Avion.Add_dh(0.0) #On vole en palier, donc on ne descend pas
             Avion.Add_dl(TAS_t * dt) #On met à jour la distance parcourue en fonction de la vitesse horizontale et du pas de temps
 
-            Avion.Add_l_descent(TAS_t * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
-
-            # --- Fuel burn ---
+            # Fuel burn
             Avion.Masse.burn_fuel(dt)
 
-            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            if Enregistrement.enregistrement_descente:
+                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            else:
+                Avion.Add_l_descent(TAS_t * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
 
-    # --- Phase 4 : Descente finale jusqu'à h_final ---
+    # Phase 4 : Descente finale jusqu'à h_final
     @staticmethod
     def Descente_Phase4(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
         """
@@ -255,21 +247,21 @@ class Descente:
         dt      : pas de temps (s)
         """
 
-        # --- CAS imposée ---
+        # CAS imposée
         CAS = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps  # kt → m/s Ajouter dans les constantes le 250kt ?
 
         while Avion.geth() > Inputs.h_final_ft:
 
-            # --- Atmosphère ---
+            # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
-            # --- Mach depuis CAS ---
+            # Mach depuis CAS
             Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
 
-            # --- TAS ---
+            # TAS
             Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
 
-            # --- Aérodynamique ---
+            # Aérodynamique
             Avion.Aero.CalculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
@@ -278,31 +270,33 @@ class Descente:
 
             finesse = Cz / Cx
 
-            # --- Poussée moteur ---
-            Avion.Moteur.Calculate_F()
+            # Poussée moteur
+            Avion.Moteur.Calculate_F_Descent()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC()
-            # SFC = Avion.Moteur.getSFC()
+            Avion.Moteur.Calculate_SFC_Descent()
 
-            # --- Résistance ---
+            # Résistance
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
-            # --- Pente ---
+            # Pente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
-            # --- Vitesses ---
+            # Vitesses
             TAS_t = Avion.Aero.getTAS()
             Vz = TAS_t * np.sin(pente)
             Vx = TAS_t * np.cos(pente)
 
-            # --- Intégration ---
+            # Intégration
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
 
-            Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
-            # --- Fuel burn ---
+            # Fuel burn
             Avion.Masse.burn_fuel(dt)
 
-            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            if Enregistrement.enregistrement_descente:
+                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            else:
+                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+
 

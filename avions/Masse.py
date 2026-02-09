@@ -51,6 +51,9 @@ class Masse:
 
 
     def getCurrentWeight(self):
+        '''
+        Renvoie le poids (en N) de l'avion
+        '''
         return self.getCurrentMass() * Constantes.g
 
     def getFuelBurned(self):

@@ -147,4 +147,26 @@ class Reseau_moteur(Moteur):
     
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
         
-            
+    def Calculate_F_Descent(self):
+        h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
+
+        F_N_Descent_lbf = Reseau_moteur.interp2d_linear(self.Donnees_moteur.mach_table,
+                                                        self.Donnees_moteur.alt_table_ft,
+                                                        self.Donnees_moteur.Fn_FI_table,
+                                                        self.Avion.Aero.getMach(), h_ft)
+        
+        self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g
+
+    def Calculate_SFC_Descent(self):
+        # A vérifier (notamment conversions unité)
+        h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
+
+        FuelFlow_lbf = Reseau_moteur.interp2d_linear(self.Donnees_moteur.mach_table,
+                                                        self.Donnees_moteur.alt_table_ft,
+                                                        self.Donnees_moteur.FF_FI_table,
+                                                        self.Avion.Aero.getMach(), h_ft)
+        
+        self.SFC_t = float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t
+
+
+

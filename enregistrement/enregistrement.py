@@ -9,6 +9,8 @@ class Enregistrement:
     # Compteur (pour la taille à chaque changement)
     counter = 0
 
+    enregistrement_descente = False
+
     data = {
         # Cinématique
         "t" : np.zeros(default_size, dtype=np.float32),

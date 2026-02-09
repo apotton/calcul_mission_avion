@@ -1,6 +1,7 @@
 import os
 import csv
 
+from constantes.Constantes import Constantes
 from moteurs.Reseau_moteur import Reseau_moteur
 from .Aero import Aero
 from .Masse import Masse
@@ -69,6 +70,15 @@ class Avion:
 
         self.h_t = 0
         self.l_t = 0
+
+    def setupDescente(self):
+        '''
+        Initialise les paramètres pour la première estimation de descente à partir des Inputs.
+        '''
+        self.l_descent = 0
+        self.set_h(Inputs.h_cruise_init * Constantes.conv_ft_m) #On initialise l'altitude de l'avion à l'altitude de croisière définie dans les Inputs
+        self.Aero.setMach_t(Inputs.Mach_cruise) #On initialise le Mach de l'avion au Mach de croisière défini dans les Inputs
+        self.Masse.initialize_mission(0.25*self.getMaxFuelWeight()) #On initialise les masses de l'avion pour la descente, en prenant 25% du fuel de mission pour simuler une descente partielle (on suppose que l'avion a déjà consommé du carburant pendant la montée et la croisière)
 
     def setl_descent(self, l_descent: float):
         '''
