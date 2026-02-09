@@ -50,24 +50,25 @@ test_atmos  = Atmosphere()
 print("Taille des tableaux: " + str(len(Enregistrement.data["t"])))
 
 def f():
-    # Enregistrement.reset()
+    Enregistrement.reset()
     Montee.Monter(A320, test_atmos)
 
-# print(timeit.timeit(f, number=1))
+print(timeit.timeit(f, number=1))
 
-for i in range(100):
-    A320 = Avion()
+for i in range(1):
+    A320.Masse.initialize_mission(19000)
     Montee.Monter(A320, test_atmos)
 
 print("Taille tableau: " + str(Enregistrement.counter))
 
-Enregistrement.cut()
+# Enregistrement.cut()
 
-plt.figure()
+# plt.figure()
 
-# plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
-plt.plot(Enregistrement.data["t"], Enregistrement.data["h"])
+# # plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
+# plt.plot(Enregistrement.data["t"], Enregistrement.data["m"])
 
-plt.show()
+# plt.show()
+
 
 print("Test complete.")

@@ -1,4 +1,4 @@
-# from avions.Avion import Avion
+from inputs.Inputs import Inputs
 from constantes.Constantes import Constantes
 
 class Masse:
@@ -18,8 +18,8 @@ class Masse:
         self.m_fuel_remaining_t = self.m_fuel_mission + self.m_fuel_reserve #Fuel dans l'avion à l'instant t
         self.m_burned_total_t = 0.0 #Quantité de Fuel consommé à l'instant t
 
-    def initialize_mission(self, payload, fuel_mission): #Initialisation des masses réalisée au début de la mission
-        self.m_payload = payload
+    def initialize_mission(self, fuel_mission): #Initialisation des masses réalisée au début de la mission
+        self.m_payload = Inputs.m_payload
         self.m_fuel_mission = fuel_mission
 
         self.compute_reserves()

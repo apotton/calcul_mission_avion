@@ -8,6 +8,11 @@ class Inputs:
     nom_fichier_csv = "Airbus_A320.csv" #Fichier csv des paramètres avions
 
     # =====================
+    # MISSION
+    # =====================
+    m_payload = 18000
+
+    # =====================
     # PAS DE TEMPS
     # =====================
     dt_climb = 1.0      # s
@@ -31,8 +36,9 @@ class Inputs:
     step_climb_ft = 2000.0      # ft
     RRoC_min_ft_min = 300.0     # ft/min
     pressurisation_ceiling_ft = 40000.0
-     # =====================
-        # DESCENTE
+
+    # =====================
+    # DESCENTE
     # =====================
     CAS_max_descent_kt = None   # kt (None -> KVMO)
     CAS_below_10000_desc_kt = 250.0  # kt
