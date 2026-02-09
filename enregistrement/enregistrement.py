@@ -71,7 +71,7 @@ class Enregistrement:
 
         Enregistrement.counter += 1
         
-        if Enregistrement.counter >= Enregistrement.default_size:
+        if Enregistrement.counter >= len(Enregistrement.data["t"]):
             Enregistrement.extend()
 
 
