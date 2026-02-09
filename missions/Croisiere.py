@@ -140,7 +140,7 @@ class Croisiere:
 
             # --- Condition de montée iso-Mach ---
             if (
-                RRoC_up > QUELQUECHOSE.RRoC_min*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s
+                RRoC_up > Inputs.RRoC_min_ft_min*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s
                 h_up < Avion.getPressurisationCeilingFt()*Constantes.conv_ft_m and  # Pas au plafond converti de ft en m
                 SGR_up > SGR):                     # Gain SGR positif
 

@@ -46,6 +46,24 @@ class Inputs:
     h_final_ft = 1500.0
 
     # =====================
+    # Critère de diversion
+    # =====================
+    Final_climb_altitude_diversion_ft = 25000; 
+    Range_diversion_NM = 200
+    Mach_cruise_div = 0.65
+    
+    # =====================
+    # Critère Holding
+    # =====================
+    KCAS_holding = 300 # kt
+    Time_holding = 30  # min
+    
+    # =====================
+    # Critère contingency
+    # =====================
+    Contingency = 5 # en %
+
+    # =====================
     # Paramètres de l'environnement
     # =====================
     Vw = 0                   # kt

@@ -27,11 +27,12 @@ test_atmos  = Atmosphere()
 #     for mach in valeurs_mach:
 #         A320.set_h(h_ft * Constantes.conv_ft_m)  # Met à jour l'altitude de l'avion en mètres
 #         A320.Aero.Mach_t = mach                       # Met à jour le Mach de l'avion
-#         A320.Moteur.Calculate_F()            # Calcule la poussée
-#         poussees_ligne.append(A320.Moteur.getF() / 1000)  # Stocke la poussée en kN
-#         # A320.Moteur.Calculate_SFC_climb() #(A320.Moteur.getF()/2)            # Calcule la poussée
-#         # poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
+#         A320.Moteur.Calculate_F_Descent()            # Calcule la poussée
+#         # poussees_ligne.append(A320.Moteur.getF() / 1000)  # Stocke la poussée en kN
+#         A320.Moteur.Calculate_SFC_Descent() #(A320.Moteur.getF()/2)            # Calcule la poussée
+#         poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
 #     poussees_2D.append(poussees_ligne)
+
 # # Convertir en numpy array pour faciliter le tracé
 # poussees_2D = np.array(poussees_2D)
 
@@ -46,9 +47,6 @@ test_atmos  = Atmosphere()
 # ax.set_ylabel('Altitude (ft)')
 # plt.show()
 
-# mission = Mission()
-
-
 # def f():
 #     Enregistrement.reset()
 #     A320.Aero.setMach_t(0.78)
@@ -62,8 +60,9 @@ Enregistrement.reset()
 Enregistrement.enregistrement_descente = False
 
 for i in range(1):
-    A320.setupDescente()
-    Descente.Descendre(A320, test_atmos)
+    # A320.setupDescente()
+    # Descente.Descendre(A320, test_atmos)
+    Montee.Monter(A320, test_atmos)
 
 print("Distance de descente: " + str(A320.l_descent / 1000) + " km")
 
