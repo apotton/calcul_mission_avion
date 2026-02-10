@@ -21,7 +21,7 @@ class Montee:
         Montee.climb_iso_Mach(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_sub_h_1500_ft(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    def climb_sub_h_1500_ft(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
         """
         Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en palier
 
@@ -45,7 +45,10 @@ class Montee:
             Avion.Aero.CalculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
-            Avion.Aero.CalculateCx(Atmosphere)
+            if Inputs.Aero_simplified:
+                Avion.Aero.CalculateCxClimb_Simplified()
+            else:
+                Avion.Aero.CalculateCx(Atmosphere)
             Cx = Avion.Aero.getCx()
 
             finesse = Cz / Cx
@@ -75,7 +78,7 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_Palier(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    def climb_Palier(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
         """
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
@@ -105,10 +108,15 @@ class Montee:
             Avion.Aero.CalculateCz(Atmosphere)
             Cz_t = Avion.Aero.getCz()
 
-            Avion.Aero.CalculateCx(Atmosphere)
+            if Inputs.Aero_simplified:
+                Avion.Aero.CalculateCxClimb_Simplified()
+            else:
+                Avion.Aero.CalculateCx(Atmosphere)
+            
             Cx_t = Avion.Aero.getCx()
+            
             finesse = Cz_t / Cx_t
-
+            
             # Traînée
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
@@ -143,7 +151,7 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_iso_CAS(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    def climb_iso_CAS(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
         """
         Montée à CAS constant jusqu'à atteindre un Mach cible
 
@@ -167,7 +175,10 @@ class Montee:
             Avion.Aero.CalculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
-            Avion.Aero.CalculateCx(Atmosphere)
+            if Inputs.Aero_simplified:
+                Avion.Aero.CalculateCxClimb_Simplified()
+            else:
+                Avion.Aero.CalculateCx(Atmosphere)
             Cx = Avion.Aero.getCx()
 
             finesse = Cz / Cx
@@ -197,7 +208,7 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_iso_Mach(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
+    def climb_iso_Mach(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
         """
         Montée à Mach constant jusqu'à une altitude cible
 
@@ -222,7 +233,10 @@ class Montee:
             Avion.Aero.CalculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
-            Avion.Aero.CalculateCx(Atmosphere)
+            if Inputs.Aero_simplified:
+                Avion.Aero.CalculateCxClimb_Simplified()
+            else:
+                Avion.Aero.CalculateCx(Atmosphere)
             Cx = Avion.Aero.getCx()
 
             finesse = Cz / Cx

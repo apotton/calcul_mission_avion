@@ -1,6 +1,6 @@
 from moteurs.Moteur import Moteur
 
-class Elodie_roux(Moteur):
+class ElodieRoux(Moteur):
     def __init__(self, Avion, BPR=0, OPR=0):
         super().__init__(Avion, BPR, OPR)
         # Pas de Donnees_moteur ici, peut-être d'autres constantes spécifiques

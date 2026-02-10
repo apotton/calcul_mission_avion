@@ -2,7 +2,7 @@ import os
 import csv
 
 from constantes.Constantes import Constantes
-from moteurs.Reseau_moteur import Reseau_moteur
+from moteurs.ReseauMoteur import ReseauMoteur
 from .Aero import Aero
 from .Masse import Masse
 from inputs.Inputs import Inputs
@@ -66,7 +66,7 @@ class Avion:
 
         self.Masse = Masse(self)
         self.Aero = Aero(self)
-        self.Moteur = Reseau_moteur(self, BPR=6, OPR=1.5)
+        self.Moteur = ReseauMoteur(self, BPR=6, OPR=1.5)
 
         self.h_t = 0
         self.l_t = 0

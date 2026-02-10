@@ -2,6 +2,7 @@ from constantes.Constantes import Constantes
 from avions.Avion import Avion
 from atmosphere.Atmosphere import Atmosphere
 from enregistrement.Enregistrement import Enregistrement
+from inputs.Inputs import Inputs
 from missions.Descente import Descente
 from missions.Montee import Montee
 import matplotlib.pyplot as plt
@@ -47,7 +48,11 @@ test_atmos  = Atmosphere()
 # ax.set_ylabel('Altitude (ft)')
 # plt.show()
 
+Enregistrement.enregistrement_descente = True
+Inputs.Aero_simplified = False
+
 # def f():
+#     Montee.Monter(A320, test_atmos)
 #     Enregistrement.reset()
 #     A320.Aero.setMach_t(0.78)
 #     A320.set_h(11000)
@@ -57,12 +62,19 @@ test_atmos  = Atmosphere()
 
 Enregistrement.reset()
 
-Enregistrement.enregistrement_descente = False
 
-for i in range(1):
-    # A320.setupDescente()
-    # Descente.Descendre(A320, test_atmos)
+tstart = timeit.default_timer()
+
+N = 1
+for i in range(N):
     Montee.Monter(A320, test_atmos)
+    A320.setupDescente()
+    Descente.Descendre(A320, test_atmos)
+
+tend = timeit.default_timer()
+
+temps_moyen = (tend - tstart) / N
+print(f"Temps moyen pour une montée + descente : {temps_moyen:.4f} secondes")
 
 print("Distance de descente: " + str(A320.l_descent / 1000) + " km")
 
@@ -74,9 +86,12 @@ Enregistrement.cut()
 plt.figure()
 
 # plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
-plt.plot(Enregistrement.data["t"], Enregistrement.data["l"])
+plt.plot(Enregistrement.data["t"], Enregistrement.data["h"])
 
 plt.show()
 
 
 print("Test complete.")
+
+# Profilage : python -m cProfile -o output.prof alexandre.py
+# Visualisation du profilage : snakeviz output.prof

@@ -1,28 +1,50 @@
-# classe qui hérite de la classe Moteur et qui utilise les Donnees_moteur pour calculer la poussée et le SFC
-# from avions.Avion import Avion
-# from avions.Avion import Avion
 from moteurs.Moteur import Moteur
 from constantes.Constantes import Constantes
-from atmosphere.Atmosphere import Atmosphere
 import numpy as np
-from moteurs.Donnees_moteur import Donnees_moteur
-from scipy.ndimage import map_coordinates
-# from numba import njit
+from moteurs.DonneesMoteur import DonneesMoteur
+from inputs.Inputs import Inputs
+import importlib
+from importlib.util import spec_from_file_location, module_from_spec
+from pathlib import Path
 
-from scipy.interpolate import RegularGridInterpolator
 
-
-class Reseau_moteur(Moteur):
+class ReseauMoteur(Moteur):
     def __init__(self, Avion, BPR=0., OPR=0.):
-        super().__init__(Avion, BPR, OPR) # On force choix_reseau=1 pour utiliser Donnees_moteur
+        super().__init__(Avion, BPR, OPR) # On force choix_reseau=1 pour utiliser DonneesMoteur
         # Spécifique à cette classe :
-        self.Donnees_moteur = Donnees_moteur()
+        self.DonneesMoteur = self._charger_donnees(Inputs.getEngineFile())
 
-        # liste des différentes altitudes disponibles dans le Donnees_moteur
-        self.available_alts = list(self.Donnees_moteur.cruise_data.keys())
+        # liste des différentes altitudes disponibles dans le DonneesMoteur
+        self.available_alts = list(self.DonneesMoteur.cruise_data.keys())
 
 
+    def _charger_donnees(self, chemin_fichier):
+        '''
+        Charge un fichier de configuration moteur
         
+        :param chemin_fichier: Le chemin du fichier
+        '''
+        chemin_fichier = Path(chemin_fichier)
+
+        if not chemin_fichier.exists():
+            raise FileNotFoundError(f"{chemin_fichier} introuvable")
+
+        spec = spec_from_file_location(
+            name=chemin_fichier.stem,
+            location=str(chemin_fichier)
+        )
+
+        if spec is None:
+            raise ValueError(f"Impossible de créer une spécification pour {chemin_fichier}")
+        module = module_from_spec(spec)
+        
+        if spec.loader is None:
+            raise ValueError(f"Impossible de créer un loader pour {chemin_fichier}")
+        spec.loader.exec_module(module)
+
+        return module.load()
+
+
     @staticmethod
     def interp2d_linear(x, y, values, xq, yq):
         """
@@ -65,10 +87,10 @@ class Reseau_moteur(Moteur):
         "Calcule la poussée Max Climb"
         h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
 
-        resultat = Reseau_moteur.interp2d_linear(self.Donnees_moteur.mach_table,
-                                                 self.Donnees_moteur.alt_table_ft,
-                                                 self.Donnees_moteur.Fn_MCL_table,
-                                                 self.Avion.Aero.getMach(), h_ft)
+        resultat = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
+                                                self.DonneesMoteur.alt_table_ft,
+                                                self.DonneesMoteur.Fn_MCL_table,
+                                                self.Avion.Aero.getMach(), h_ft)
 
         self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
         
@@ -92,17 +114,17 @@ class Reseau_moteur(Moteur):
         # conv_lbf_N = Constantes.g * Constantes.conv_lb_kg
 
         # 2. Trouver l'altitude la plus proche dans la base de données (cruise_data)        
-        closest_h = min(self.available_alts, key=lambda x: abs(x - h_ft)) # Trouve l'altitude la plus proche de h_ft présente dans le Donnees_moteur
+        closest_h = min(self.available_alts, key=lambda x: abs(x - h_ft)) # Trouve l'altitude la plus proche de h_ft présente dans le DonneesMoteur
 
         # (Optionnel) : On pourrait mettre une alerte si l'altitude est trop éloignée d'un niveau standard
         # if abs(h_ft - closest_h) > 500: print("Attention: Interpolation SFC loin du FL standard")
 
         # 3. Récupération des tables correspondantes
-        data = self.Donnees_moteur.cruise_data[closest_h]
+        data = self.DonneesMoteur.cruise_data[closest_h]
         
         fn_lbf_vector = data['fn']                       # Vecteur Poussée en lbf (vecteur lignes)
         sfc_matrix = data['sfc']                         # Matrice SFC (Lignes=Fn, Colonnes=Mach)
-        mach_vector = self.Donnees_moteur.mach_table_crl  # Vecteur Mach (vecteur colonnes)
+        mach_vector = self.DonneesMoteur.mach_table_crl  # Vecteur Mach (vecteur colonnes)
         # 4. Conversion de l'axe Poussée de la table (lbf -> Newtons)
         # Nécessaire car l'entrée 'thrust_to_use' est en Newtons
         fn_newton_vector = fn_lbf_vector * Constantes.g * Constantes.conv_lb_kg
@@ -121,11 +143,11 @@ class Reseau_moteur(Moteur):
         # Ici, thrust_to_use est déjà censé être pour UN moteur.
         # sfc_lbf_raw = float(interp_func((thrust_to_use, self.Avion.Aero.getMach())))  # Résultat en lb/(lbf*h)
         # Interpolation avec la fonction Reseau_moteur.interp2d_linear
-        sfc_lbf_raw = Reseau_moteur.interp2d_linear(fn_newton_vector,
-                                                    mach_vector,
-                                                    sfc_matrix,
-                                                    thrust_to_use,
-                                                    self.Avion.Aero.getMach())
+        sfc_lbf_raw = ReseauMoteur.interp2d_linear(fn_newton_vector,
+                                                   mach_vector,
+                                                   sfc_matrix,
+                                                   thrust_to_use,
+                                                   self.Avion.Aero.getMach())
 
         # 6. Conversion finale des unités
         # MATLAB: SFC = SFC_lbf / 3600 / g
@@ -140,20 +162,20 @@ class Reseau_moteur(Moteur):
         "Calcule la SFC en montée"
         h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
 
-        SFC_lbf = Reseau_moteur.interp2d_linear(self.Donnees_moteur.mach_table,
-                                                self.Donnees_moteur.alt_table_ft,
-                                                self.Donnees_moteur.SFC_MCL_table,
-                                                self.Avion.Aero.getMach(), h_ft)
+        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
+                                               self.DonneesMoteur.alt_table_ft,
+                                               self.DonneesMoteur.SFC_MCL_table,
+                                               self.Avion.Aero.getMach(), h_ft)
     
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
         
     def Calculate_F_Descent(self):
         h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
 
-        F_N_Descent_lbf = Reseau_moteur.interp2d_linear(self.Donnees_moteur.mach_table,
-                                                        self.Donnees_moteur.alt_table_ft,
-                                                        self.Donnees_moteur.Fn_FI_table,
-                                                        self.Avion.Aero.getMach(), h_ft)
+        F_N_Descent_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
+                                                       self.DonneesMoteur.alt_table_ft,
+                                                       self.DonneesMoteur.Fn_FI_table,
+                                                       self.Avion.Aero.getMach(), h_ft)
         
         self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g
 
@@ -161,9 +183,9 @@ class Reseau_moteur(Moteur):
         # A vérifier (notamment conversions unité)
         h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
 
-        FuelFlow_lbf = Reseau_moteur.interp2d_linear(self.Donnees_moteur.mach_table,
-                                                        self.Donnees_moteur.alt_table_ft,
-                                                        self.Donnees_moteur.FF_FI_table,
+        FuelFlow_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
+                                                        self.DonneesMoteur.alt_table_ft,
+                                                        self.DonneesMoteur.FF_FI_table,
                                                         self.Avion.Aero.getMach(), h_ft)
         
         self.SFC_t = float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t
