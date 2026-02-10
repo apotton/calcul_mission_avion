@@ -1,11 +1,11 @@
-import os
-import csv
-
-from constantes.Constantes import Constantes
 from moteurs.ReseauMoteur import ReseauMoteur
-from .Aero import Aero
-from .Masse import Masse
+from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
+from .Masse import Masse
+from .Aero import Aero
+
+import csv
+import os
 
 class Avion:
     Name                    = ''     # Nom du modèle d'avion

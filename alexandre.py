@@ -1,11 +1,11 @@
-from constantes.Constantes import Constantes
-from avions.Avion import Avion
-from atmosphere.Atmosphere import Atmosphere
 from enregistrement.Enregistrement import Enregistrement
-from inputs.Inputs import Inputs
+from atmosphere.Atmosphere import Atmosphere
+from constantes.Constantes import Constantes
 from missions.Descente import Descente
 from missions.Montee import Montee
+from inputs.Inputs import Inputs
 import matplotlib.pyplot as plt
+from avions.Avion import Avion
 import numpy as np
 import timeit
 
@@ -50,7 +50,7 @@ A320 = Avion()
 test_atmos  = Atmosphere()
 
 Enregistrement.enregistrement_descente = True
-Inputs.Aero_simplified = False
+Inputs.Aero_simplified = True
 
 # def f():
 #     A320 = Avion()
@@ -67,7 +67,7 @@ tstart = timeit.default_timer()
 
 Enregistrement.reset()
 
-N = 10
+N = 1
 for i in range(N):
     Montee.Monter(A320, test_atmos)
     A320.setupDescente()

@@ -1,6 +1,6 @@
-import numpy as np
 from atmosphere.Atmosphere import Atmosphere
 from avions.Avion import Avion
+import numpy as np
 
 
 class Enregistrement:

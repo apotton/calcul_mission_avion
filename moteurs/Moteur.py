@@ -1,3 +1,7 @@
+'''
+Classe mère des différentes manières de faire un moteur
+'''
+
 class Moteur:
     def __init__(self, Avion, BPR=0., OPR=0., choix_reseau=1):
         self.Avion = Avion

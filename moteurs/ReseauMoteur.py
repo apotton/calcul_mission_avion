@@ -1,16 +1,14 @@
-from moteurs.Moteur import Moteur
-from constantes.Constantes import Constantes
-import numpy as np
-from moteurs.DonneesMoteur import DonneesMoteur
-from inputs.Inputs import Inputs
-import importlib
 from importlib.util import spec_from_file_location, module_from_spec
+from constantes.Constantes import Constantes
+from moteurs.Moteur import Moteur
+from inputs.Inputs import Inputs
 from pathlib import Path
+import numpy as np
 
 
 class ReseauMoteur(Moteur):
     def __init__(self, Avion, BPR=0., OPR=0.):
-        super().__init__(Avion, BPR, OPR) # On force choix_reseau=1 pour utiliser DonneesMoteur
+        super().__init__(Avion, BPR, OPR)
         # Spécifique à cette classe :
         self.DonneesMoteur = self._charger_donnees(Inputs.getEngineFile())
 
@@ -26,6 +24,7 @@ class ReseauMoteur(Moteur):
         '''
         chemin_fichier = Path(chemin_fichier)
 
+        # Check de l'existence du fichier
         if not chemin_fichier.exists():
             raise FileNotFoundError(f"{chemin_fichier} introuvable")
 
@@ -34,10 +33,12 @@ class ReseauMoteur(Moteur):
             location=str(chemin_fichier)
         )
 
+        # Check de la spec
         if spec is None:
             raise ValueError(f"Impossible de créer une spécification pour {chemin_fichier}")
         module = module_from_spec(spec)
         
+        # Check du loader
         if spec.loader is None:
             raise ValueError(f"Impossible de créer un loader pour {chemin_fichier}")
         spec.loader.exec_module(module)
