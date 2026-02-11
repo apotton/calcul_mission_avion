@@ -7,7 +7,7 @@ import numpy as np
 
 class Croisiere:
     @staticmethod
-    def Croisiere(Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
+    def Croisiere(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_cruise):
         ''' Réalise toute la croisière
         
         Avion : instance de la classe Avion
@@ -15,7 +15,7 @@ class Croisiere:
         l_end : distance à parcourir en croisière avant de commencer la descente (UNITE)
         dt : pas de temps (s)
         '''
-        Croisiere.Cruise_Mach_SAR(Avion, Atmosphere, l_end, dt)
+        Croisiere.Cruise_Mach_SAR(Avion, Atmosphere, Inputs.l_mission , dt)
 
     @staticmethod
     def Climb_iso_Mach(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
@@ -119,7 +119,10 @@ class Croisiere:
             Avion.Aero.CalculateCz(Atmosphere)
             Cz_up = Avion.Aero.getCz()
 
-            Avion.Aero.CalculateCxCruise_Simplified()
+            if Inputs.Aero_simplified:
+                Avion.Aero.CalculateCxCruise_Simplified()
+            else:
+                Avion.Aero.CalculateCx(Atmosphere)
             Cx_up = Avion.Aero.getCx()
 
             finesse_up = Cz_up / Cx_up
@@ -197,7 +200,11 @@ class Croisiere:
 
             # --- Aérodynamique ---
             Avion.Aero.CalculateCz(Atmosphere)
-            Avion.Aero.CalculateCx(Atmosphere)
+
+            if Inputs.Aero_simplified:
+                Avion.Aero.CalculateCxCruise_Simplified()
+            else:
+                Avion.Aero.CalculateCx(Atmosphere)
 
             # --- Poussée moteur ---
             Avion.Moteur.Calculate_F_cruise()
@@ -212,7 +219,7 @@ class Croisiere:
                 dl = Vx * dt
 
                 
-                l += dl
+                l_t += dl
 
                 # --- Fuel burn ---
                 Avion.Masse.burn_fuel(dt)

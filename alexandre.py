@@ -1,6 +1,7 @@
 from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
+from missions.Croisiere import Croisiere
 from missions.Descente import Descente
 from missions.Montee import Montee
 from inputs.Inputs import Inputs
@@ -49,8 +50,7 @@ import timeit
 A320 = Avion()
 test_atmos  = Atmosphere()
 
-Enregistrement.enregistrement_descente = True
-Inputs.Aero_simplified = True
+Inputs.Aero_simplified = False
 
 # def f():
 #     A320 = Avion()
@@ -66,20 +66,28 @@ tstart = timeit.default_timer()
 
 
 Enregistrement.reset()
+Enregistrement.enregistrement_descente = False
+A320.setupDescente()
+Descente.Descendre(A320, test_atmos)
+Enregistrement.enregistrement_descente = True
+l_descent = A320.l_descent
+print("Distance de descente: " + str(A320.l_descent / 1000) + " km")
 
-N = 1
+N = 10
 for i in range(N):
+    A320 = Avion()
+    A320.l_descent = l_descent
     Montee.Monter(A320, test_atmos)
-    A320.setupDescente()
+    Croisiere.Croisiere(A320, test_atmos)
     Descente.Descendre(A320, test_atmos)
+    # Enregistrement.reset()
 
 tend = timeit.default_timer()
 
 temps_moyen = (tend - tstart) / N
 
-print(f"Temps moyen pour une montée + descente : {temps_moyen:.4f} secondes")
+print(f"Temps moyen pour une montée + croisière + descente : {temps_moyen:.4f} secondes")
 
-print("Distance de descente: " + str(A320.l_descent / 1000) + " km")
 
 print("Taille tableau: " + str(Enregistrement.counter))
 
@@ -89,7 +97,7 @@ Enregistrement.cut()
 plt.figure()
 
 # plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
-plt.plot(Enregistrement.data["t"], Enregistrement.data["h"])
+plt.plot(Enregistrement.data["t"], Enregistrement.data["l"])
 
 plt.show()
 
