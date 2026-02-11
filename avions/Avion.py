@@ -116,6 +116,15 @@ class Avion:
         '''
         self.h_t = h
 
+    def set_l(self, l: float):
+        '''
+        Définit l'altitude actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param h: Altitude à définir (m)
+        '''
+        self.l_t = l
+
     def Add_dh(self, dh: float):
         '''
         Ajoute une variation d'altitude dh à l'altitude actuelle de l'avion.

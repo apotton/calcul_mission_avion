@@ -59,7 +59,7 @@ class Inputs:
     # =====================
     # Critère de diversion
     # =====================
-    Final_climb_altitude_diversion_ft = 25000; 
+    Final_climb_altitude_diversion_ft = 25000
     Range_diversion_NM = 200
     Mach_cruise_div = 0.65
     

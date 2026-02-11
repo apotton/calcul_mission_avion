@@ -10,6 +10,26 @@ class Moteur:
         self.F_t = 0          # Poussée actuelle (N)
         self.SFC_t = 0        # SFC actuelle (kg/(N.s))
 
+    # Setters
+
+    def setF(self, F: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.F_t = F
+
+    def setSFC(self, SFC: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.SFC_t = SFC
+
     # Getters
     def getBPR(self):
         return self.BPR

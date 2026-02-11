@@ -59,6 +59,33 @@ class Atmosphere:
         self.P_t = p
         self.T_t = T
 
+    def setRho(self, Rho: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.rho_t = Rho  
+
+    def setP(self, P: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.P_t = P   
+
+    def setT(self, T: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.T_t = T 
+
     def getRho_t(self):
         return self.rho_t
     
