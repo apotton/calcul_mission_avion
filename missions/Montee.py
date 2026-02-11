@@ -217,9 +217,6 @@ class Montee:
         dt          : pas de temps (s)
         """
 
-        # Mach constant
-        Avion.Aero.setMach_t(Inputs.Mach_cruise)
-
         while Avion.geth() < h_lim * Constantes.conv_ft_m:
 
             # Atmosphère
