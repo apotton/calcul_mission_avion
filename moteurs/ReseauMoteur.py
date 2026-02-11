@@ -230,3 +230,27 @@ class ReseauMoteur(Moteur):
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
 
 
+    ### diversion ###
+
+    '''
+    pour la montée et la descente, on peut utiliser les mêmes fonctions 
+    pour la croisière, on utilise les valeurs à 25 000 ft
+    '''
+
+    def Calculate_F_cruise_diversion(self):
+        Cz = self.Avion.Aero.getCz()
+        Cx = self.Avion.Aero.getCx()
+        finesse = Cz / Cx
+        self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
+
+    def Calculate_SFC_cruise_diversion(self):
+        h_ft = 25000  # ft
+
+        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table_crl,
+                                               self.DonneesMoteur.cruise_data[h_ft]['fn'] * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
+                                               self.DonneesMoteur.cruise_data[h_ft]['sfc'],
+                                               self.Avion.Aero.getMach(), self.F_t/2)
+    
+        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+
+

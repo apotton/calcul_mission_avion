@@ -63,6 +63,9 @@ class Moteur:
     def Calculate_F_holding(self):
         pass  # Méthode à implémenter dans les classes filles
 
+    def Calculate_F_cruise_diversion(self):
+        pass  # Méthode à implémenter dans les classes filles
+
     ## SFC ##
 
     def Calculate_SFC_cruise(self):
@@ -74,7 +77,10 @@ class Moteur:
     def Calculate_SFC_descent(self):
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_F_holding(self):
+    def Calculate_SFC_holding(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    def Calculate_SFC_cruise_diversion(self):
         pass  # Méthode à implémenter dans les classes filles
 
          
