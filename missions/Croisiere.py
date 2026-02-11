@@ -31,6 +31,11 @@ class Croisiere:
     ##
     #Croisière MACH SAR
     ##
+
+    @staticmethod
+    def Check_up(Avion : Avion, Atmosphere : Atmosphere):
+        pass
+
     @staticmethod
     def Cruise_Mach_SAR(Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
         """
