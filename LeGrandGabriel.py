@@ -28,7 +28,6 @@ if not DOSSIER_SORTIE.exists():
     DOSSIER_SORTIE.mkdir(parents=True, exist_ok=True)
 
 def sauvegarder_donnees():
-    # CHANGEMENT 1 : Extension .csv par défaut
     chemin = filedialog.asksaveasfilename(
         initialdir=DOSSIER_SORTIE, 
         defaultextension=".csv", 
@@ -44,13 +43,13 @@ def sauvegarder_donnees():
         # Format : "Nom_Dans_Le_CSV": variable_python
         data = {
             # Reserves and Allowances
-            "Diversion_Distance": distance_de_diversion, "Holding_Time": temps_attente,
-            "Contingency_Fuel": carburant_de_reserve, "Taxi_Out": t_taxi_out,
+            "Range_diversion_NM": distance_de_diversion, "Time_holding": temps_attente,
+            "Contingency": carburant_de_reserve, "Taxi_Out": t_taxi_out,
             "Takeoff_Allowance": t_take_off, "Approach_Allowance": t_approach,
             "Taxi_In": t_taxi_in, "Missed_Approach": t_miis_approach,
             
             # Basic Design Weights
-            "MTOW": m_MTOW, "OWE": m_OWE, "MZFW": m_MZFW, "MLW": m_MLW,
+            "MaxTakeoffWeight": m_MTOW, "EmptyWeight": m_OWE, "MZFW": m_MZFW, "MLW": m_MLW,
             "N_Passengers": n_passengers, "Mass_Per_Pax": m_passenger, "Cargo_Mass": m_cargo,
             
             # Thrust Drag Fuel Flow
@@ -80,7 +79,6 @@ def sauvegarder_donnees():
             "TO_Temp_Dev": t_deviation_decolage, "LD_Temp_Dev": t_deviasion_atterrissage
         }
 
-        # CHANGEMENT 2 : newline='' évite les lignes vides sous Windows
         with open(chemin, "w", encoding="utf-8", newline='') as f:
             # On écrit l'en-tête (Titres des colonnes)
             f.write("Attribut;Valeur\n")
@@ -92,19 +90,11 @@ def sauvegarder_donnees():
         
         messagebox.showinfo("Succès", f"Fichier CSV créé dans :\n{chemin}")
         
-        # Ouvre le fichier avec le logiciel par défaut (Excel ou Bloc-notes)
-        try:
-            os.startfile(chemin)
-        except AttributeError:
-            # Fallback pour Mac/Linux si jamais le code bouge un jour
-            import subprocess
-            subprocess.call(['open', chemin])
             
     except Exception as e:
         messagebox.showerror("Erreur", f"Impossible de créer le fichier : {e}")
 
 def charger_donnees():
-    # CHANGEMENT 4 : Filtre pour .csv
     chemin = filedialog.askopenfilename(
         initialdir=DOSSIER_SORTIE,
         filetypes=[("Fichier CSV", "*.csv"), ("Fichier texte", "*.txt")]
@@ -114,7 +104,6 @@ def charger_donnees():
         return
         
     try:
-        # Mapping (identique à sauvegarder_donnees)
         mapping = {
             "Diversion_Distance": distance_de_diversion, "Holding_Time": temps_attente,
             "Contingency_Fuel": carburant_de_reserve, "Taxi_Out": t_taxi_out,
@@ -145,7 +134,6 @@ def charger_donnees():
         with open(chemin, "r", encoding="utf-8") as f:
             for ligne in f:
                 ligne = ligne.strip()
-                # CHANGEMENT 5 : Lecture avec point-virgule
                 if ";" in ligne:
                     parts = ligne.split(";", 1)
                     if len(parts) == 2:
@@ -484,7 +472,7 @@ tk.Label(frame_Block_range_summary, text="with Payload(kg)").grid(row=1, column=
 range = tk.Entry(frame_Block_range_summary, **COMMUN)
 range.grid(row=2, column =2)
 payload = tk.Entry(frame_Block_range_summary, **COMMUN)
-payload.grid(row=2, column =3)
+payload.grid(row=2, column =4)
 
 #----------------------------Fin du frame du "Block Range Summary"-------------------------
 
@@ -500,7 +488,7 @@ tk.Label(frame_Detailed_flight_profile, text="with Payload(kg)").grid(row=1, col
 range = tk.Entry(frame_Detailed_flight_profile, **COMMUN)
 range.grid(row=2, column =2)
 paylaod = tk.Entry(frame_Detailed_flight_profile, **COMMUN)
-payload.grid(row=2, column =3)
+payload.grid(row=2, column =4)
 
 #----------------------------Fin du frame du "Detailed flight profile"-------------------------
 
