@@ -66,9 +66,9 @@ class Descente:
             finesse = Cz / Cx
 
             # Poussée moteur et SFC
-            Avion.Moteur.Calculate_F_Descent()
+            Avion.Moteur.Calculate_F_descent()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_Descent()
+            Avion.Moteur.Calculate_SFC_descent()
 
             # Résistance horizontale
             Rx = Avion.Masse.getCurrentWeight() / finesse
