@@ -57,7 +57,7 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.Calculate_F()
+            Avion.Moteur.Calculate_F_climb()
             F_N = Avion.Moteur.getF()
             Avion.Moteur.Calculate_SFC_climb()
 
@@ -121,7 +121,7 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée moteur
-            Avion.Moteur.Calculate_F()
+            Avion.Moteur.Calculate_F_climb()
             F_N = Avion.Moteur.getF()
             Avion.Moteur.Calculate_SFC_climb()
 
@@ -187,7 +187,7 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.Calculate_F()
+            Avion.Moteur.Calculate_F_climb()
             F_N = Avion.Moteur.getF()
             Avion.Moteur.Calculate_SFC_climb()
 
@@ -245,7 +245,7 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.Calculate_F()
+            Avion.Moteur.Calculate_F_climb()
             F_N = Avion.Moteur.getF()
             Avion.Moteur.Calculate_SFC_climb()
 

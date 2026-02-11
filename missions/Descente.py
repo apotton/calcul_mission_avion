@@ -137,9 +137,9 @@ class Descente:
             finesse = Cz / Cx
 
             # Poussée moteur (idle en descente)
-            Avion.Moteur.Calculate_F_Descent()
+            Avion.Moteur.Calculate_F_descent()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_Descent()
+            Avion.Moteur.Calculate_SFC_descent()
 
             # Résistance
             Rx = Avion.Masse.getCurrentWeight() / finesse
@@ -210,9 +210,9 @@ class Descente:
             Rx = Avion.Masse.getCurrentWeight() / finesse  # cohérent avec finesse
 
             # Poussée moteur (idle / freinage)
-            Avion.Moteur.Calculate_F_Descent()
+            Avion.Moteur.Calculate_F_descent()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_Descent()
+            Avion.Moteur.Calculate_SFC_descent()
 
             # Dynamique longitudinale simplifiée #c'est la force qui va faire ralentir l'appareil
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
@@ -281,9 +281,9 @@ class Descente:
             finesse = Cz / Cx
 
             # Poussée moteur
-            Avion.Moteur.Calculate_F_Descent()
+            Avion.Moteur.Calculate_F_descent()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_Descent()
+            Avion.Moteur.Calculate_SFC_descent()
 
             # Résistance
             Rx = Avion.Masse.getCurrentWeight() / finesse
