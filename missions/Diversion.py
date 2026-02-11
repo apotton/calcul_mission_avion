@@ -4,6 +4,7 @@ from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
 from avions.Avion import Avion
 from Montee import Montee
+from Descente import Descente
 import numpy as np
 
 class Diversion:
@@ -27,7 +28,11 @@ class Diversion:
         Diversion.Diversion_Cruise(Avion, Atmosphere)
 
     # Descente de diversion
-
+    ## ATTENTION IL VA FALLOIR CHANGER LES FONCTIONS POUR EVITER LE CONFLIT ENTRE l_descent ET l_descent_diversion ET AJOUTER l_descent_diversion
+        Descente.descent_iso_Mach(Avion, Atmosphere, Inputs.dt_descent)
+        Descente.descent_iso_max_CAS(Avion, Atmosphere, Inputs.dt_descent)
+        Descente.descent_Palier(Avion, Atmosphere, Inputs.dt_descent)
+        Descente.descent_final_iso_CAS(Avion, Atmosphere, Inputs.dt_descent)
 
 
 
