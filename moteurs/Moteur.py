@@ -10,6 +10,26 @@ class Moteur:
         self.F_t = 0          # Poussée actuelle (N)
         self.SFC_t = 0        # SFC actuelle (kg/(N.s))
 
+    # Setters
+
+    def setF(self, F: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.F_t = F
+
+    def setSFC(self, SFC: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.SFC_t = SFC
+
     # Getters
     def getBPR(self):
         return self.BPR
@@ -29,16 +49,38 @@ class Moteur:
     def getF_MCL_cruise_step(self):
         return self.F_t
 
+    ## Poussée ##
 
-    def calculate_F(self):
+    def Calculate_F_climb(self):
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC(self, F_engine_N=None):
+    def Calculate_F_cruise(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    def Calculate_F_descent(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    def Calculate_F_holding(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    def Calculate_F_cruise_diversion(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    ## SFC ##
+
+    def Calculate_SFC_cruise(self):
         pass  # Méthode à implémenter dans les classes filles
 
     def Calculate_SFC_climb(self):
         pass  # Méthode à implémenter dans les classes filles
 
+    def Calculate_SFC_descent(self):
+        pass  # Méthode à implémenter dans les classes filles
 
- 
+    def Calculate_SFC_holding(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    def Calculate_SFC_cruise_diversion(self):
+        pass  # Méthode à implémenter dans les classes filles
+
          

@@ -294,6 +294,24 @@ class Aero:
         '''
         self.CAS_t = CAS
 
+    def setCx(self, Cx: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.Cx_t = Cx
+
+    def setCz(self, Cz: float):
+        '''
+        Définit la vitesse CAS actuelle de l'avion.
+        
+        :param self: Instance de la classe Avion
+        :param CAS: Vitesse CAS à définir (m/s)
+        '''
+        self.Cz_t = Cz
+
 
 
 

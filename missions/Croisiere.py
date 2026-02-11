@@ -52,7 +52,7 @@ class Croisiere:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.Calculate_F()
+            Avion.Moteur.Calculate_F_cruise()
             F_N = Avion.Moteur.getF()
             Avion.Moteur.Calculate_SFC_climb() #On prend quelles tables du coup ? 
 
@@ -128,9 +128,9 @@ class Croisiere:
             Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
 
             # --- Poussée moteur --- #ATTENTION A VOIR CE QU'UTILISE F ET SFC CAR ICI ON MODIFIE QUELQUES CARACTERISTIQUES AVIONS POUR MONTER EN ALTITUDE
-            Avion.Moteur.Calculate_F()
+            Avion.Moteur.Calculate_F_cruise()
             F_N_up = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC()
+            Avion.Moteur.Calculate_SFC_cruise()
             #SFC_up = Avion.Moteur.getSFC()
 
             
@@ -151,13 +151,13 @@ class Croisiere:
             Avion.Aero.setCAS_t(CAS_init)
             Avion.Aero.setTAS_t(TAS_init)
             Avion.Aero.setMach_t(Mach_init)
-            Avion.Aero.set_Cz(Cz_init)
-            Avion.Aero.set_Cx(Cx_init)
-            Avion.Moteur.set_F(F_init)
-            Avion.Moteur.set_SFC(SFC_init)
-            Atmosphere.set_P_t(P_init)
-            Atmosphere.set_T_t(T_init)
-            Atmosphere.set_Rho_t(Rho_init)
+            Avion.Aero.setCz(Cz_init)
+            Avion.Aero.setCx(Cx_init)
+            Avion.Moteur.setF(F_init)
+            Avion.Moteur.setSFC(SFC_init)
+            Atmosphere.setP(P_init)
+            Atmosphere.setT(T_init)
+            Atmosphere.setRho(Rho_init)
 
             # --- Condition de montée iso-Mach ---
             if (
@@ -200,8 +200,8 @@ class Croisiere:
             Avion.Aero.CalculateCx(Atmosphere)
 
             # --- Poussée moteur ---
-            Avion.Moteur.Calculate_F()
-            Avion.Moteur.Calculate_SFC()
+            Avion.Moteur.Calculate_F_cruise()
+            Avion.Moteur.Calculate_SFC_cruise()
 
             # --- Condition de montée iso-Mach ---
             if (Croisiere.Check_up(Avion, Atmosphere) == 1 ):
