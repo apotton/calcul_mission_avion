@@ -1,64 +1,99 @@
+from atmosphere.Atmosphere import Atmosphere
+from avions.Avion import Avion
+import numpy as np
+
+
 class Enregistrement:
-    def __init__(self):
+    default_size = 10000  # Taille par défaut des tableaux numpy
+
+    # Compteur (pour la taille à chaque changement)
+    counter = 0
+
+    enregistrement_descente = False
+
+    data = {
         # Cinématique
-        self.t = []
-        self.h = []
-        self.l = []
+        "t" : np.zeros(default_size, dtype=np.float32),
+        "h" : np.zeros(default_size, dtype=np.float32),
+        "l" : np.zeros(default_size, dtype=np.float32),
 
         # Vitesses
-        self.CAS = []
-        self.TAS = []
-        self.Mach = []
+        "CAS" : np.zeros(default_size, dtype=np.float32),
+        "TAS" : np.zeros(default_size, dtype=np.float32),
+        "Mach" : np.zeros(default_size, dtype=np.float32),
 
         # Aérodynamique
-        self.Cz = []
-        self.Cx = []
+        "Cz" : np.zeros(default_size, dtype=np.float32),
+        "Cx" : np.zeros(default_size, dtype=np.float32),
 
         # Vitesses composantes
-        self.Vx = []
-        self.Vz = []
+        "Vx" : np.zeros(default_size, dtype=np.float32),
+        "Vz" : np.zeros(default_size, dtype=np.float32),
 
         # Propulsion
-        self.F_N = []
-        self.SFC = []
+        "F_N" : np.zeros(default_size, dtype=np.float32),
+        "SFC" : np.zeros(default_size, dtype=np.float32),
 
         # Masse / carburant
-        self.FB = []
-        self.m = []
+        "FB" : np.zeros(default_size, dtype=np.float32),
+        "m" : np.zeros(default_size, dtype=np.float32),
 
-    def record(
-        self,
-        h,
-        l,
-        t=None,
-        CAS=None,
-        TAS=None,
-        Mach=None,
-        Cz=None,
-        Cx=None,
-        Vx=None,
-        Vz=None,
-        F_N=None,
-        SFC=None,
-        FB=None,
-        m=None
-    ):
-        self.h.append(h)
-        self.l.append(l)
-        self.t.append(t)
+        # Atmosphere
+        "P" : np.zeros(default_size, dtype=np.float32),
+        "T" : np.zeros(default_size, dtype=np.float32),
+        "rho" : np.zeros(default_size, dtype=np.float32)
+    }
 
-        self.CAS.append(CAS)
-        self.TAS.append(TAS)
-        self.Mach.append(Mach)
+    @staticmethod
+    def save(Avion: Avion, Atmosphere: Atmosphere, dt):
+        Enregistrement.data["t"][Enregistrement.counter] = Enregistrement.data["t"][Enregistrement.counter - 1] + dt if Enregistrement.counter > 1 else 0
 
-        self.Cz.append(Cz)
-        self.Cx.append(Cx)
+        Enregistrement.data["h"][Enregistrement.counter] = Avion.geth()
+        Enregistrement.data["l"][Enregistrement.counter] = Avion.getl()
 
-        self.Vx.append(Vx)
-        self.Vz.append(Vz)
+        Enregistrement.data["CAS"][Enregistrement.counter] = Avion.Aero.getCAS()
+        Enregistrement.data["TAS"][Enregistrement.counter] = Avion.Aero.getTAS()
+        Enregistrement.data["Mach"][Enregistrement.counter] = Avion.Aero.getMach()
 
-        self.F_N.append(F_N)
-        self.SFC.append(SFC)
+        Enregistrement.data["Cz"][Enregistrement.counter] = Avion.Aero.getCz()
+        Enregistrement.data["Cx"][Enregistrement.counter] = Avion.Aero.getCx()
+        
+        # Enregistrement.Vx.append(Avion.getVx())
+        # Enregistrement.Vz.append(Avion.getVz())
 
-        self.FB.append(FB)
-        self.m.append(m)
+        Enregistrement.data["F_N"][Enregistrement.counter] = Avion.Moteur.getF()
+        Enregistrement.data["SFC"][Enregistrement.counter] = Avion.Moteur.getSFC()
+
+        Enregistrement.data["FB"][Enregistrement.counter] = Avion.Masse.getFuelBurned()
+        Enregistrement.data["m"][Enregistrement.counter] = Avion.Masse.getCurrentMass()
+
+        Enregistrement.data["P"][Enregistrement.counter] = Atmosphere.getP_t()
+        Enregistrement.data["T"][Enregistrement.counter] = Atmosphere.getT_t()
+        Enregistrement.data["rho"][Enregistrement.counter] = Atmosphere.getRho_t()
+
+        Enregistrement.counter += 1
+        
+        if Enregistrement.counter >= len(Enregistrement.data["t"]):
+            Enregistrement.extend()
+
+
+    @staticmethod
+    def extend():
+        for key in Enregistrement.data:
+            Enregistrement.data[key] = np.concatenate([
+                Enregistrement.data[key],
+                np.zeros(Enregistrement.default_size, dtype=np.float32)
+            ])
+
+    @staticmethod
+    def cut():
+        # Enlève tout à partir du dernier ajout (counter)
+
+        for key in Enregistrement.data:
+            Enregistrement.data[key] = Enregistrement.data[key][:Enregistrement.counter]
+
+    @staticmethod
+    def reset():
+        Enregistrement.counter = 0
+        for key in Enregistrement.data:
+            Enregistrement.data[key] = np.zeros(Enregistrement.default_size, dtype=np.float32)

@@ -1,6 +1,6 @@
-import numpy as np
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
+import numpy as np
 
 class Atmosphere:
 

@@ -1,5 +1,3 @@
-import numpy as np
-
 class Constantes:
         
     # --- Constantes Atmosphère ---
@@ -64,3 +62,4 @@ class Constantes:
 
     coef_fpr_SFCmin      = 0      # 0.001739837
     coef_fpr_Fi          = 0      # 0.048060427
+

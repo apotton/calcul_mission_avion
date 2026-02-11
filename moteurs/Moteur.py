@@ -1,9 +1,6 @@
-from constantes.Constantes import Constantes
-from atmosphere.Atmosphere import Atmosphere
-import numpy as np
-from moteurs.Donnees_moteur import Donnees_moteur 
-
-
+'''
+Classe mère des différentes manières de faire un moteur
+'''
 
 class Moteur:
     def __init__(self, Avion, BPR=0., OPR=0., choix_reseau=1):
@@ -20,8 +17,8 @@ class Moteur:
     def getOPR(self):
         return self.OPR
 
-    def getDonnees_moteur(self):
-        return self.Donnees_moteur
+    # def getDonnees_moteur(self):
+    #     return self.Donnees_moteur
 
     def getF(self):
         return self.F_t

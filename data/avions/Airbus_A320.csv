@@ -1,12 +1,7 @@
 Name;Airbus A320
 Manufacturer;Airbus
-Wingspan;34.1
-Length;37.57
-Height;11.76
 MaxTakeoffWeight;73500
 EmptyWeight;42220
-WingArea;122.4
-MaxPassengers;180
 MaxFuelWeight;19087.2
 MaxPLWeight;18824
 Sref;122.4

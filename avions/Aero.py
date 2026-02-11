@@ -1,9 +1,6 @@
-# from avions import Avion
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
-# from .Avion import Avion
-# from .Masse import Masse
 
 class Aero:
     def __init__(self, avion):

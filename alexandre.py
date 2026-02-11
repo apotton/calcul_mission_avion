@@ -1,116 +1,100 @@
-from constantes.Constantes import Constantes
-from avions.Avion import Avion
+from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
+from constantes.Constantes import Constantes
+from missions.Descente import Descente
+from missions.Montee import Montee
+from inputs.Inputs import Inputs
 import matplotlib.pyplot as plt
+from avions.Avion import Avion
 import numpy as np
+import timeit
 
-A320 = Avion("Airbus_A320.csv")
 
-print(A320.getWingspan())
-print(A320.getName())
-print(A320.getLength())
-print(A320.getHeight())
 
-print(Constantes.g)
-print(Atmosphere.T0_K)
 
+# # Test du moteur un peu plus en détail: poussée à différentes altitudes et Mach (figure 2D)
+# valeurs_mach = [i/100 for i in range(0, 90)]  # Mach de 0.0 à 0.8
+# altitudes_ft = range(0, 40000, 1000)  # Altitudes en pieds
+
+# # tableau 2D des poussées
+# poussees_2D = []
+
+
+# # Boucle 2D sur les altitudes et Mach, indéxée sur les indices des tableaux
+
+# for h_ft in altitudes_ft:
+#     poussees_ligne = []
+#     for mach in valeurs_mach:
+#         A320.set_h(h_ft * Constantes.conv_ft_m)  # Met à jour l'altitude de l'avion en mètres
+#         A320.Aero.Mach_t = mach                       # Met à jour le Mach de l'avion
+#         A320.Moteur.Calculate_F_Descent()            # Calcule la poussée
+#         poussees_ligne.append(A320.Moteur.getF() / 1000)  # Stocke la poussée en kN
+#         # A320.Moteur.Calculate_SFC_Descent() #(A320.Moteur.getF()/2)            # Calcule la poussée
+#         # poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
+#     poussees_2D.append(poussees_ligne)
+
+# # Convertir en numpy array pour faciliter le tracé
+# poussees_2D = np.array(poussees_2D)
+
+# # Tracé d'une figure en 3D (Mach, altitude, poussée)
+# from mpl_toolkits.mplot3d import Axes3D
+# fig = plt.figure(figsize=(10, 7))
+# ax = fig.add_subplot(111, projection='3d')
+# X, Y = np.meshgrid(valeurs_mach, altitudes_ft)
+# ax.plot_surface(X, Y, poussees_2D, cmap='viridis')
+# ax.set_title('Consommation spécifique du moteur en fonction de l\'altitude et du Mach')
+# ax.set_xlabel('Mach')
+# ax.set_ylabel('Altitude (ft)')
+# plt.show()
+A320 = Avion()
 test_atmos  = Atmosphere()
-test_atmos.CalculateRhoPT(15000)
-print("At 15000 m: rho = {:.4f} kg/m³, p = {:.2f} Pa, T = {:.2f} K".format(test_atmos.rho_t, test_atmos.P_t, test_atmos.T_t))
 
-print("Cx_t = " + str(A320.Aero.Cx_t))
+Enregistrement.enregistrement_descente = True
+Inputs.Aero_simplified = True
 
-print("Masse actuelle = " + str(A320.Masse.getCurrentMass()) + " kg")
+# def f():
+#     A320 = Avion()
+#     test_atmos  = Atmosphere()
+#     Montee.Monter(A320, test_atmos)
+#     Enregistrement.reset()
+#     A320.Aero.setMach_t(0.78)
+#     A320.set_h(11000)
+#     Descente.Descendre(A320, test_atmos)
 
-#Test Aero
-
-A320.Aero.CalculateCz(test_atmos)
-Cz = A320.Aero.getCz()
-
-A320.Aero.CalculateCxClimb_Simplified()
-Cx_Climb = A320.Aero.getCx()
-
-A320.Aero.CalculateCxCruise_Simplified()
-Cx_Cruise = A320.Aero.getCx()
-
-A320.Aero.CalculateCxDescent_Simplified()
-Cx_Descent = A320.Aero.getCx()
-
-print(Cz)
-print(Cx_Climb)
-print(Cx_Cruise)
-print(Cx_Descent)
-
-A320.Aero.CalculateAll(test_atmos)
-
-# Test de l'obtention de l'envergure dans la classe avion
-env = A320.getEnvergure()
-print("Envergure de l'avion : " + str(env) + " m")
-
-# Test de l'obtention de l'envergure via la méthode getEnvergure()
-env_method = A320.getEnvergure()
-print("Envergure de l'avion via méthode : " + str(env_method) + " m")
-
-# Test du calcul complet de Cx
-A320.Aero.CalculateCx(test_atmos)
-Cx_complete = A320.Aero.getCx()
-print("Cx complet calculé : " + str(Cx_complete))
-
-# Test du calcul de Cz buffet
-cz_buffet = A320.Aero.CalculateCzBuffet()
-print("Cz buffet calculé : " + str(A320.Aero.getCzBuffet()))
-
-# Test du calcul de Cz
-A320.Aero.CalculateCz(test_atmos)
-print("Cz calculé : " + str(A320.Aero.getCz()))
-
-# Test du calcul de la TAS
-tas = A320.Aero.getTAS()
-print("TAS calculée : " + str(tas) + " m/s")
-
-# Test du calcul du SFC
-A320.Moteur.Calculate_SFC(15000 / Constantes.conv_ft_m)
-sfc = A320.Moteur.getSFC()
-print("SFC actuel : " + str(sfc) + " kg/(N.s)")
-
-# Test du calcul de la poussée maximale en montée
-A320.Moteur.Calculate_F()
-thrust = A320.Moteur.getF()
-print("Poussée maximale en montée : " + str(thrust) + " N")
-
-# Test du moteur un peu plus en détail: poussée à différentes altitudes et Mach (figure 2D)
-valeurs_mach = [i/100 for i in range(0, 90)]  # Mach de 0.0 à 0.8
-altitudes_ft = range(0, 40000, 1000)  # Altitudes en pieds
-
-# tableau 2D des poussées
-poussees_2D = []
+# print(timeit.timeit(f, number=1))
+tstart = timeit.default_timer()
 
 
-# Boucle 2D sur les altitudes et Mach, indéxée sur les indices des tableaux
+Enregistrement.reset()
 
-for h_ft in altitudes_ft:
-    poussees_ligne = []
-    for mach in valeurs_mach:
-        A320.set_h(h_ft * Constantes.conv_ft_m)  # Met à jour l'altitude de l'avion en mètres
-        A320.Aero.Mach_t = mach                       # Met à jour le Mach de l'avion
-        A320.Moteur.Calculate_F()            # Calcule la poussée
-        # poussees_ligne.append(A320.Moteur.getF() / 1000)  # Stocke la poussée en kN
-        A320.Moteur.Calculate_SFC_climb() #(A320.Moteur.getF()/2)            # Calcule la poussée
-        poussees_ligne.append(A320.Moteur.getSFC() / 1000)  # Stocke la poussée en kN
-    poussees_2D.append(poussees_ligne)
-# Convertir en numpy array pour faciliter le tracé
-poussees_2D = np.array(poussees_2D)
+N = 1
+for i in range(N):
+    Montee.Monter(A320, test_atmos)
+    A320.setupDescente()
+    Descente.Descendre(A320, test_atmos)
 
-# Tracé d'une figure en 3D (Mach, altitude, poussée)
-from mpl_toolkits.mplot3d import Axes3D
-fig = plt.figure(figsize=(10, 7))
-ax = fig.add_subplot(111, projection='3d')
-X, Y = np.meshgrid(valeurs_mach, altitudes_ft)
-ax.plot_surface(X, Y, poussees_2D, cmap='viridis')
-ax.set_title('Consommation spécifique du moteur en fonction de l\'altitude et du Mach')
-ax.set_xlabel('Mach')
-ax.set_ylabel('Altitude (ft)')
+tend = timeit.default_timer()
+
+temps_moyen = (tend - tstart) / N
+
+print(f"Temps moyen pour une montée + descente : {temps_moyen:.4f} secondes")
+
+print("Distance de descente: " + str(A320.l_descent / 1000) + " km")
+
+print("Taille tableau: " + str(Enregistrement.counter))
+
+
+Enregistrement.cut()
+
+plt.figure()
+
+# plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
+plt.plot(Enregistrement.data["t"], Enregistrement.data["h"])
+
 plt.show()
 
 
 print("Test complete.")
+
+# Profilage : python -m cProfile -o output.prof alexandre.py
+# Visualisation du profilage : snakeviz output.prof
