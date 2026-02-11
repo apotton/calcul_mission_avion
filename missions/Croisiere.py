@@ -151,13 +151,13 @@ class Croisiere:
             Avion.Aero.setCAS_t(CAS_init)
             Avion.Aero.setTAS_t(TAS_init)
             Avion.Aero.setMach_t(Mach_init)
-            Avion.Aero.set_Cz(Cz_init)
-            Avion.Aero.set_Cx(Cx_init)
-            Avion.Moteur.set_F(F_init)
-            Avion.Moteur.set_SFC(SFC_init)
-            Atmosphere.set_P_t(P_init)
-            Atmosphere.set_T_t(T_init)
-            Atmosphere.set_Rho_t(Rho_init)
+            Avion.Aero.setCz(Cz_init)
+            Avion.Aero.setCx(Cx_init)
+            Avion.Moteur.setF(F_init)
+            Avion.Moteur.setSFC(SFC_init)
+            Atmosphere.setP(P_init)
+            Atmosphere.setT(T_init)
+            Atmosphere.setRho(Rho_init)
 
             # --- Condition de montée iso-Mach ---
             if (
