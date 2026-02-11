@@ -3,7 +3,6 @@ from tkinter import ttk
 import os
 from tkinter import filedialog, messagebox
 from pathlib import Path
-
 root = tk.Tk()
 root.title("PIE COA26")
 root.geometry("1200x900")
@@ -25,18 +24,24 @@ menu_deroulant_1.grid(row=1, column =1,columnspan = 3, sticky= "ew")
 DOSSIER_SORTIE = Path(__file__).parent
 
 
-if not os.path.exists(DOSSIER_SORTIE):
-    os.makedirs(DOSSIER_SORTIE)
+if not DOSSIER_SORTIE.exists():
+    DOSSIER_SORTIE.mkdir(parents=True, exist_ok=True)
 
 def sauvegarder_donnees():
-    chemin = filedialog.asksaveasfilename( initialdir=DOSSIER_SORTIE, defaultextension=".txt", filetypes=[("Fichier texte", "*.txt")], title="Sauvegarder les données de mission")
+    # CHANGEMENT 1 : Extension .csv par défaut
+    chemin = filedialog.asksaveasfilename(
+        initialdir=DOSSIER_SORTIE, 
+        defaultextension=".csv", 
+        filetypes=[("Fichier CSV", "*.csv"), ("Tous les fichiers", "*.*")], 
+        title="Sauvegarder les données de mission"
+    )
     
     if not chemin:
         return
 
     try:
         # Dictionnaire de toutes tes variables Entry
-        # Format : "Nom_Dans_Le_TXT": variable_python
+        # Format : "Nom_Dans_Le_CSV": variable_python
         data = {
             # Reserves and Allowances
             "Diversion_Distance": distance_de_diversion, "Holding_Time": temps_attente,
@@ -75,33 +80,41 @@ def sauvegarder_donnees():
             "TO_Temp_Dev": t_deviation_decolage, "LD_Temp_Dev": t_deviasion_atterrissage
         }
 
-        with open(chemin, "w", encoding="utf-8") as f:
+        # CHANGEMENT 2 : newline='' évite les lignes vides sous Windows
+        with open(chemin, "w", encoding="utf-8", newline='') as f:
+            # On écrit l'en-tête (Titres des colonnes)
+            f.write("Attribut;Valeur\n")
+            
             for cle, widget in data.items():
-                # On vérifie si le widget existe (pour éviter les erreurs sur les variables non-définies)
                 valeur = widget.get() if widget else ""
-                f.write(f"{cle}:{valeur}\n")
+                # CHANGEMENT 3 : Utilisation du point-virgule
+                f.write(f"{cle};{valeur}\n")
         
-        messagebox.showinfo("Succès", f"Fichier créé dans :\n{chemin}")
+        messagebox.showinfo("Succès", f"Fichier CSV créé dans :\n{chemin}")
         
-        # ça, ça ouvre le fichier pour qu'il apparaisse à l'écran
-        os.startfile(chemin)
-        
+        # Ouvre le fichier avec le logiciel par défaut (Excel ou Bloc-notes)
+        try:
+            os.startfile(chemin)
+        except AttributeError:
+            # Fallback pour Mac/Linux si jamais le code bouge un jour
+            import subprocess
+            subprocess.call(['open', chemin])
+            
     except Exception as e:
         messagebox.showerror("Erreur", f"Impossible de créer le fichier : {e}")
 
 def charger_donnees():
-    # charge directement le .txt
+    # CHANGEMENT 4 : Filtre pour .csv
     chemin = filedialog.askopenfilename(
         initialdir=DOSSIER_SORTIE,
-        filetypes=[("Fichier texte", "*.txt")]
+        filetypes=[("Fichier CSV", "*.csv"), ("Fichier texte", "*.txt")]
     )
     
     if not chemin:
         return
         
     try:
-        # On réutilise le même dictionnaire pour faire la correspondance inverse
-        # (Note: Assure-toi que les noms de variables ici correspondent à ton code)
+        # Mapping (identique à sauvegarder_donnees)
         mapping = {
             "Diversion_Distance": distance_de_diversion, "Holding_Time": temps_attente,
             "Contingency_Fuel": carburant_de_reserve, "Taxi_Out": t_taxi_out,
@@ -131,12 +144,23 @@ def charger_donnees():
 
         with open(chemin, "r", encoding="utf-8") as f:
             for ligne in f:
-                if ":" in ligne:
-                    cle, valeur = ligne.strip().split(":", 1)
-                    if cle in mapping:
-                        widget = mapping[cle]
-                        widget.delete(0, tk.END)
-                        widget.insert(0, valeur)
+                ligne = ligne.strip()
+                # CHANGEMENT 5 : Lecture avec point-virgule
+                if ";" in ligne:
+                    parts = ligne.split(";", 1)
+                    if len(parts) == 2:
+                        cle, valeur = parts
+                        
+                        # On ignore la ligne d'en-tête si on tombe dessus
+                        if cle == "Attribut": 
+                            continue
+                            
+                        if cle in mapping:
+                            widget = mapping[cle]
+                            # On vide et on remplit
+                            if widget: # Sécurité si widget est None
+                                widget.delete(0, tk.END)
+                                widget.insert(0, valeur)
 
         messagebox.showinfo("Succès", "Données importées avec succès.")
     except Exception as e:
