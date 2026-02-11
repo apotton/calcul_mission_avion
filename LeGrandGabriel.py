@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import os
 from tkinter import filedialog, messagebox
+from pathlib import Path
+
 root = tk.Tk()
 root.title("PIE COA26")
 root.geometry("1200x900")
@@ -20,7 +22,7 @@ menu_deroulant_1.grid(row=1, column =1,columnspan = 3, sticky= "ew")
 #-------------------Fin du normalement tu l'as déjà----------------------------
 
 #------------------Début de la partie affichage dans un .txt -----------------------------------------------
-DOSSIER_SORTIE = r"C:\Users\marcm\Documents\Supaéro\3A\PIE\Sortie"
+DOSSIER_SORTIE = Path(__file__).parent
 
 
 if not os.path.exists(DOSSIER_SORTIE):
