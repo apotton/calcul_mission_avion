@@ -49,16 +49,26 @@ class Moteur:
     def getF_MCL_cruise_step(self):
         return self.F_t
 
+    ## Poussée ##
 
-    def calculate_F(self):
+    def Calculate_F_climb(self):
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC(self, F_engine_N=None):
+    def Calculate_F_cruise(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    def Calculate_F_descent(self):
+        pass  # Méthode à implémenter dans les classes filles
+
+    ## SFC ##
+
+    def Calculate_SFC_cruise(self):
         pass  # Méthode à implémenter dans les classes filles
 
     def Calculate_SFC_climb(self):
         pass  # Méthode à implémenter dans les classes filles
 
+    def Calculate_SFC_descent(self):
+        pass  # Méthode à implémenter dans les classes filles
 
- 
          

@@ -82,10 +82,12 @@ class ReseauMoteur(Moteur):
     
         
 
+    #### CROISIÈRE ####
+
    # Cette fonction permet de calculer *F_MCL_cruise_step* et aussi *F_MCL_cruise_step_up* (il suffit de mettre h_ft=h_ft + 2000)
-    # et aussi *F_N_AEO_lbf*
-    def Calculate_F(self):
-        "Calcule la poussée Max Climb"
+    # et aussi *F_N_AEO_lbf*  
+    def Calculate_F_cruise(self):
+        "Calcule la poussée cruise"
         h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
 
         resultat = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
@@ -94,21 +96,12 @@ class ReseauMoteur(Moteur):
                                                 self.Avion.Aero.getMach(), h_ft)
 
         self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
-        
-        
     
     # calcule la SFC en croisière, utilise la partie data de Donnes_moteur.py
-    def Calculate_SFC(self, F_engine_N=None): # F_engine correspond à F_cruise_step pour 2 moteurs (poussée totale actuelle)
+    def Calculate_SFC_cruise(self): # F_engine correspond à F_cruise_step pour 2 moteurs (poussée totale actuelle)
         "Calcule le SFC en croisière"
         
         h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
-
-        # 1. Gestion de la poussée d'entrée
-        # Si aucune poussée n'est fournie, on utilise la poussée actuelle de l'objet (self.F)
-        if F_engine_N is None:
-            thrust_to_use = self.F_t
-        else:
-            thrust_to_use = F_engine_N
 
     
         # Conversion lbf -> Newtons : 1 lbf = 0.4535 kg * 9.81 m/s²
@@ -147,7 +140,7 @@ class ReseauMoteur(Moteur):
         sfc_lbf_raw = ReseauMoteur.interp2d_linear(fn_newton_vector,
                                                    mach_vector,
                                                    sfc_matrix,
-                                                   thrust_to_use,
+                                                   self.F_t,  # thrust_to_use
                                                    self.Avion.Aero.getMach())
 
         # 6. Conversion finale des unités
@@ -156,6 +149,21 @@ class ReseauMoteur(Moteur):
         self.SFC_t = sfc_lbf_raw / 3600.0 / Constantes.g
 
 
+
+
+
+    #### MONTÉE ####
+
+    def Calculate_F_climb(self):
+        "Calcule la poussée Max Climb"
+        h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
+
+        resultat = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table, # mach climb ops
+                                                self.DonneesMoteur.alt_table_ft, # h climb ops
+                                                self.DonneesMoteur.Fn_MCL_table,
+                                                self.Avion.Aero.getMach(), h_ft)
+
+        self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
 
 
     # Utilise la SFC_MCL tables pour la montée
@@ -169,8 +177,18 @@ class ReseauMoteur(Moteur):
                                                self.Avion.Aero.getMach(), h_ft)
     
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
-        
-    def Calculate_F_Descent(self):
+    
+
+
+
+
+
+
+
+
+    #### DESENTE ####
+
+    def Calculate_F_descent(self):
         h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
 
         F_N_Descent_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
@@ -180,7 +198,7 @@ class ReseauMoteur(Moteur):
         
         self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g
 
-    def Calculate_SFC_Descent(self):
+    def Calculate_SFC_descent(self):
         # A vérifier (notamment conversions unité)
         h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
 
