@@ -140,7 +140,7 @@ class ReseauMoteur(Moteur):
         sfc_lbf_raw = ReseauMoteur.interp2d_linear(fn_newton_vector,
                                                    mach_vector,
                                                    sfc_matrix,
-                                                   self.F_t,  # thrust_to_use
+                                                   self.F_t /2,  # thrust_to_use en Newtons pour UN moteur
                                                    self.Avion.Aero.getMach())
 
         # 6. Conversion finale des unités
@@ -209,5 +209,24 @@ class ReseauMoteur(Moteur):
         
         self.SFC_t = float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t
 
+
+    ### HOLDING ###
+
+    def Calculate_F_holding(self):
+        Cz = self.Avion.Aero.getCz()
+        Cx = self.Avion.Aero.getCx()
+        finesse = Cz / Cx
+
+        self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
+
+    def Calculate_SFC_holding(self):
+        h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
+
+        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table_crl_holding,
+                                               self.DonneesMoteur.fn_lbf_crl_holding * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
+                                               self.DonneesMoteur.sfc_crl_holding,
+                                               self.Avion.Aero.getMach(), self.F_t/2)
+    
+        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
 
 
