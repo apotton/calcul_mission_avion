@@ -37,6 +37,8 @@ class Avion:
     l_t                     = 0.     # Distance totale parcourue (m)    
     h_t                     = 0.     # Altitude actuelle (m)
     l_descent               = 0.     # Distance nécessaire pour la descente (m)
+    l_descent_diversion     = 0.     # Distance de la descente en diversion (m)
+    diversion               = False  # Etat de l'avion (en diversion ou non)
 
     def __init__(self):
         '''
@@ -66,19 +68,14 @@ class Avion:
 
         self.Masse = Masse(self)
         self.Aero = Aero(self)
-        self.Moteur = ReseauMoteur(self, BPR=6, OPR=1.5)
+        self.Moteur = ReseauMoteur(self)
 
-        self.h_t = 0
-        self.l_t = 0
-
-    def setupDescente(self):
+    def setupDescentes(self):
         '''
-        Initialise les paramètres pour la première estimation de descente à partir des Inputs.
+        Initialise les paramètres pour la première estimation de descente à partir des Inputs (règle de 3: il faut ~3 nautiques pour descendre de 1000 pieds).
         '''
-        self.l_descent = 0
-        self.set_h(Inputs.h_cruise_init * Constantes.conv_ft_m) #On initialise l'altitude de l'avion à l'altitude de croisière définie dans les Inputs
-        self.Aero.setMach_t(Inputs.Mach_cruise) #On initialise le Mach de l'avion au Mach de croisière défini dans les Inputs
-        self.Masse.initialize_mission(0.25*self.getMaxFuelWeight()) #On initialise les masses de l'avion pour la descente, en prenant 25% du fuel de mission pour simuler une descente partielle (on suppose que l'avion a déjà consommé du carburant pendant la montée et la croisière)
+        self.l_descent = 3 * Inputs.h_cruise_init / 1000 * Constantes.conv_NM_m
+        self.l_descent_diversion = 3 * Inputs.Final_climb_altitude_diversion_ft / 1000 * Constantes.conv_NM_m
 
     def setl_descent(self, l_descent: float):
         '''
@@ -97,6 +94,15 @@ class Avion:
         :param dl_descent: Distance à ajouter à la distance de descente (m)
         '''
         self.l_descent += dl_descent
+
+    def Add_l_descent_diversion(self, dl_descent_diversion: float):
+        '''
+        Ajoute une distance dl_descent à la distance nécessaire pour la descente de la diversion.
+
+        :param self: Instance de la classe Avion
+        :param dl_descent: Distance à ajouter à la distance de descente (m)
+        '''
+        self.l_descent_diversion += dl_descent_diversion
 
     def Add_dl(self, dl: float):
         '''
@@ -220,6 +226,9 @@ class Avion:
     
     def getl_descent(self):
         return self.l_descent
+    
+    def getl_descent_diversion(self):
+        return self.l_descent_diversion
     
     
 

@@ -8,8 +8,8 @@ import numpy as np
 
 
 class ReseauMoteur(Moteur):
-    def __init__(self, Avion, BPR=0., OPR=0.):
-        super().__init__(Avion, BPR, OPR)
+    def __init__(self, Avion):
+        super().__init__(Avion)
         # Spécifique à cette classe :
         self.DonneesMoteur = self._charger_donnees(Inputs.getEngineFile())
 
@@ -247,10 +247,10 @@ class ReseauMoteur(Moteur):
     def Calculate_SFC_cruise_diversion(self):
         h_ft = 25000  # ft
 
-        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table_crl,
-                                               self.DonneesMoteur.cruise_data[h_ft]['fn'] * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
+        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.cruise_data[h_ft]['fn'] * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
+                                               self.DonneesMoteur.mach_table_crl,
                                                self.DonneesMoteur.cruise_data[h_ft]['sfc'],
-                                               self.Avion.Aero.getMach(), self.F_t/2)
+                                               self.F_t/2, self.Avion.Aero.getMach())
     
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
 

@@ -17,21 +17,27 @@ class Diversion:
         Atmosphere  : instance de la classe Atmosphere
         dt          : pas de temps (s)
         """
+        Avion.diversion = True
+
+        # Enregistrement de la distance actuelle pour mesurer la longueur de la diversion
+        l_fin_mission = Avion.getl()
 
         # Montée de diversion
         Montee.Monter_Diversion(Avion, Atmosphere, dt = Inputs.dt_climb)
         
         # Croisière diversion
-        Diversion.Diversion_Cruise(Avion, Atmosphere)
+        Diversion.Diversion_Cruise(Avion, Atmosphere, l_fin_mission, Inputs.dt_cruise)
 
         # Descente de diversion
         Descente.Descendre_Diversion(Avion, Atmosphere, dt = Inputs.dt_descent)
+
+        Avion.diversion = False
 
 
 
 
     @staticmethod
-    def Diversion_Cruise(Avion: Avion, Atmosphere: Atmosphere, l_end = Inputs.Range_diversion_NM, dt=Inputs.dt_cruise): #ON PEUT METTRE UN dt ENORME, IL SE PASSE RIEN 
+    def Diversion_Cruise(Avion: Avion, Atmosphere: Atmosphere, l_debut, dt=Inputs.dt_cruise): #ON PEUT METTRE UN dt ENORME, IL SE PASSE RIEN 
             """
             Phase : croisière en palier à Mach constant
 
@@ -41,9 +47,10 @@ class Diversion:
             """
             l_init = Avion.getl()
             l_t = l_init
+            l_end_diversion = Inputs.Range_diversion_NM * Constantes.conv_NM_m
 
 
-            while (l_t < l_end - Avion.getl_descent()) and Avion.Masse.getFuelRemaining() > Avion.Masse.getFuelReserve(): #METTRE UN L DESCENT DIVERSION ??? ET QUESTION SUR LA LIMITE DE FUEL
+            while ((l_t) < (l_debut + l_end_diversion - Avion.getl_descent_diversion())) and Avion.Masse.getFuelRemaining() > Avion.Masse.getFuelReserve(): #METTRE UN L DESCENT DIVERSION ??? ET QUESTION SUR LA LIMITE DE FUEL
 
                 # --- Atmosphère ---
                 Atmosphere.CalculateRhoPT(Avion.geth())

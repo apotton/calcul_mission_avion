@@ -15,7 +15,8 @@ class Croisiere:
         l_end : distance à parcourir en croisière avant de commencer la descente (UNITE)
         dt : pas de temps (s)
         '''
-        Croisiere.Cruise_Mach_SAR(Avion, Atmosphere, Inputs.l_mission , dt)
+        l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
+        Croisiere.Cruise_Mach_SAR(Avion, Atmosphere, l_end, dt)
 
     @staticmethod
     def Climb_iso_Mach(Avion: Avion, Atmosphere: Atmosphere, dt=1.0):
@@ -26,8 +27,9 @@ class Croisiere:
         Atmosphere : instance de la classe Atmosphere
         dt : pas de temps (s)
         '''
+        h_init = Avion.geth()
 
-        while Avion.geth() < Avion.geth() + Inputs.step_climb_ft * Constantes.conv_ft_m:
+        while Avion.geth() < h_init + Inputs.step_climb_ft * Constantes.conv_ft_m:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
@@ -179,10 +181,8 @@ class Croisiere:
 
         Avion : instance de la classe Avion
         Atmosphere : instance de la classe Atmosphere
-        l_end : distance à parcourir en croisière avant de commencer la descente (UNITE)
+        l_end : distance à parcourir en croisière avant de commencer la descente (m)
         """
-
-        h_t = Avion.geth()
         l_t = Avion.getl()
 
 

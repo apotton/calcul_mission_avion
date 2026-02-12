@@ -3,10 +3,8 @@ Classe mère des différentes manières de faire un moteur
 '''
 
 class Moteur:
-    def __init__(self, Avion, BPR=0., OPR=0., choix_reseau=1):
+    def __init__(self, Avion, choix_reseau=1):
         self.Avion = Avion
-        self.BPR = BPR        # Bypass ratio
-        self.OPR = OPR        # Overall Pressure Ratio
         self.F_t = 0          # Poussée actuelle (N)
         self.SFC_t = 0        # SFC actuelle (kg/(N.s))
 
@@ -14,28 +12,21 @@ class Moteur:
 
     def setF(self, F: float):
         '''
-        Définit la vitesse CAS actuelle de l'avion.
+        Définit la force du moteur
         
         :param self: Instance de la classe Avion
-        :param CAS: Vitesse CAS à définir (m/s)
+        :param F: Poussée à définir (N)
         '''
         self.F_t = F
 
     def setSFC(self, SFC: float):
         '''
-        Définit la vitesse CAS actuelle de l'avion.
+        Définit la SFC actuelle de l'avion.
         
         :param self: Instance de la classe Avion
-        :param CAS: Vitesse CAS à définir (m/s)
+        :param SFC: SFC à définir
         '''
         self.SFC_t = SFC
-
-    # Getters
-    def getBPR(self):
-        return self.BPR
-
-    def getOPR(self):
-        return self.OPR
 
     # def getDonnees_moteur(self):
     #     return self.Donnees_moteur

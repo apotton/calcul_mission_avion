@@ -68,21 +68,21 @@ tstart = timeit.default_timer()
 
 
 Enregistrement.reset()
-Enregistrement.enregistrement_descente = False
-A320.setupDescente()
-Descente.Descendre(A320, test_atmos)
-Enregistrement.enregistrement_descente = True
-l_descent = A320.l_descent
+A320.setupDescentes()
 
-N = 1
+l_descent = A320.l_descent
+l_descent_diversion = A320.l_descent_diversion
+essence_restante = 0
+
+N = 10
 for i in range(N):
     A320 = Avion()
-    A320.l_descent = l_descent
     Montee.Monter(A320, test_atmos)
     Croisiere.Croisiere(A320, test_atmos)
     Descente.Descendre(A320, test_atmos)
     Diversion.Diversion(A320, test_atmos)
     Holding.Hold(A320, test_atmos)
+    essence_restante = A320.Masse.getFuelRemaining()
     # Enregistrement.reset()
 
 tend = timeit.default_timer()
@@ -91,7 +91,13 @@ temps_moyen = (tend - tstart) / N
 
 print("Distance de descente début: " + str(l_descent / 1000) + " km")
 print("Distance de descente final: " + str(A320.l_descent / 1000) + " km")
-print(f"Temps moyen pour une montée + croisière + descente : {temps_moyen:.4f} secondes")
+
+print("Distance de descente début diversion: " + str(l_descent_diversion / 1000) + " km")
+print("Distance de descente final diversion: " + str(A320.l_descent_diversion / 1000) + " km")
+
+print(f"Temps moyen pour une montée + croisière + descente + holding + diversion: {temps_moyen:.4f} secondes")
+print("Essence restante: " + str(A320.Masse.getFuelRemaining()) + " kg")
+
 
 
 print("Taille tableau: " + str(Enregistrement.counter))

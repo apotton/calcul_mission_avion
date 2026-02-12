@@ -104,12 +104,13 @@ class Descente:
             # Fuel burn
             Avion.Masse.burn_fuel(dt) #Carburant consommé à ce pas de temps dt, on met à jour la masse de carburant 
 
-            if Enregistrement.enregistrement_descente:
-                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
-                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            if (Avion.diversion):
+                Avion.Add_l_descent_diversion(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
-
+            
+            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            
 
     # Phase 2 : Descente à V constante jusqu'à 10000 ft
     @staticmethod
@@ -176,12 +177,13 @@ class Descente:
             # Fuel burn
             Avion.Masse.burn_fuel(dt)
 
-            if Enregistrement.enregistrement_descente:
-                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
-                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            if (Avion.diversion):
+                Avion.Add_l_descent_diversion(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
-
+            
+            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            
 
     # Phase 3 : Réduction de vitesse en plateau à 250 kt
     @staticmethod
@@ -255,12 +257,13 @@ class Descente:
             # Fuel burn
             Avion.Masse.burn_fuel(dt)
 
-            if Enregistrement.enregistrement_descente:
-                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
-                Avion.Add_l_descent(TAS_t * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            if (Avion.diversion):
+                Avion.Add_l_descent_diversion(TAS_t * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(TAS_t * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
+            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            
 
     # Phase 4 : Descente finale jusqu'à h_final
     @staticmethod
@@ -321,14 +324,14 @@ class Descente:
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
 
-
             # Fuel burn
             Avion.Masse.burn_fuel(dt)
 
-            if Enregistrement.enregistrement_descente:
-                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
-                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
+            if (Avion.diversion):
+                Avion.Add_l_descent_diversion(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
-
+        
+            Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+            
 

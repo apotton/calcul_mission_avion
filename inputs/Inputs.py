@@ -22,7 +22,7 @@ class Inputs:
     # MISSION
     # =====================
     m_payload = 18000
-    l_mission = 2_000_000 # m
+    l_mission_NM = 2000 # NM
 
     # =====================
     # PAS DE TEMPS
