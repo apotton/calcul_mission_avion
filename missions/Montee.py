@@ -15,10 +15,32 @@ class Montee:
         Atmosphere  : instance de la classe Atmosphere
         dt          : pas de temps (s)
         """
-        Montee.climb_sub_h_10000_ft(Avion, Atmosphere, Inputs.h_accel_ft, Inputs.dt_climb)
-        Montee.climb_Palier(Avion, Atmosphere, dt)
-        Montee.climb_iso_CAS(Avion, Atmosphere, Inputs.h_cruise_init, Inputs.Mach_climb, Inputs.dt_climb)
-        Montee.climb_iso_Mach(Avion, Atmosphere, Inputs.h_cruise_init, Inputs.dt_climb)
+        # Initialisations
+        Avion.set_h(Inputs.h_initial_ft*Constantes.conv_ft_m)
+        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps) #On initialise la CAS de l'avion
+
+        h_target = Inputs.h_accel_ft * Constantes.conv_ft_m
+        Montee.climb_sub_h_10000_ft(Avion, Atmosphere, h_target, Inputs.dt_climb)
+
+        CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
+        Montee.climb_Palier(Avion, Atmosphere, CAS_target, dt)
+
+        h_target = Inputs.h_cruise_init * Constantes.conv_ft_m
+        Montee.climb_iso_CAS(Avion, Atmosphere, h_target, Inputs.Mach_climb, Inputs.dt_climb)
+        Montee.climb_iso_Mach(Avion, Atmosphere, h_target, Inputs.dt_climb)
+
+    @staticmethod
+    def Monter_Diversion(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
+        h_target = Inputs.h_accel_ft * Constantes.conv_ft_m
+        Montee.climb_sub_h_10000_ft(Avion, Atmosphere, h_target, Inputs.dt_climb)
+
+        CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
+        Montee.climb_Palier(Avion, Atmosphere, CAS_target, dt = Inputs.dt_cruise)
+
+        h_target = Inputs.Final_climb_altitude_diversion_ft * Constantes.conv_ft_m
+        Montee.climb_iso_CAS(Avion, Atmosphere, h_target, Inputs.Mach_cruise_div, Inputs.dt_climb)
+        Montee.climb_iso_Mach(Avion, Atmosphere, h_target, Inputs.dt_climb)
+        
 
     @staticmethod
     def climb_sub_h_10000_ft(Avion: Avion, Atmosphere: Atmosphere, h_lim, dt):
@@ -27,13 +49,11 @@ class Montee:
 
         Avion       : instance de la classe Avion
         Atmosphere  : instance de la classe Atmosphere
+        h_lim       : Altitude de fin (en mètres)
         dt          : pas de temps (s)
         """
-        # Initialisations
-        Avion.set_h(Inputs.h_initial_ft*Constantes.conv_ft_m)
-        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps) #On initialise la CAS de l'avion
 
-        while Avion.geth() < h_lim * Constantes.conv_ft_m:
+        while Avion.geth() < h_lim:
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
@@ -78,7 +98,7 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_Palier(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
+    def climb_Palier(Avion: Avion, Atmosphere: Atmosphere, CAS_target, dt = Inputs.dt_climb):
         """
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
@@ -92,7 +112,7 @@ class Montee:
         CAS_t = Avion.Aero.getCAS() * Constantes.conv_kt_mps
 
         # CAS cible A CHANGER
-        CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
+        
 
         # Atmosphère (constante en palier)
         Atmosphere.CalculateRhoPT(Avion.geth())
@@ -162,7 +182,7 @@ class Montee:
 
         Avion.Aero.setCAS_t(Avion.getKVMO() * Constantes.conv_kt_mps) #On initialise la CAS de l'avion)
 
-        while Avion.Aero.getMach() < Mach_lim and Avion.geth() < h_lim * Constantes.conv_ft_m:
+        while Avion.Aero.getMach() < Mach_lim and Avion.geth() < h_lim:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
@@ -217,7 +237,7 @@ class Montee:
         dt          : pas de temps (s)
         """
 
-        while Avion.geth() < h_lim * Constantes.conv_ft_m:
+        while Avion.geth() < h_lim:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())

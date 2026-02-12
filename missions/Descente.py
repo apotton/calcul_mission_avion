@@ -15,10 +15,28 @@ class Descente:
         Atmosphere  : instance de la classe Atmosphere
         dt          : pas de temps (s)
         """
+        # Reset de la distance de descente pour une estimation plus précise
+        Avion.setl_descent(0.)
+
         Descente.descent_iso_Mach(Avion, Atmosphere, dt)
-        Descente.descent_iso_max_CAS(Avion, Atmosphere, dt)
-        Descente.descent_Palier(Avion, Atmosphere, dt)
+
+        h_target = Inputs.h_decel_ft * Constantes.conv_ft_m
+        Descente.descent_iso_max_CAS(Avion, Atmosphere, h_target, dt)
+
+        CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
+        Descente.descent_Palier(Avion, Atmosphere, CAS_target, dt)
         Descente.descent_final_iso_CAS(Avion, Atmosphere, dt)
+
+    @staticmethod
+    def Descendre_Diversion(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_descent):
+        Descente.descent_iso_Mach(Avion, Atmosphere)
+
+        h_target = Inputs.h_decel_ft * Constantes.conv_ft_m
+        Descente.descent_iso_max_CAS(Avion, Atmosphere, h_target)
+
+        CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
+        Descente.descent_Palier(Avion, Atmosphere, CAS_target)
+        Descente.descent_final_iso_CAS(Avion, Atmosphere)
 
     # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod
@@ -88,6 +106,7 @@ class Descente:
 
             if Enregistrement.enregistrement_descente:
                 Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
@@ -110,7 +129,7 @@ class Descente:
         CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
         Avion.Aero.setCAS_t(CAS_t)
 
-        while Avion.geth() > Inputs.h_decel_ft * Constantes.conv_ft_m:
+        while Avion.geth() > h_end:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
@@ -159,13 +178,14 @@ class Descente:
 
             if Enregistrement.enregistrement_descente:
                 Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
 
     # Phase 3 : Réduction de vitesse en plateau à 250 kt
     @staticmethod
-    def descent_Palier(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_descent):
+    def descent_Palier(Avion: Avion, Atmosphere: Atmosphere, CAS_target, dt = Inputs.dt_descent):
         """
         Phase 3 : Décélération en palier, on fixe l'altitude à 10000ft et on passe la vitesse à Min CAS
 
@@ -183,7 +203,7 @@ class Descente:
         Atmosphere.CalculateRhoPT(Avion.geth())
 
         # CAS cible (250 kt)
-        CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps #PEUT ETRE LE FIXER DANS LES CONSTANTES
+        
 
         Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
         Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
@@ -237,6 +257,7 @@ class Descente:
 
             if Enregistrement.enregistrement_descente:
                 Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+                Avion.Add_l_descent(TAS_t * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(TAS_t * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 
@@ -306,6 +327,7 @@ class Descente:
 
             if Enregistrement.enregistrement_descente:
                 Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement des données à ce pas de temps
+                Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
             else:
                 Avion.Add_l_descent(Vx * dt) #Calcule de la distance nécessaire à la descente afin d'avoir le critère d'arrêt de la croisière
 

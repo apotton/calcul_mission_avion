@@ -2,7 +2,9 @@ from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
 from missions.Croisiere import Croisiere
+from missions.Diversion import Diversion
 from missions.Descente import Descente
+from missions.Holding import Holding
 from missions.Montee import Montee
 from inputs.Inputs import Inputs
 import matplotlib.pyplot as plt
@@ -71,21 +73,24 @@ A320.setupDescente()
 Descente.Descendre(A320, test_atmos)
 Enregistrement.enregistrement_descente = True
 l_descent = A320.l_descent
-print("Distance de descente: " + str(A320.l_descent / 1000) + " km")
 
-N = 10
+N = 1
 for i in range(N):
     A320 = Avion()
     A320.l_descent = l_descent
     Montee.Monter(A320, test_atmos)
     Croisiere.Croisiere(A320, test_atmos)
     Descente.Descendre(A320, test_atmos)
+    Diversion.Diversion(A320, test_atmos)
+    Holding.Hold(A320, test_atmos)
     # Enregistrement.reset()
 
 tend = timeit.default_timer()
 
 temps_moyen = (tend - tstart) / N
 
+print("Distance de descente début: " + str(l_descent / 1000) + " km")
+print("Distance de descente final: " + str(A320.l_descent / 1000) + " km")
 print(f"Temps moyen pour une montée + croisière + descente : {temps_moyen:.4f} secondes")
 
 
@@ -94,11 +99,12 @@ print("Taille tableau: " + str(Enregistrement.counter))
 
 Enregistrement.cut()
 
+# plt.figure()
+# plt.plot(Enregistrement.data["t"]/60, Enregistrement.data["CAS"])
+# plt.show()
+
 plt.figure()
-
-# plt.plot(Enregistrement.data["t"], Enregistrement.data["F_N"])
-plt.plot(Enregistrement.data["t"], Enregistrement.data["l"])
-
+plt.plot(Enregistrement.data["t"]/60, Enregistrement.data["h"])
 plt.show()
 
 

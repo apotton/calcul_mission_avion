@@ -2,6 +2,7 @@ from importlib.util import spec_from_file_location, module_from_spec
 from constantes.Constantes import Constantes
 from moteurs.Moteur import Moteur
 from inputs.Inputs import Inputs
+import moteurs.DonneesMoteur as DonneesMoteur
 from pathlib import Path
 import numpy as np
 
@@ -220,12 +221,12 @@ class ReseauMoteur(Moteur):
         self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
 
     def Calculate_SFC_holding(self):
-        h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
+        # h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
 
-        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table_crl_holding,
-                                               self.DonneesMoteur.fn_lbf_crl_holding * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
+        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.fn_lbf_crl_holding * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
+                                               self.DonneesMoteur.mach_table_crl_holding,
                                                self.DonneesMoteur.sfc_crl_holding,
-                                               self.Avion.Aero.getMach(), self.F_t/2)
+                                               self.F_t/2, self.Avion.Aero.getMach())
     
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
 
