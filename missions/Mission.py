@@ -1,27 +1,35 @@
 from enregistrement.Enregistrement import Enregistrement
+from atmosphere.Atmosphere import Atmosphere
 from missions.Croisiere import Croisiere
 from missions.Diversion import Diversion
 from missions.Descente import Descente
 from missions.Holding import Holding
 from missions.Montee import Montee
-from atmosphere.Atmosphere import Atmosphere
 from inputs.Inputs import Inputs
 from avions.Avion import Avion
-import numpy as np
 
 class Mission:
     @staticmethod
     def Principal(Avion : Avion, Atmosphere: Atmosphere):
-        # Mission principale
+        '''
+        Réalisation de la boucle principale: l'avion effectue plusieurs missions complètes
+        jusqu'à convergence du fuel mission utilisé.
+        
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphère
+        '''
         ecart_mission = 100 # %
         Enregistrement.save_simu(Avion, ecart_mission)
 
         while ecart_mission > Inputs.precision:
+            # Initialisations
             Enregistrement.reset()
             masse_init = Avion.Masse.getCurrentMass()
-            Montee.Monter(Avion, Atmosphere, dt = Inputs.dt_climb)
-            Croisiere.Croisiere(Avion, Atmosphere, dt = Inputs.dt_cruise)
-            Descente.Descendre(Avion, Atmosphere, Inputs.dt_descent)
+
+            # Mission principale (montée, croisière, descente)
+            Montee.Monter(Avion, Atmosphere)
+            Croisiere.Croisiere(Avion, Atmosphere)
+            Descente.Descendre(Avion, Atmosphere)
             FB_mission = masse_init - Avion.Masse.getCurrentMass()
 
             # Diversion
@@ -31,12 +39,12 @@ class Mission:
 
             # Holding
             masse_init = Avion.Masse.getCurrentMass()
-            Holding.Hold(Avion, Atmosphere, Inputs.dt_cruise)
+            Holding.Hold(Avion, Atmosphere)
             FB_holding = masse_init - Avion.Masse.getCurrentMass()
 
-            # Calcul de précision
+            # Calcul de précision (écart relatif)
             ecart_mission = abs(FB_mission - Avion.Masse.getFuelMission()) / Avion.Masse.getFuelMission() * 100
-            # print(f"Ecart mission {ecart_mission:.2f}%")
+            print(f"Ecart mission {ecart_mission:.3f}%")
 
             # Remise à zéro pour la boucle suivante
             Avion.reset(FB_mission, FB_diversion, FB_holding)

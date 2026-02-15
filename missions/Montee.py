@@ -8,67 +8,74 @@ import numpy as np
 class Montee:
     @staticmethod
     def Monter(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
-        """
-        Réalise toute la montée jusqu'à la croisière
+        '''
+        Réalise toute la montée principale jusqu'à la croisière.
 
-        Avion       : instance de la classe Avion
-        Atmosphere  : instance de la classe Atmosphere
-        dt          : pas de temps (s)
-        """
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param dt: Pas de temps (s)
+        '''
         # Initialisations
         Avion.set_h(Inputs.h_initial_ft*Constantes.conv_ft_m)
-        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps) #On initialise la CAS de l'avion
+        Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps)
 
         h_target = Inputs.h_accel_ft * Constantes.conv_ft_m
-        Montee.climb_sub_h_10000_ft(Avion, Atmosphere, h_target, Inputs.dt_climb)
+        Montee.climbLowAltitude(Avion, Atmosphere, h_target, Inputs.dt_climb)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
-        Montee.climb_Palier(Avion, Atmosphere, CAS_target, dt)
+        Montee.climbPalier(Avion, Atmosphere, CAS_target, dt)
 
         h_target = Inputs.h_cruise_init * Constantes.conv_ft_m
-        Montee.climb_iso_CAS(Avion, Atmosphere, h_target, Inputs.Mach_climb, Inputs.dt_climb)
-        Montee.climb_iso_Mach(Avion, Atmosphere, h_target, Inputs.dt_climb)
+        Montee.climbIsoCAS(Avion, Atmosphere, h_target, Inputs.Mach_climb, Inputs.dt_climb)
+        Montee.climbIsoMach(Avion, Atmosphere, h_target, Inputs.dt_climb)
 
     @staticmethod
-    def Monter_Diversion(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
+    def monterDiversion(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
+        '''
+        Réalise la montée de la phase de diversion.
+        
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param dt: Pas de temps (s)
+        '''
         h_target = Inputs.h_accel_ft * Constantes.conv_ft_m
-        Montee.climb_sub_h_10000_ft(Avion, Atmosphere, h_target, Inputs.dt_climb)
+        Montee.climbLowAltitude(Avion, Atmosphere, h_target, dt)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
-        Montee.climb_Palier(Avion, Atmosphere, CAS_target, dt = Inputs.dt_cruise)
+        Montee.climbPalier(Avion, Atmosphere, CAS_target, dt)
 
         h_target = Inputs.Final_climb_altitude_diversion_ft * Constantes.conv_ft_m
-        Montee.climb_iso_CAS(Avion, Atmosphere, h_target, Inputs.Mach_cruise_div, Inputs.dt_climb)
-        Montee.climb_iso_Mach(Avion, Atmosphere, h_target, Inputs.dt_climb)
+        Montee.climbIsoCAS(Avion, Atmosphere, h_target, Inputs.Mach_cruise_div, dt)
+        Montee.climbIsoMach(Avion, Atmosphere, h_target, dt)
         
 
     @staticmethod
-    def climb_sub_h_10000_ft(Avion: Avion, Atmosphere: Atmosphere, h_lim, dt):
-        """
-        Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en palier
+    def climbLowAltitude(Avion: Avion, Atmosphere: Atmosphere, h_lim, dt):
+        '''
+        Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en palier.
 
         Avion       : instance de la classe Avion
         Atmosphere  : instance de la classe Atmosphere
         h_lim       : Altitude de fin (en mètres)
         dt          : pas de temps (s)
-        """
+        '''
 
         while Avion.geth() < h_lim:
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
             # Vitesses
-            Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
-            Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+            Avion.Aero.convertCASToMach(Atmosphere)
+            Avion.Aero.convertMachToTAS(Atmosphere)
 
             # Aérodynamique
-            Avion.Aero.CalculateCz(Atmosphere)
+            Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
             if Inputs.Aero_simplified:
-                Avion.Aero.CalculateCxClimb_Simplified()
+                Avion.Aero.calculateCxClimb_Simplified()
             else:
-                Avion.Aero.CalculateCx(Atmosphere)
+                Avion.Aero.calculateCx(Atmosphere)
             Cx = Avion.Aero.getCx()
 
             finesse = Cz / Cx
@@ -77,9 +84,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.Calculate_F_climb()
+            Avion.Moteur.calculateFClimb()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_climb()
+            Avion.Moteur.calculateSFCClimb()
 
             # Pente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
@@ -89,7 +96,7 @@ class Montee:
             Vx = Avion.Aero.getTAS() * np.cos(pente)
 
             # Fuel burn
-            Avion.Masse.burn_fuel(dt)
+            Avion.Masse.burnFuel(dt)
 
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
@@ -98,40 +105,34 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_Palier(Avion: Avion, Atmosphere: Atmosphere, CAS_target, dt = Inputs.dt_climb):
-        """
+    def climbPalier(Avion: Avion, Atmosphere: Atmosphere, CAS_target, dt = Inputs.dt_climb):
+        '''
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
 
         Avion       : instance de la classe Avion
         Atmosphere  : instance de la classe Atmosphere
         dt          : pas de temps (s)
-        """
-
-        # CAS initiale
-        CAS_t = Avion.Aero.getCAS() * Constantes.conv_kt_mps
-
-        # CAS cible A CHANGER
-        
+        '''
 
         # Atmosphère (constante en palier)
         Atmosphere.CalculateRhoPT(Avion.geth())
 
         # Vitesses
-        Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
-        Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+        Avion.Aero.convertCASToMach(Atmosphere)
+        Avion.Aero.convertMachToTAS(Atmosphere)
         TAS_t  = Avion.Aero.getTAS()
 
-        while CAS_t < CAS_target:
+        while Avion.Aero.getCAS() < CAS_target:
 
             # Aérodynamique
-            Avion.Aero.CalculateCz(Atmosphere)
+            Avion.Aero.calculateCz(Atmosphere)
             Cz_t = Avion.Aero.getCz()
 
             if Inputs.Aero_simplified:
-                Avion.Aero.CalculateCxClimb_Simplified()
+                Avion.Aero.calculateCxClimb_Simplified()
             else:
-                Avion.Aero.CalculateCx(Atmosphere)
+                Avion.Aero.calculateCx(Atmosphere)
             
             Cx_t = Avion.Aero.getCx()
             
@@ -141,9 +142,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée moteur
-            Avion.Moteur.Calculate_F_climb()
+            Avion.Moteur.calculateFClimb()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_climb()
+            Avion.Moteur.calculateSFCClimb()
 
             # Dynamique longitudinale
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
@@ -153,52 +154,49 @@ class Montee:
             Avion.Aero.setTAS_t(TAS_t)
 
             # Recalcul Mach et CAS
-            Avion.Aero.Convert_TAS_to_Mach(Atmosphere)
-            Avion.Aero.Convert_Mach_to_CAS(Atmosphere)
-            CAS_t = Avion.Aero.getCAS()
-
-            # Cinématique (pas de Vz)
-            Vx_t = TAS_t
-            dl = Vx_t * dt
+            Avion.Aero.convertTASToMach(Atmosphere)
+            Avion.Aero.convertMachToCAS(Atmosphere)
 
             # Fuel burn
-            Avion.Masse.burn_fuel(dt)
+            Avion.Masse.burnFuel(dt)
 
-            # Mise à jour avion
-            Avion.Add_dl(dl)
+            # Cinématique
+            Avion.Add_dl(Avion.Aero.getTAS() * dt)
             
             # Pas de changement d'altitude en palier            
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_iso_CAS(Avion: Avion, Atmosphere: Atmosphere, h_lim, Mach_lim, dt = Inputs.dt_climb):
-        """
+    def climbIsoCAS(Avion: Avion, Atmosphere: Atmosphere, h_lim, Mach_lim, dt = Inputs.dt_climb):
+        '''
         Montée à CAS constant jusqu'à atteindre un Mach cible
 
-        Avion       : instance de la classe Avion
-        Atmosphere  : instance de la classe Atmosphere
-        dt          : pas de temps (s)
-        """
+        :param Avion: instance de la classe Avion
+        :param Atmosphere: instance de la classe Atmosphere
+        :param h_lim: Altitude de fin de montée (m)
+        :param Mach_lim: Mach de fin de montée
+        :param dt: pas de temps (s)
+        '''
+        Avion.Aero.setCAS_t(Avion.getKVMO() * Constantes.conv_kt_mps)
 
-        Avion.Aero.setCAS_t(Avion.getKVMO() * Constantes.conv_kt_mps) #On initialise la CAS de l'avion)
-
+        # Tant que l'on a pas atteint le Mach limite ou l'altitude limit
         while Avion.Aero.getMach() < Mach_lim and Avion.geth() < h_lim:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
             # Vitesses
-            Avion.Aero.Convert_CAS_to_Mach(Atmosphere)
-            Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
+            Avion.Aero.convertCASToMach(Atmosphere)
+            Avion.Aero.convertMachToTAS(Atmosphere)
 
             # Aérodynamique
-            Avion.Aero.CalculateCz(Atmosphere)
+            Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
             if Inputs.Aero_simplified:
-                Avion.Aero.CalculateCxClimb_Simplified()
+                Avion.Aero.calculateCxClimb_Simplified()
             else:
-                Avion.Aero.CalculateCx(Atmosphere)
+                Avion.Aero.calculateCx(Atmosphere)
             Cx = Avion.Aero.getCx()
 
             finesse = Cz / Cx
@@ -207,9 +205,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.Calculate_F_climb()
+            Avion.Moteur.calculateFClimb()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_climb()
+            Avion.Moteur.calculateSFCClimb()
 
             # Pente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
@@ -219,41 +217,43 @@ class Montee:
             Vx = Avion.Aero.getTAS() * np.cos(pente)
 
             # Fuel burn
-            Avion.Masse.burn_fuel(dt)
+            Avion.Masse.burnFuel(dt)
 
             # Mise à jour avion
-            Avion.Add_dh(Vz * dt) #Un peu redondant, à voir comment modifier
+            Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
 
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climb_iso_Mach(Avion: Avion, Atmosphere: Atmosphere, h_lim, dt = Inputs.dt_climb):
-        """
-        Montée à Mach constant jusqu'à une altitude cible
+    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, h_lim, dt = Inputs.dt_climb):
+        '''
+        Montée à Mach constant jusqu'à une altitude cible.
 
-        Avion       : instance de la classe Avion
-        Atmosphere  : instance de la classe Atmosphere
-        dt          : pas de temps (s)
-        """
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param h_lim: Altitude de fin de montée (m)
+        :param dt: pas de temps (s)
+        '''
 
+        # Tant que l'on n'a pas atteint l'altitude cible
         while Avion.geth() < h_lim:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
             # Vitesse
-            Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
-            Avion.Aero.Convert_Mach_to_CAS(Atmosphere)
+            Avion.Aero.convertMachToTAS(Atmosphere)
+            Avion.Aero.convertMachToCAS(Atmosphere)
 
             # Aérodynamique
-            Avion.Aero.CalculateCz(Atmosphere)
+            Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
             if Inputs.Aero_simplified:
-                Avion.Aero.CalculateCxClimb_Simplified()
+                Avion.Aero.calculateCxClimb_Simplified()
             else:
-                Avion.Aero.CalculateCx(Atmosphere)
+                Avion.Aero.calculateCx(Atmosphere)
             Cx = Avion.Aero.getCx()
 
             finesse = Cz / Cx
@@ -262,9 +262,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.Calculate_F_climb()
+            Avion.Moteur.calculateFClimb()
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.Calculate_SFC_climb()
+            Avion.Moteur.calculateSFCClimb()
 
             # Pente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
@@ -274,7 +274,7 @@ class Montee:
             Vx = Avion.Aero.getTAS() * np.cos(pente)
 
             # Fuel burn
-            Avion.Masse.burn_fuel(dt)
+            Avion.Masse.burnFuel(dt)
 
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)

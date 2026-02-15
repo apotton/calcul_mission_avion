@@ -1,12 +1,6 @@
 from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
-from constantes.Constantes import Constantes
-from missions.Croisiere import Croisiere
-from missions.Diversion import Diversion
-from missions.Descente import Descente
-from missions.Holding import Holding
 from missions.Mission import Mission
-from missions.Montee import Montee
 from inputs.Inputs import Inputs
 import matplotlib.pyplot as plt
 from avions.Avion import Avion
@@ -50,23 +44,18 @@ import timeit
 # ax.set_xlabel('Mach')
 # ax.set_ylabel('Altitude (ft)')
 # plt.show()
+
 A320 = Avion()
 test_atmos  = Atmosphere()
 
-Inputs.Aero_simplified = False
-
 # def f():
 #     A320 = Avion()
-#     test_atmos  = Atmosphere()
-#     Montee.Monter(A320, test_atmos)
-#     Enregistrement.reset()
-#     A320.Aero.setMach_t(0.78)
-#     A320.set_h(11000)
-#     Descente.Descendre(A320, test_atmos)
+#     Mission.Principal(A320, test_atmos)
 
 # print(timeit.timeit(f, number=1))
-tstart = timeit.default_timer()
 
+
+tstart = timeit.default_timer()
 
 Enregistrement.reset()
 
@@ -77,7 +66,7 @@ tend = timeit.default_timer()
 
 temps_total = (tend - tstart)
 
-print(f"Temps moyen pour une boucle complète: {temps_total:.4f} secondes")
+print(f"Temps pour une boucle complète: {temps_total:.4f} secondes")
 print("Essence mission: " + str(A320.Masse.getFuelMission()) + " kg")
 print("Essence réserve: " + str(A320.Masse.getFuelReserve()) + " kg")
 
@@ -92,9 +81,9 @@ Enregistrement.cut()
 # plt.plot(Enregistrement.data["t"]/60, Enregistrement.data["CAS"])
 # plt.show()
 
-plt.figure()
-plt.plot(Enregistrement.data["t"]/60, Enregistrement.data["h"])
-plt.show()
+# plt.figure()
+# plt.plot(Enregistrement.data["t"]/60, Enregistrement.data["h"])
+# plt.show()
 
 # plt.figure()
 # plt.plot(np.log10(Enregistrement.data_simu["ecart_mission"]))

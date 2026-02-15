@@ -57,6 +57,13 @@ class Enregistrement:
 
     @staticmethod
     def save(Avion: Avion, Atmosphere: Atmosphere, dt):
+        '''
+        Enregistre toutes les variables dynamiques contenues dans les deux classes.
+        
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param dt: Pas de temps (s)
+        '''
         Enregistrement.data["t"][Enregistrement.counter] = Enregistrement.data["t"][Enregistrement.counter - 1] + dt if Enregistrement.counter > 1 else 0
 
         Enregistrement.data["h"][Enregistrement.counter] = Avion.geth()
@@ -68,9 +75,6 @@ class Enregistrement:
 
         Enregistrement.data["Cz"][Enregistrement.counter] = Avion.Aero.getCz()
         Enregistrement.data["Cx"][Enregistrement.counter] = Avion.Aero.getCx()
-        
-        # Enregistrement.Vx.append(Avion.getVx())
-        # Enregistrement.Vz.append(Avion.getVz())
 
         Enregistrement.data["F_N"][Enregistrement.counter] = Avion.Moteur.getF()
         Enregistrement.data["SFC"][Enregistrement.counter] = Avion.Moteur.getSFC()
@@ -89,6 +93,13 @@ class Enregistrement:
 
     @staticmethod
     def save_simu(Avion: Avion, ecart_mission):
+        '''
+        Enregistre les données de performance de la boucle (l'écart de précision,
+        les longueurs de descente et la masse de fuel brulée pour la mission).
+        
+        :param Avion: Instance de la classe Avion
+        :param ecart_mission: Ecart relatif sur le fuel burn mission (%)
+        '''
         Enregistrement.data_simu["ecart_mission"].append(ecart_mission)
         Enregistrement.data_simu["l_descent"].append(Avion.getl_descent())
         Enregistrement.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
@@ -96,6 +107,9 @@ class Enregistrement:
 
     @staticmethod
     def extend():
+        '''
+        Rajoute des 0 à la fin des tableaux pré-alloués si ceux-ci sont remplis.
+        '''
         for key in Enregistrement.data:
             Enregistrement.data[key] = np.concatenate([
                 Enregistrement.data[key],
@@ -104,13 +118,17 @@ class Enregistrement:
 
     @staticmethod
     def cut():
-        # Enlève tout à partir du dernier ajout (counter)
-
+        '''
+        Enlève toutes les valeurs non atteintes après le counter.
+        '''
         for key in Enregistrement.data:
             Enregistrement.data[key] = Enregistrement.data[key][:Enregistrement.counter]
 
     @staticmethod
     def reset():
+        '''
+        Remet tous les tableaux à zéro.
+        '''
         Enregistrement.counter = 0
         for key in Enregistrement.data:
             Enregistrement.data[key] = np.zeros(Enregistrement.default_size, dtype=np.float32)

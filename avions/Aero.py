@@ -21,7 +21,7 @@ class Aero:
         self.TAS_t = 0.
 
     #Calcul du Cz
-    def CalculateCz(self, atmosphere: Atmosphere):
+    def calculateCz(self, atmosphere: Atmosphere):
         '''
         Calcule le coefficient de portance (Cz) à l'instant t en fonction de la masse actuelle de l'avion 
         et des conditions atmosphériques. A faire avant le calcul du coefficient de traînée (Cx).
@@ -33,7 +33,7 @@ class Aero:
     
 
     #Calcul du simplifié de Cx en fonction de la configuration du vol
-    def CalculateCxClimb_Simplified(self):
+    def calculateCxClimb_Simplified(self):
         '''
         Calcul simplifié du coefficient de traînée en montée.
         
@@ -41,7 +41,7 @@ class Aero:
         '''
         self.Cx_t = self.Avion.getCx0Climb() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldClimb()) *self.Cz_t**2
 
-    def CalculateCxCruise_Simplified(self):
+    def calculateCxCruise_Simplified(self):
         '''
         Calcul simplifié du coefficient de traînée en croisière.
         
@@ -49,7 +49,7 @@ class Aero:
         '''
         self.Cx_t = self.Avion.getCx0Cruise() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldCruise()) *self.Cz_t**2
 
-    def CalculateCxDescent_Simplified(self):
+    def calculateCxDescent_Simplified(self):
         '''
         Calcul simplifié du coefficient de traînée en descente.
         
@@ -60,7 +60,7 @@ class Aero:
     
 
     #Calcul avancé du Cx
-    def CalculateCx(self, atmosphere: Atmosphere):
+    def calculateCx(self, atmosphere: Atmosphere):
         '''
         Calcule le coefficient de traînée (Cx) à l'instant t en fonction des conditions atmosphériques 
         et des caractéristiques de l'avion. A faire après avoir calculé le Cz.
@@ -115,7 +115,7 @@ class Aero:
         # Résultat final
         self.Cx_t = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
     
-    def CalculateCzBuffet(self):
+    def calculateCzBuffet(self):
         """
         Calcule le Cz d'apparition du buffeting pour un Mach donné. Basé sur une 
         méthode de scaling depuis un avion de référence.
@@ -216,7 +216,7 @@ class Aero:
 
     ##Calcul des vitesses
 
-    def Convert_Mach_to_CAS(self, Atmosphere: Atmosphere):
+    def convertMachToCAS(self, Atmosphere: Atmosphere):
         '''
         Convertit la vitesse Mach en vitesse CAS en utilisant les propriétés de l'atmosphère.
         
@@ -240,7 +240,7 @@ class Aero:
         )
     
 
-    def Convert_CAS_to_Mach(self, Atmosphere: Atmosphere):
+    def convertCASToMach(self, Atmosphere: Atmosphere):
         '''
         Convertit la vitesse CAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
         
@@ -262,7 +262,7 @@ class Aero:
             * ((1 + delta_p / Atmosphere.getP_t())**((gamma - 1) / gamma) - 1)
         )
 
-    def Convert_TAS_to_Mach(self, Atmosphere: Atmosphere):
+    def convertTASToMach(self, Atmosphere: Atmosphere):
         '''
         Convertit la vitesse TAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
         
@@ -271,7 +271,7 @@ class Aero:
         '''
         self.Mach_t = self.TAS_t / np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
 
-    def Convert_Mach_to_TAS(self, Atmosphere: Atmosphere):
+    def convertMachToTAS(self, Atmosphere: Atmosphere):
         '''
         Convertit la vitesse Mach en vitesse TAS en utilisant les propriétés de l'atmosphère.
         
@@ -325,7 +325,7 @@ class Aero:
         '''
         self.Cz_t = Cz
 
-    def CalculateECCF(self, atmosphere: Atmosphere):
+    def calculateECCF(self, atmosphere: Atmosphere):
         '''
         Calcule l'Economic Cruise Climb Fuel (ECCF) à l'instant t en fonction des
         conditions atmosphériques et des caractéristiques de l'avion.
@@ -344,7 +344,7 @@ class Aero:
                      + (SFC * m * Constantes.g) 
                      / ((TAS + Vw) * finesse) )
         
-    def CalculateSGR(self, atmosphere: Atmosphere):
+    def calculateSGR(self, atmosphere: Atmosphere):
         '''
         Calcule le Specific Ground Range (SGR) à l'instant t en fonction des conditions
         atmosphériques et des caractéristiques de l'avion.
@@ -399,6 +399,15 @@ class Aero:
         :param self: Instance de la classe Aero
         '''
         return self.SGR_t
+    
+    def setSGR(self, SGR):
+        '''
+        Définit le Specific Ground Range de l'avion.
+        
+        :param self: Instance de la classe Aero
+        :param SGR: SGR à définir
+        '''
+        self.SGR = SGR
     
     def getMach(self):
         '''

@@ -58,7 +58,7 @@ class Avion:
 
             # Lecture ligne par ligne
             for ligne in lecteur:
-                
+
                 if len(ligne) == 2:
                     # Récupération des noms de paramètre (clé) et de leur valeur
                     cle, valeur = ligne
@@ -89,7 +89,7 @@ class Avion:
         self.l_t                     = 0.     # Distance totale parcourue (m)    
         self.h_t                     = 0.     # Altitude actuelle (m)
         self.diversion               = False  # Etat de l'avion (en diversion ou non)
-        self.Masse.initialize_mission(FB_mission, FB_diversion, FB_holding)
+        self.Masse.initializeMission(FB_mission, FB_diversion, FB_holding)
 
     def setupDescentes(self):
         '''
@@ -265,9 +265,19 @@ class Avion:
         return self.OswaldDescent
     
     def getl_descent(self):
+        '''
+        Retourne la valeur actuelle de la distance de la descente.
+        
+        :param self: Instance de la classe Avion
+        '''
         return self.l_descent
     
     def getl_descent_diversion(self):
+        '''
+        Retourne la valeur actuelle de la distance de la descente en diversion.
+        
+        :param self: Instance de la classe Avion
+        '''
         return self.l_descent_diversion
     
     

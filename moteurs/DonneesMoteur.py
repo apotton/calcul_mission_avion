@@ -3,6 +3,9 @@ Fichier qui définit les champs à l'intérieur des Données Moteur
 '''
 
 class DonneesMoteur:
+    '''
+    Classe permettant d'accéder aux données d'un réseau moteur en entrée.
+    '''
     def __init__(self, mach_table,
                  alt_table_ft,
                  Fn_MCL_table,

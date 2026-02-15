@@ -96,14 +96,14 @@ def load():
 
 
 
-# ==============================================================================
-# DONNÉES DE CROISIÈRE (CRUISE LOOP)
-# ==============================================================================
+    # ==============================================================================
+    # DONNÉES DE CROISIÈRE (CRUISE LOOP)
+    # ==============================================================================
 
     mach_table_crl = np.ascontiguousarray([0.6, 0.7, 0.78, 0.8, 0.82], dtype=np.float64)
 
-# Dictionnaire structuré par altitude.
-# Format: { Altitude_ft : { 'fn': array_1D, 'sfc': array_2D } }
+    # Dictionnaire structuré par altitude.
+    # Format: { Altitude_ft : { 'fn': array_1D en lbf, 'sfc': array_2D en ?? } }
     cruise_data = {
         25000: {
             "fn": np.ascontiguousarray([3067.8, 3473.52, 3879.24, 4284.96, 4690.68, 5096.4, 5502.12, 5907.84, 6313.56, 6719.28, 7125]),

@@ -10,79 +10,73 @@ import numpy as np
 class Diversion:
     @staticmethod
     def Diversion(Avion: Avion, Atmosphere: Atmosphere):
-        """
-        Réalise toute la montée jusqu'à la croisière
+        '''
+        Réalise toutes les opérations liées à la phase de diversion.
 
-        Avion       : instance de la classe Avion
-        Atmosphere  : instance de la classe Atmosphere
-        dt          : pas de temps (s)
-        """
+        :param Avion: instance de la classe Avion
+        :param Atmosphere: instance de la classe Atmosphere
+        '''
+        # Entrée en diversion
         Avion.diversion = True
 
         # Enregistrement de la distance actuelle pour mesurer la longueur de la diversion
         l_fin_mission = Avion.getl()
 
         # Montée de diversion
-        Montee.Monter_Diversion(Avion, Atmosphere, dt = Inputs.dt_climb)
+        Montee.monterDiversion(Avion, Atmosphere, dt = Inputs.dt_climb)
         
         # Croisière diversion
-        Diversion.Diversion_Cruise(Avion, Atmosphere, l_fin_mission, Inputs.dt_cruise)
+        Diversion.croisiereDiversion(Avion, Atmosphere, l_fin_mission, dt = Inputs.dt_cruise)
 
         # Descente de diversion
-        Descente.Descendre_Diversion(Avion, Atmosphere, dt = Inputs.dt_descent)
+        Descente.descendreDiversion(Avion, Atmosphere, dt = Inputs.dt_descent)
 
+        # Fin de la diversion
         Avion.diversion = False
 
 
-
-
     @staticmethod
-    def Diversion_Cruise(Avion: Avion, Atmosphere: Atmosphere, l_debut, dt=Inputs.dt_cruise): #ON PEUT METTRE UN dt ENORME, IL SE PASSE RIEN 
-            """
-            Phase : croisière en palier à Mach constant
+    def croisiereDiversion(Avion: Avion, Atmosphere: Atmosphere, l_debut, dt = Inputs.dt_cruise):
+            '''
+            Croisière en palier à Mach constant
 
-            Avion : instance de la classe Avion
-            Atmosphere : instance de la classe Atmosphere
-            l_end : distance à parcourir en croisière avant de commencer la descente (UNITE)
-            """
-            l_init = Avion.getl()
-            l_t = l_init
+            :param Avion: instance de la classe Avion
+            :param Atmosphere: instance de la classe Atmosphere
+            :param l_debut: début de la diversion, avant la montée (m)
+            :param dt: Pas de temps (s)
+            '''
+
             l_end_diversion = Inputs.Range_diversion_NM * Constantes.conv_NM_m
+            l_descent_diversion = Avion.getl_descent_diversion()
 
+            # Tant que l'on n'a pas parcouru la distance de diversion
+            while (Avion.getl() < (l_debut + l_end_diversion - l_descent_diversion)):
 
-            while (l_t < (l_debut + l_end_diversion - Avion.getl_descent_diversion())): # QUESTION SUR LA LIMITE DE FUEL
-
-                # --- Atmosphère ---
+                # Atmosphère
                 Atmosphere.CalculateRhoPT(Avion.geth())
 
-                # --- Vitesse ---
-                Avion.Aero.Convert_Mach_to_TAS(Atmosphere)
-                Avion.Aero.Convert_Mach_to_CAS(Atmosphere)
+                # Vitesse
+                Avion.Aero.convertMachToTAS(Atmosphere)
+                Avion.Aero.convertMachToCAS(Atmosphere)
 
-                # --- Vitesses ---
+                # Vitesses
                 Vx = Avion.Aero.getTAS() + Atmosphere.getVwind()
 
-                # --- Aérodynamique ---
-                Avion.Aero.CalculateCz(Atmosphere)
-                Avion.Aero.CalculateCx(Atmosphere)
+                # Aérodynamique
+                Avion.Aero.calculateCz(Atmosphere)
+                Avion.Aero.calculateCx(Atmosphere)
 
-                # --- Poussée moteur ---
-                Avion.Moteur.Calculate_F_cruise_diversion()
-                Avion.Moteur.Calculate_SFC_cruise_diversion()
+                # Poussée moteur
+                Avion.Moteur.calculateFCruiseDiversion()
+                Avion.Moteur.calculateSFCCruiseDiversion()
 
-                # --- Intégration ---
-                    
-                dl = Vx * dt
-                l_t += dl
+                # Fuel burn
+                Avion.Masse.burnFuel(dt)
 
-                # --- Fuel burn ---
-                Avion.Masse.burn_fuel(dt)
+                # Mise à jour avion
+                Avion.Add_dl(Vx * dt)
 
-                # --- Mise à jour avion ---
-                Avion.Add_dl(dl)
-                # Pas de changement d'altitude en croisière
-
-                Enregistrement.save(Avion, Atmosphere, dt) #Enregistrement à chaque pas de temps pour la croisière
+                Enregistrement.save(Avion, Atmosphere, dt)
 
 
 

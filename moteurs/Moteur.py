@@ -3,7 +3,7 @@ Classe mère des différentes manières de faire un moteur
 '''
 
 class Moteur:
-    def __init__(self, Avion, choix_reseau=1):
+    def __init__(self, Avion):
         self.Avion = Avion
         self.F_t = 0          # Poussée actuelle (N)
         self.SFC_t = 0        # SFC actuelle (kg/(N.s))
@@ -12,9 +12,8 @@ class Moteur:
 
     def setF(self, F: float):
         '''
-        Définit la force du moteur
+        Définit la poussée émise par le moteur.
         
-        :param self: Instance de la classe Avion
         :param F: Poussée à définir (N)
         '''
         self.F_t = F
@@ -23,55 +22,83 @@ class Moteur:
         '''
         Définit la SFC actuelle de l'avion.
         
-        :param self: Instance de la classe Avion
         :param SFC: SFC à définir
         '''
         self.SFC_t = SFC
 
-    # def getDonnees_moteur(self):
-    #     return self.Donnees_moteur
-
     def getF(self):
+        '''
+        Renvoie la poussée émise par le moteur (N).
+        '''
         return self.F_t
 
     def getSFC(self):
+        '''
+        Renvoie la SFC du moteur (kg/(N.s))
+        '''
         return self.SFC_t
-    
-    def getF_MCL_cruise_step(self):
-        return self.F_t
 
     ## Poussée ##
-
-    def Calculate_F_climb(self):
+    def calculateFClimb(self):
+        '''
+        Calcule la force de poussée du moteur pendant la montée (N).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_F_cruise(self):
+    def calculateFCruise(self):
+        '''
+        Calcule la force de poussée du moteur pendant la croisière (N).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_F_descent(self):
+    def calculateFDescent(self):
+        '''
+        Calcule la force de poussée du moteur pendant la descente (N).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_F_holding(self):
+    def calculateFHolding(self):
+        '''
+        Calcule la force de poussée du moteur pendant la phase de holding (N).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_F_cruise_diversion(self):
+    def calculateFCruiseDiversion(self):
+        '''
+        Calcule la force de poussée du moteur pendant la croisière de la diversion (N).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
     ## SFC ##
 
-    def Calculate_SFC_cruise(self):
+    def calculateSFCCruise(self):
+        '''
+        Calcule la poussée spécifique du moteur pendant la croisière (kg/(N.s)).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC_climb(self):
+    def calculateSFCClimb(self):
+        '''
+        Calcule la poussée spécifique du moteur pendant la montée (kg/(N.s)).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC_descent(self):
+    def calculateSFCDecent(self):
+        '''
+        Calcule la poussée spécifique du moteur pendant la descente (kg/(N.s)).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC_holding(self):
+    def calculateSFCHolding(self):
+        '''
+        Calcule la poussée spécifique du moteur pendant la phase de holding (kg/(N.s)).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
-    def Calculate_SFC_cruise_diversion(self):
+    def calculateSFCCruiseDiversion(self):
+        '''
+        Calcule la poussée spécifique du moteur pendant la croisière de la diversion (kg/(N.s)).
+        '''
         pass  # Méthode à implémenter dans les classes filles
 
          

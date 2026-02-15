@@ -23,16 +23,16 @@ print("Masse actuelle = " + str(A320.Masse.getCurrentMass()) + " kg")
 
 #Test Aero
 
-A320.Aero.CalculateCz()
+A320.Aero.calculateCz()
 Cz = A320.Aero.getCz()
 
-A320.Aero.CalculateCxClimb_Simplified()
+A320.Aero.calculateCxClimb_Simplified()
 Cx_Climb = A320.Aero.getCx()
 
-A320.Aero.CalculateCxCruise_Simplified()
+A320.Aero.calculateCxCruise_Simplified()
 Cx_Cruise = A320.Aero.getCx()
 
-A320.Aero.CalculateCxDescent_Simplified()
+A320.Aero.calculateCxDescent_Simplified()
 Cx_Descent = A320.Aero.getCx()
 
 print(Cz)
@@ -49,7 +49,7 @@ env_method = A320.getEnvergure()
 print("Envergure de l'avion via méthode : " + str(env_method) + " m")
 
 # Test du calcul complet de Cx
-A320.Aero.CalculateCx(test_atmos)
+A320.Aero.calculateCx(test_atmos)
 Cx_complete = A320.Aero.getCx()
 print("Cx complet calculé : " + str(Cx_complete))
 

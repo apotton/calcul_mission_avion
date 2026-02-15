@@ -16,7 +16,7 @@ class Inputs:
     # =====================
     # Paramètres généraux
     # =====================
-    Aero_simplified = True
+    Aero_simplified = False
     dt_climb = 10.      # s
     dt_cruise = 60.0    # s
     dt_descent = 10.    # s
@@ -81,7 +81,7 @@ class Inputs:
     # =====================
     # VALIDATION
     # =====================
-    precision = 1 # %
+    precision = 0.01 # %
     
     @staticmethod
     def validate():

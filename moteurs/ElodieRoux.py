@@ -2,7 +2,7 @@ from moteurs.Moteur import Moteur
 
 class ElodieRoux(Moteur):
     def __init__(self, Avion, BPR=0, OPR=0):
-        super().__init__(Avion, BPR, OPR)
+        super().__init__(Avion)
         # Pas de Donnees_moteur ici, peut-être d'autres constantes spécifiques
 
     def Calculate_F(self):
