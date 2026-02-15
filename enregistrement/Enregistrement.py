@@ -42,6 +42,19 @@ class Enregistrement:
         "rho" : np.zeros(default_size, dtype=np.float32)
     }
 
+    # Données de convergence simu
+    data_simu = {
+        # Précision
+        "ecart_mission" : [],
+
+        # Longueur descentes
+        "l_descent" : [],
+        "l_descent_diversion" : [],
+
+        # Masse fuel mission
+        "FB_mission" : []
+    }
+
     @staticmethod
     def save(Avion: Avion, Atmosphere: Atmosphere, dt):
         Enregistrement.data["t"][Enregistrement.counter] = Enregistrement.data["t"][Enregistrement.counter - 1] + dt if Enregistrement.counter > 1 else 0
@@ -74,6 +87,12 @@ class Enregistrement:
         if Enregistrement.counter >= len(Enregistrement.data["t"]):
             Enregistrement.extend()
 
+    @staticmethod
+    def save_simu(Avion: Avion, ecart_mission):
+        Enregistrement.data_simu["ecart_mission"].append(ecart_mission)
+        Enregistrement.data_simu["l_descent"].append(Avion.getl_descent())
+        Enregistrement.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
+        Enregistrement.data_simu["FB_mission"].append(Avion.Masse.getFuelMission())
 
     @staticmethod
     def extend():

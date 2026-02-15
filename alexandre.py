@@ -5,6 +5,7 @@ from missions.Croisiere import Croisiere
 from missions.Diversion import Diversion
 from missions.Descente import Descente
 from missions.Holding import Holding
+from missions.Mission import Mission
 from missions.Montee import Montee
 from inputs.Inputs import Inputs
 import matplotlib.pyplot as plt
@@ -68,39 +69,21 @@ tstart = timeit.default_timer()
 
 
 Enregistrement.reset()
-A320.setupDescentes()
 
-l_descent = A320.l_descent
-l_descent_diversion = A320.l_descent_diversion
-essence_restante = 0
-
-N = 10
-for i in range(N):
-    A320 = Avion()
-    Montee.Monter(A320, test_atmos)
-    Croisiere.Croisiere(A320, test_atmos)
-    Descente.Descendre(A320, test_atmos)
-    Diversion.Diversion(A320, test_atmos)
-    Holding.Hold(A320, test_atmos)
-    essence_restante = A320.Masse.getFuelRemaining()
-    # Enregistrement.reset()
+# Coeur du logiciel
+Mission.Principal(A320, test_atmos)
 
 tend = timeit.default_timer()
 
-temps_moyen = (tend - tstart) / N
+temps_total = (tend - tstart)
 
-print("Distance de descente début: " + str(l_descent / 1000) + " km")
-print("Distance de descente final: " + str(A320.l_descent / 1000) + " km")
-
-print("Distance de descente début diversion: " + str(l_descent_diversion / 1000) + " km")
-print("Distance de descente final diversion: " + str(A320.l_descent_diversion / 1000) + " km")
-
-print(f"Temps moyen pour une montée + croisière + descente + holding + diversion: {temps_moyen:.4f} secondes")
-print("Essence restante: " + str(A320.Masse.getFuelRemaining()) + " kg")
+print(f"Temps moyen pour une boucle complète: {temps_total:.4f} secondes")
+print("Essence mission: " + str(A320.Masse.getFuelMission()) + " kg")
+print("Essence réserve: " + str(A320.Masse.getFuelReserve()) + " kg")
 
 
 
-print("Taille tableau: " + str(Enregistrement.counter))
+# print("Taille tableau: " + str(Enregistrement.counter))
 
 
 Enregistrement.cut()
@@ -113,8 +96,19 @@ plt.figure()
 plt.plot(Enregistrement.data["t"]/60, Enregistrement.data["h"])
 plt.show()
 
+# plt.figure()
+# plt.plot(np.log10(Enregistrement.data_simu["ecart_mission"]))
+# plt.show()
 
-print("Test complete.")
+# plt.figure()
+# plt.plot(Enregistrement.data_simu["l_descent"])
+# plt.plot(Enregistrement.data_simu["l_descent_diversion"])
+# plt.show()
+
+# plt.figure()
+# plt.plot(Enregistrement.data_simu["FB_mission"])
+# plt.show()
+
 
 # Profilage : python -m cProfile -o output.prof alexandre.py
 # Visualisation du profilage : snakeviz output.prof

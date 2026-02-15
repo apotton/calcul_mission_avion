@@ -13,22 +13,18 @@ class Aero:
         #Coef aero
         self.Avion = avion
         self.Cx_t = self.Avion.getCx0Climb()
-        self.Cz_t = 0 #Uniquement pour l'initialisation 
+        self.Cz_t = 0. #Uniquement pour l'initialisation 
 
         #Vitesses
-        self.Mach_t = 0
-        self.CAS_t = 0
-        self.TAS_t = 0
-
-    def CalculateAll(self, atmosphere):
-        self.CalculateCzBuffet()
-        self.CalculateCz(atmosphere)
-        self.CalculateCx(atmosphere)
+        self.Mach_t = 0.
+        self.CAS_t = 0.
+        self.TAS_t = 0.
 
     #Calcul du Cz
     def CalculateCz(self, atmosphere: Atmosphere):
         '''
-        Calcule le coefficient de portance (Cz) à l'instant t en fonction de la masse actuelle de l'avion et des conditions atmosphériques.
+        Calcule le coefficient de portance (Cz) à l'instant t en fonction de la masse actuelle de l'avion 
+        et des conditions atmosphériques. A faire avant le calcul du coefficient de traînée (Cx).
 
         :param self: Instance de la classe Aero
         :param atmosphere: Instance de la classe Atmosphere
@@ -38,12 +34,27 @@ class Aero:
 
     #Calcul du simplifié de Cx en fonction de la configuration du vol
     def CalculateCxClimb_Simplified(self):
+        '''
+        Calcul simplifié du coefficient de traînée en montée.
+        
+        :param self: Instance de la classe Aero
+        '''
         self.Cx_t = self.Avion.getCx0Climb() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldClimb()) *self.Cz_t**2
 
     def CalculateCxCruise_Simplified(self):
+        '''
+        Calcul simplifié du coefficient de traînée en croisière.
+        
+        :param self: Instance de la classe Aero
+        '''
         self.Cx_t = self.Avion.getCx0Cruise() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldCruise()) *self.Cz_t**2
 
     def CalculateCxDescent_Simplified(self):
+        '''
+        Calcul simplifié du coefficient de traînée en descente.
+        
+        :param self: Instance de la classe Aero
+        '''
         self.Cx_t = self.Avion.getCx0Descent() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldDescent()) *self.Cz_t**2
 
     
@@ -51,7 +62,8 @@ class Aero:
     #Calcul avancé du Cx
     def CalculateCx(self, atmosphere: Atmosphere):
         '''
-        Calcule le coefficient de traînée (Cx) à l'instant t en fonction des conditions atmosphériques et des caractéristiques de l'avion.
+        Calcule le coefficient de traînée (Cx) à l'instant t en fonction des conditions atmosphériques 
+        et des caractéristiques de l'avion. A faire après avoir calculé le Cz.
         
         :param self: Instance de la classe Aero
         :param atmosphere: Instance de la classe Atmosphere
@@ -62,15 +74,15 @@ class Aero:
         cos_phi = np.cos(phi_rad)
         cos_phi_c = np.cos(phi_rad)**2
 
-        #Calcul du nombre de Reynolds
+        # Calcul du nombre de Reynolds
         Re = (47899*atmosphere.getP_t()*self.getMach()*
               ((1+0.126*self.getMach()**2)*atmosphere.getT_t()+110.4)
               /(atmosphere.getT_t()**2))/(1+0.126*self.getMach()**2)**(5/2)
         
-        #Calcul du Cf
+        # Calcul du Cf
         Cf = 0.455/(1+0.126*self.getMach()**2)/(np.log10(Re*self.Avion.getLref()))**2.58
 
-        #Calcul du K_e & K_c
+        # Calcul du K_e & K_c
         K_e = 4.688*self.Avion.getTtoCref()**2 + 3.146*self.Avion.getTtoCref()
         K_c = 2.859*(self.getCz()/cos_phi_c)**3 - 1.849*(self.getCz()/cos_phi_c)**2 + 0.382*(self.getCz()/cos_phi_c)+0.06
         K_phi = 1 - 0.000178*(phi_rad)**2 - 0.00065*phi_rad
@@ -94,18 +106,19 @@ class Aero:
         MDD = 0.95/cos_phi - self.Avion.getTtoCref()/cos_phi_c - self.getCz()/(10*cos_phi**3)
         M_cr = MDD - (0.1/80)**(1/3)
 
-        # Maintenant c'est la boucle :
+        # Choix selon le critère de compressibilité :
         if self.getMach() > M_cr :
             Cx_compressibility = 20 * (self.getMach()-M_cr)**4
         else:
             Cx_compressibility = 0
         
-        #Calcul final
+        # Résultat final
         self.Cx_t = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
     
     def CalculateCzBuffet(self):
         """
-        Calcule le Cz d'apparition du buffeting pour un Mach donné. Basé sur une méthode de scaling depuis un avion de référence (A320).
+        Calcule le Cz d'apparition du buffeting pour un Mach donné. Basé sur une 
+        méthode de scaling depuis un avion de référence.
 
         :param self: Instance de la classe Aero
         """
@@ -207,7 +220,7 @@ class Aero:
         '''
         Convertit la vitesse Mach en vitesse CAS en utilisant les propriétés de l'atmosphère.
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param Atmosphere: Instance de la classe Atmosphere
         '''
         gamma = Constantes.gamma
@@ -231,7 +244,7 @@ class Aero:
         '''
         Convertit la vitesse CAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param Atmosphere: Instance de la classe Atmosphere
         '''
 
@@ -253,7 +266,7 @@ class Aero:
         '''
         Convertit la vitesse TAS en vitesse Mach en utilisant les propriétés de l'atmosphère.
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param Atmosphere: Instance de la classe Atmosphere
         '''
         self.Mach_t = self.TAS_t / np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
@@ -262,62 +275,60 @@ class Aero:
         '''
         Convertit la vitesse Mach en vitesse TAS en utilisant les propriétés de l'atmosphère.
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param Atmosphere: Instance de la classe Atmosphere
         '''
         self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
 
     def setMach_t(self, Mach: float):
         '''
-        Définit la vitesse Mach actuelle de l'avion.
+        Définit la vitesse Mach actuelle de l'avion (m/s).
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param Mach: Vitesse Mach à définir
         '''
         self.Mach_t = Mach
 
     def setTAS_t(self, TAS: float):
         '''
-        Définit la vitesse TAS actuelle de l'avion.
+        Définit la vitesse TAS actuelle de l'avion (m/s).
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param TAS: Vitesse TAS à définir (m/s)
         '''
         self.TAS_t = TAS
 
     def setCAS_t(self, CAS: float):
         '''
-        Définit la vitesse CAS actuelle de l'avion.
+        Définit la vitesse CAS actuelle de l'avion (m/s).
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param CAS: Vitesse CAS à définir (m/s)
         '''
         self.CAS_t = CAS
 
     def setCx(self, Cx: float):
         '''
-        Définit la vitesse CAS actuelle de l'avion.
+        Définit le coefficient de traînée Cx de l'avion.
         
-        :param self: Instance de la classe Avion
+        :param self: Instance de la classe Aero
         :param CAS: Vitesse CAS à définir (m/s)
         '''
         self.Cx_t = Cx
 
     def setCz(self, Cz: float):
         '''
-        Définit la vitesse CAS actuelle de l'avion.
+        Définit le coefficient de portance Cz de l'avion.
         
         :param self: Instance de la classe Avion
         :param CAS: Vitesse CAS à définir (m/s)
         '''
         self.Cz_t = Cz
 
-
-
-
     def CalculateECCF(self, atmosphere: Atmosphere):
         '''
-        Calcule l'Economic Cruise Climb Fuel (ECCF) à l'instant t en fonction des conditions atmosphériques et des caractéristiques de l'avion.
+        Calcule l'Economic Cruise Climb Fuel (ECCF) à l'instant t en fonction des
+        conditions atmosphériques et des caractéristiques de l'avion.
         
         :param self: Instance de la classe Aero
         :param atmosphere: Instance de la classe Atmosphere
@@ -335,7 +346,8 @@ class Aero:
         
     def CalculateSGR(self, atmosphere: Atmosphere):
         '''
-        Calcule le Specific Ground Range (SGR) à l'instant t en fonction des conditions atmosphériques et des caractéristiques de l'avion.
+        Calcule le Specific Ground Range (SGR) à l'instant t en fonction des conditions
+        atmosphériques et des caractéristiques de l'avion.
         
         :param self: Instance de la classe Aero
         :param atmosphere: Instance de la classe Atmosphere
@@ -349,26 +361,65 @@ class Aero:
 
     #Getters 
     def getCx(self):
+        '''
+        Renvoie le coefficient de traînée de l'avion.
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.Cx_t
     
-    
     def getCz(self):
+        '''
+        Renvoie le coefficient de portance de l'avion.
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.Cz_t
     
     def getCzBuffet(self):
+        '''
+        Renvoie le coefficient de portance limite.
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.CzBuffet_t
     
     def getECCF(self):
+        '''
+        Renvoie l'Economic Cruise Climb Fuel de l'avion.
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.ECCF_t
     
     def getSGR(self):
+        '''
+        Renvoie le Specific Ground Range de l'avion.
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.SGR_t
     
     def getMach(self):
+        '''
+        Renvoie le Mach actuel de l'avion.
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.Mach_t
     
     def getCAS(self):
+        '''
+        Renvoie la vitesse CAS actuelle de l'avion (m/s).
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.CAS_t
     
     def getTAS(self):
+        '''
+        Renvoie la vitesse TAS actuelle de l'avion (m/s).
+        
+        :param self: Instance de la classe Aero
+        '''
         return self.TAS_t

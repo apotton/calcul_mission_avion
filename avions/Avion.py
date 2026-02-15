@@ -8,8 +8,8 @@ import csv
 import os
 
 class Avion:
-    Name                    = ''     # Nom du modèle d'avion
-    Manufacturer            = ''     # Nom du constructeur
+    Name                    = ""     # Nom du modèle d'avion
+    Manufacturer            = ""     # Nom du constructeur
     MaxTakeoffWeight        = 0.     # MTOW (kg)
     EmptyWeight             = 0.     # Masse à vide (kg)
     MaxFuelWeight           = 0.     # Masse carburant maximale (kg)
@@ -53,10 +53,16 @@ class Avion:
 
         # Lecture CSV
         with open(full_path, mode='r', encoding='utf-8') as f:
-            lecteur = csv.reader(f, delimiter=';') #On lit le fichier csv
-            for ligne in lecteur: #On lit chaque ligne
+            # Ouverture du fichier
+            lecteur = csv.reader(f, delimiter=';')
+
+            # Lecture ligne par ligne
+            for ligne in lecteur:
+                
                 if len(ligne) == 2:
-                    cle, valeur = ligne #A chaque ligne on récupère le nom du paramètre qu'on appelle clé et sa valeur
+                    # Récupération des noms de paramètre (clé) et de leur valeur
+                    cle, valeur = ligne
+
                     # Conversion en float si possible
                     try:
                         valeur = float(valeur)
@@ -64,11 +70,26 @@ class Avion:
                         pass
 
                     # Attribution dynamique des attributs
-                    setattr(self, cle, valeur) #On crée les attributs à partir des clés du csv et on leur associe les valeurs du fichiers
+                    setattr(self, cle, valeur)
 
+        # Initialisation des sous-classes
         self.Masse = Masse(self)
         self.Aero = Aero(self)
         self.Moteur = ReseauMoteur(self)
+
+        # Initialisation des approximations des longueurs de descente
+        self.setupDescentes()
+
+    def reset(self, FB_mission, FB_diversion, FB_holding):
+        '''
+        Remet l'avion à ses conditions initiales (altitude, distance, vitesse), mais met à jour les masses
+        
+        :param self: Instance de la classe avion
+        '''
+        self.l_t                     = 0.     # Distance totale parcourue (m)    
+        self.h_t                     = 0.     # Altitude actuelle (m)
+        self.diversion               = False  # Etat de l'avion (en diversion ou non)
+        self.Masse.initialize_mission(FB_mission, FB_diversion, FB_holding)
 
     def setupDescentes(self):
         '''
@@ -86,6 +107,15 @@ class Avion:
         '''
         self.l_descent = l_descent
 
+    def setl_descent_diversion(self, l_descent_diversion: float):
+        '''
+        Définit la distance nécessaire pour la descente en diversion.
+        
+        :param self: Instance de la classe Avion
+        :param l_descent_diversion: Distance necessaire pour la descente en diversion (m)
+        '''
+        self.l_descent_diversion = l_descent_diversion
+
     def Add_l_descent(self, dl_descent: float):
         '''
         Ajoute une distance dl_descent à la distance nécessaire pour la descente.
@@ -100,7 +130,7 @@ class Avion:
         Ajoute une distance dl_descent à la distance nécessaire pour la descente de la diversion.
 
         :param self: Instance de la classe Avion
-        :param dl_descent: Distance à ajouter à la distance de descente (m)
+        :param dl_descent: Distance à ajouter à la distance de descente de la diversion (m)
         '''
         self.l_descent_diversion += dl_descent_diversion
 
@@ -124,10 +154,10 @@ class Avion:
 
     def set_l(self, l: float):
         '''
-        Définit l'altitude actuelle de l'avion.
+        Définit la distance parcourue par l'avion.
         
         :param self: Instance de la classe Avion
-        :param h: Altitude à définir (m)
+        :param h: Distance à définir (m)
         '''
         self.l_t = l
 
@@ -141,9 +171,19 @@ class Avion:
         self.h_t += dh
 
     def geth(self):
+        '''
+        Renvoie l'altitude actuelle de l'avion (m).
+        
+        :param self: Instance de la classe Avion
+        '''
         return self.h_t
     
     def getl(self):
+        '''
+        Renvoie la distance parcourue par l'avion (m).
+        
+        :param self: Instance de la classe Avion
+        '''
         return self.l_t
 
     def __repr__(self):

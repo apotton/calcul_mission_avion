@@ -17,19 +17,15 @@ class Inputs:
     # Paramètres généraux
     # =====================
     Aero_simplified = True
+    dt_climb = 10.      # s
+    dt_cruise = 60.0    # s
+    dt_descent = 10.    # s
 
     # =====================
     # MISSION
     # =====================
     m_payload = 18000
     l_mission_NM = 2000 # NM
-
-    # =====================
-    # PAS DE TEMPS
-    # =====================
-    dt_climb = 1.0      # s
-    dt_cruise = 60.0    # s
-    dt_descent = 1.0    # s
 
     # =====================
     # MONTEE
@@ -73,7 +69,7 @@ class Inputs:
     # =====================
     # Critère contingency
     # =====================
-    Contingency = 5 # en %
+    Contingency = 5/100
 
     # =====================
     # Paramètres de l'environnement
@@ -85,6 +81,7 @@ class Inputs:
     # =====================
     # VALIDATION
     # =====================
+    precision = 1 # %
     
     @staticmethod
     def validate():

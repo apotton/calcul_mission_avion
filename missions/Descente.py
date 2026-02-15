@@ -29,6 +29,9 @@ class Descente:
 
     @staticmethod
     def Descendre_Diversion(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_descent):
+        # Reset de la distance de descente pour une estimation plus précise
+        Avion.setl_descent_diversion(0.)
+
         Descente.descent_iso_Mach(Avion, Atmosphere)
 
         h_target = Inputs.h_decel_ft * Constantes.conv_ft_m

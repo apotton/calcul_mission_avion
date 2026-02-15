@@ -50,7 +50,7 @@ class Diversion:
             l_end_diversion = Inputs.Range_diversion_NM * Constantes.conv_NM_m
 
 
-            while ((l_t) < (l_debut + l_end_diversion - Avion.getl_descent_diversion())) and Avion.Masse.getFuelRemaining() > Avion.Masse.getFuelReserve(): #METTRE UN L DESCENT DIVERSION ??? ET QUESTION SUR LA LIMITE DE FUEL
+            while (l_t < (l_debut + l_end_diversion - Avion.getl_descent_diversion())): # QUESTION SUR LA LIMITE DE FUEL
 
                 # --- Atmosphère ---
                 Atmosphere.CalculateRhoPT(Avion.geth())
