@@ -10,36 +10,38 @@ from avions.Avion import Avion
 
 class Mission:
     @staticmethod
-    def Principal(Avion : Avion, Atmosphere: Atmosphere):
+    def Principal(Avion : Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement):
         '''
         Réalisation de la boucle principale: l'avion effectue plusieurs missions complètes
         jusqu'à convergence du fuel mission utilisé.
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphère
+        :param Enregistrement: Instance de la classe Enregistrement
         '''
         ecart_mission = 100 # %
         Enregistrement.save_simu(Avion, ecart_mission)
+        n_iter = 0
 
-        while ecart_mission > Inputs.precision:
+        while ecart_mission > Inputs.precision and n_iter < Inputs.max_iteration:
             # Initialisations
             Enregistrement.reset()
             masse_init = Avion.Masse.getCurrentMass()
 
             # Mission principale (montée, croisière, descente)
-            Montee.Monter(Avion, Atmosphere)
-            Croisiere.Croisiere(Avion, Atmosphere)
-            Descente.Descendre(Avion, Atmosphere)
+            Montee.Monter(Avion, Atmosphere, Enregistrement)
+            Croisiere.Croisiere(Avion, Atmosphere, Enregistrement)
+            Descente.Descendre(Avion, Atmosphere, Enregistrement)
             FB_mission = masse_init - Avion.Masse.getCurrentMass()
 
             # Diversion
             masse_init = Avion.Masse.getCurrentMass()
-            Diversion.Diversion(Avion, Atmosphere)
+            Diversion.Diversion(Avion, Atmosphere, Enregistrement)
             FB_diversion = masse_init - Avion.Masse.getCurrentMass()
 
             # Holding
             masse_init = Avion.Masse.getCurrentMass()
-            Holding.Hold(Avion, Atmosphere)
+            Holding.Hold(Avion, Atmosphere, Enregistrement)
             FB_holding = masse_init - Avion.Masse.getCurrentMass()
 
             # Calcul de précision (écart relatif)
@@ -49,6 +51,7 @@ class Mission:
             # Remise à zéro pour la boucle suivante
             Avion.reset(FB_mission, FB_diversion, FB_holding)
             Enregistrement.save_simu(Avion, ecart_mission)
+            n_iter += 1
 
         # Fin de l'enregistrement
         Enregistrement.cut()

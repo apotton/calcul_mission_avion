@@ -1,56 +1,52 @@
-from constantes.Constantes import Constantes
-from avions.Avion import Avion
+from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
+from constantes.Constantes import Constantes
+from missions.Mission import Mission
+import matplotlib.pyplot as plt
+from avions.Avion import Avion
+import timeit
+
+A320 = Avion()
+Atmos  = Atmosphere()
+Saving = Enregistrement()
+
+tstart = timeit.default_timer()
+
+# Boucle sur une mission
+Mission.Principal(A320, Atmos, Saving)
+
+tend = timeit.default_timer()
+
+temps_total = (tend - tstart)
+
+print(f"Temps pour une boucle complète: {temps_total:.4f} secondes")
+print("Essence mission: " + str(A320.Masse.getFuelMission()) + " kg")
+print("Essence réserve: " + str(A320.Masse.getFuelReserve()) + " kg")
 
 
-A320 = Avion("Airbus_A320.csv")
+Saving.cut()
 
-print(A320.getWingspan())
-print(A320.getName())
-print(A320.getLength())
-print(A320.getHeight())
+# plt.figure()
+# plt.plot(Saving.data["t"]/60, Saving.data["CAS"])
+# plt.show()
 
-print(Constantes.g)
-print(Atmosphere.T0_K)
+# Altitude en fonction de la distance
+plt.figure()
+plt.plot(Saving.data["l"]/Constantes.conv_NM_m,
+         Saving.data["h"]/Constantes.conv_ft_m)
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("Altitude (ft)")
+plt.show()
 
-test_atmos  = Atmosphere()
-test_atmos.getRhoPT(15000)
-print("At 15000 m: rho = {:.4f} kg/m³, p = {:.2f} Pa, T = {:.2f} K".format(test_atmos.rho_t, test_atmos.P_t, test_atmos.T_t))
+# plt.figure()
+# plt.plot(np.log10(Saving.data_simu["ecart_mission"]))
+# plt.show()
 
-print("Cx_t = " + str(A320.Aero.Cx_t))
+# plt.figure()
+# plt.plot(Saving.data_simu["l_descent"])
+# plt.plot(Saving.data_simu["l_descent_diversion"])
+# plt.show()
 
-print("Masse actuelle = " + str(A320.Masse.getCurrentMass()) + " kg")
-
-#Test Aero
-
-A320.Aero.calculateCz()
-Cz = A320.Aero.getCz()
-
-A320.Aero.calculateCxClimb_Simplified()
-Cx_Climb = A320.Aero.getCx()
-
-A320.Aero.calculateCxCruise_Simplified()
-Cx_Cruise = A320.Aero.getCx()
-
-A320.Aero.calculateCxDescent_Simplified()
-Cx_Descent = A320.Aero.getCx()
-
-print(Cz)
-print(Cx_Climb)
-print(Cx_Cruise)
-print(Cx_Descent)
-
-# Test de l'obtention de l'envergure dans la classe avion
-env = A320.Envergure
-print("Envergure de l'avion : " + str(env) + " m")
-
-# Test de l'obtention de l'envergure via la méthode getEnvergure()
-env_method = A320.getEnvergure()
-print("Envergure de l'avion via méthode : " + str(env_method) + " m")
-
-# Test du calcul complet de Cx
-A320.Aero.calculateCx(test_atmos)
-Cx_complete = A320.Aero.getCx()
-print("Cx complet calculé : " + str(Cx_complete))
-
-print("Test complete.")
+# plt.figure()
+# plt.plot(Saving.data_simu["FB_mission"])
+# plt.show()

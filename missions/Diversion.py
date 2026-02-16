@@ -9,12 +9,13 @@ import numpy as np
 
 class Diversion:
     @staticmethod
-    def Diversion(Avion: Avion, Atmosphere: Atmosphere):
+    def Diversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement):
         '''
         Réalise toutes les opérations liées à la phase de diversion.
 
         :param Avion: instance de la classe Avion
         :param Atmosphere: instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         '''
         # Entrée en diversion
         Avion.diversion = True
@@ -23,25 +24,26 @@ class Diversion:
         l_fin_mission = Avion.getl()
 
         # Montée de diversion
-        Montee.monterDiversion(Avion, Atmosphere, dt = Inputs.dt_climb)
+        Montee.monterDiversion(Avion, Atmosphere, Enregistrement, dt = Inputs.dt_climb)
         
         # Croisière diversion
-        Diversion.croisiereDiversion(Avion, Atmosphere, l_fin_mission, dt = Inputs.dt_cruise)
+        Diversion.croisiereDiversion(Avion, Atmosphere, Enregistrement, l_fin_mission, dt = Inputs.dt_cruise)
 
         # Descente de diversion
-        Descente.descendreDiversion(Avion, Atmosphere, dt = Inputs.dt_descent)
+        Descente.descendreDiversion(Avion, Atmosphere, Enregistrement, dt = Inputs.dt_descent)
 
         # Fin de la diversion
         Avion.diversion = False
 
 
     @staticmethod
-    def croisiereDiversion(Avion: Avion, Atmosphere: Atmosphere, l_debut, dt = Inputs.dt_cruise):
+    def croisiereDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, l_debut, dt = Inputs.dt_cruise):
             '''
             Croisière en palier à Mach constant
 
             :param Avion: instance de la classe Avion
             :param Atmosphere: instance de la classe Atmosphere
+            :param Enregistrement: Instance de la classe Enregistrement
             :param l_debut: début de la diversion, avant la montée (m)
             :param dt: Pas de temps (s)
             '''

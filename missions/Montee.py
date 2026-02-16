@@ -7,12 +7,13 @@ import numpy as np
 
 class Montee:
     @staticmethod
-    def Monter(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
+    def Monter(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_climb):
         '''
         Réalise toute la montée principale jusqu'à la croisière.
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
         # Initialisations
@@ -20,44 +21,46 @@ class Montee:
         Avion.Aero.setCAS_t(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps)
 
         h_target = Inputs.h_accel_ft * Constantes.conv_ft_m
-        Montee.climbLowAltitude(Avion, Atmosphere, h_target, Inputs.dt_climb)
+        Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, h_target, Inputs.dt_climb)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
-        Montee.climbPalier(Avion, Atmosphere, CAS_target, dt)
+        Montee.climbPalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
 
         h_target = Inputs.h_cruise_init * Constantes.conv_ft_m
-        Montee.climbIsoCAS(Avion, Atmosphere, h_target, Inputs.Mach_climb, Inputs.dt_climb)
-        Montee.climbIsoMach(Avion, Atmosphere, h_target, Inputs.dt_climb)
+        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, h_target, Inputs.Mach_climb, Inputs.dt_climb)
+        Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, h_target, Inputs.dt_climb)
 
     @staticmethod
-    def monterDiversion(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_climb):
+    def monterDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_climb):
         '''
         Réalise la montée de la phase de diversion.
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
         h_target = Inputs.h_accel_ft * Constantes.conv_ft_m
-        Montee.climbLowAltitude(Avion, Atmosphere, h_target, dt)
+        Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, h_target, dt)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
-        Montee.climbPalier(Avion, Atmosphere, CAS_target, dt)
+        Montee.climbPalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
 
         h_target = Inputs.Final_climb_altitude_diversion_ft * Constantes.conv_ft_m
-        Montee.climbIsoCAS(Avion, Atmosphere, h_target, Inputs.Mach_cruise_div, dt)
-        Montee.climbIsoMach(Avion, Atmosphere, h_target, dt)
+        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, h_target, Inputs.Mach_cruise_div, dt)
+        Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, h_target, dt)
         
 
     @staticmethod
-    def climbLowAltitude(Avion: Avion, Atmosphere: Atmosphere, h_lim, dt):
+    def climbLowAltitude(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_lim, dt):
         '''
         Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en palier.
 
-        Avion       : instance de la classe Avion
-        Atmosphere  : instance de la classe Atmosphere
-        h_lim       : Altitude de fin (en mètres)
-        dt          : pas de temps (s)
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
+        :param h_lim: Altitude de fin (en mètres)
+        :param dt: pas de temps (s)
         '''
 
         while Avion.geth() < h_lim:
@@ -88,6 +91,9 @@ class Montee:
             F_N = Avion.Moteur.getF()
             Avion.Moteur.calculateSFCClimb()
 
+            # Check puissance suffisante
+            assert F_N >= Rx, "Moteur trop peu puissant en montée"
+
             # Pente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
@@ -105,13 +111,14 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climbPalier(Avion: Avion, Atmosphere: Atmosphere, CAS_target, dt = Inputs.dt_climb):
+    def climbPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, CAS_target, dt = Inputs.dt_climb):
         '''
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
 
         Avion       : instance de la classe Avion
         Atmosphere  : instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         dt          : pas de temps (s)
         '''
 
@@ -146,6 +153,9 @@ class Montee:
             F_N = Avion.Moteur.getF()
             Avion.Moteur.calculateSFCClimb()
 
+            # Check puissance suffisante
+            assert F_N >= Rx, "Moteur trop peu puissant en montée"
+
             # Dynamique longitudinale
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
@@ -167,12 +177,13 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climbIsoCAS(Avion: Avion, Atmosphere: Atmosphere, h_lim, Mach_lim, dt = Inputs.dt_climb):
+    def climbIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_lim, Mach_lim, dt = Inputs.dt_climb):
         '''
         Montée à CAS constant jusqu'à atteindre un Mach cible
 
         :param Avion: instance de la classe Avion
         :param Atmosphere: instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param h_lim: Altitude de fin de montée (m)
         :param Mach_lim: Mach de fin de montée
         :param dt: pas de temps (s)
@@ -209,6 +220,9 @@ class Montee:
             F_N = Avion.Moteur.getF()
             Avion.Moteur.calculateSFCClimb()
 
+            # Check puissance suffisante
+            assert F_N >= Rx, "Moteur trop peu puissant en montée"
+
             # Pente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
@@ -226,12 +240,13 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, h_lim, dt = Inputs.dt_climb):
+    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_lim, dt = Inputs.dt_climb):
         '''
         Montée à Mach constant jusqu'à une altitude cible.
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param h_lim: Altitude de fin de montée (m)
         :param dt: pas de temps (s)
         '''
@@ -265,6 +280,9 @@ class Montee:
             Avion.Moteur.calculateFClimb()
             F_N = Avion.Moteur.getF()
             Avion.Moteur.calculateSFCClimb()
+
+            # Check puissance suffisante
+            assert F_N >= Rx, "Moteur trop peu puissant en montée"
 
             # Pente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())

@@ -40,9 +40,11 @@ class Avion:
     l_descent_diversion     = 0.     # Distance de la descente en diversion (m)
     diversion               = False  # Etat de l'avion (en diversion ou non)
 
-    def __init__(self):
+    def __init__(self, m_payload = Inputs.m_payload):
         '''
         Initialise un objet Avion en lisant les paramètres depuis un fichier CSV.
+
+        :param m_payload: Masse de la payload (kg)
         '''
 
         full_path = Inputs.getAirplaneFile() #On utilise la méthode statique de la classe Inputs pour obtenir le chemin complet du fichier csv de l'avion
@@ -73,7 +75,7 @@ class Avion:
                     setattr(self, cle, valeur)
 
         # Initialisation des sous-classes
-        self.Masse = Masse(self)
+        self.Masse = Masse(self, m_payload)
         self.Aero = Aero(self)
         self.Moteur = ReseauMoteur(self)
 
@@ -83,8 +85,6 @@ class Avion:
     def reset(self, FB_mission, FB_diversion, FB_holding):
         '''
         Remet l'avion à ses conditions initiales (altitude, distance, vitesse), mais met à jour les masses
-        
-        :param self: Instance de la classe avion
         '''
         self.l_t                     = 0.     # Distance totale parcourue (m)    
         self.h_t                     = 0.     # Altitude actuelle (m)
@@ -102,7 +102,6 @@ class Avion:
         '''
         Définit la distance nécessaire pour la descente.
 
-        :param self: Instance de la classe Avion
         :param l_descent: Distance nécessaire pour la descente (m)
         '''
         self.l_descent = l_descent
@@ -111,7 +110,6 @@ class Avion:
         '''
         Définit la distance nécessaire pour la descente en diversion.
         
-        :param self: Instance de la classe Avion
         :param l_descent_diversion: Distance necessaire pour la descente en diversion (m)
         '''
         self.l_descent_diversion = l_descent_diversion
@@ -120,7 +118,6 @@ class Avion:
         '''
         Ajoute une distance dl_descent à la distance nécessaire pour la descente.
 
-        :param self: Instance de la classe Avion
         :param dl_descent: Distance à ajouter à la distance de descente (m)
         '''
         self.l_descent += dl_descent
@@ -129,7 +126,6 @@ class Avion:
         '''
         Ajoute une distance dl_descent à la distance nécessaire pour la descente de la diversion.
 
-        :param self: Instance de la classe Avion
         :param dl_descent: Distance à ajouter à la distance de descente de la diversion (m)
         '''
         self.l_descent_diversion += dl_descent_diversion
@@ -138,7 +134,6 @@ class Avion:
         '''
         Ajoute une distance dl à la distance totale parcourue par l'avion.
         
-        :param self: Instance de la classe Avion
         :param dl: Distance à ajouter (m)
         '''
         self.l_t += dl
@@ -147,7 +142,6 @@ class Avion:
         '''
         Définit l'altitude actuelle de l'avion.
         
-        :param self: Instance de la classe Avion
         :param h: Altitude à définir (m)
         '''
         self.h_t = h
@@ -156,7 +150,6 @@ class Avion:
         '''
         Définit la distance parcourue par l'avion.
         
-        :param self: Instance de la classe Avion
         :param h: Distance à définir (m)
         '''
         self.l_t = l
@@ -165,7 +158,6 @@ class Avion:
         '''
         Ajoute une variation d'altitude dh à l'altitude actuelle de l'avion.
         
-        :param self: Instance de la classe Avion
         :param dh: Variation d'altitude à ajouter (m)
         '''
         self.h_t += dh
@@ -173,16 +165,12 @@ class Avion:
     def geth(self):
         '''
         Renvoie l'altitude actuelle de l'avion (m).
-        
-        :param self: Instance de la classe Avion
         '''
         return self.h_t
     
     def getl(self):
         '''
         Renvoie la distance parcourue par l'avion (m).
-        
-        :param self: Instance de la classe Avion
         '''
         return self.l_t
 
@@ -267,16 +255,12 @@ class Avion:
     def getl_descent(self):
         '''
         Retourne la valeur actuelle de la distance de la descente.
-        
-        :param self: Instance de la classe Avion
         '''
         return self.l_descent
     
     def getl_descent_diversion(self):
         '''
         Retourne la valeur actuelle de la distance de la descente en diversion.
-        
-        :param self: Instance de la classe Avion
         '''
         return self.l_descent_diversion
     

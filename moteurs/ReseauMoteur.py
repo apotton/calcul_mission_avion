@@ -112,14 +112,11 @@ class ReseauMoteur(Moteur):
         sfc_matrix = data['sfc']                         # Matrice SFC (Lignes=Fn, Colonnes=Mach)
         mach_vector = self.DonneesMoteur.mach_table_crl  # Vecteur Mach (vecteur colonnes)
 
-        # Conversion de l'axe Poussée de la table (lbf -> Newtons)
-        fn_newton_vector = fn_lbf_vector * Constantes.g * Constantes.conv_lb_kg
-
-        # Interpolation de la table de SFC
-        sfc_lbf_raw = ReseauMoteur.interp2d_linear(fn_newton_vector,
+        # Interpolation de la table de SFC (poussée en lbf)
+        sfc_lbf_raw = ReseauMoteur.interp2d_linear(fn_lbf_vector,
                                                    mach_vector,
                                                    sfc_matrix,
-                                                   self.F_t / 2, # Poussée pour un moteur en lbf
+                                                   self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g,
                                                    self.Avion.Aero.getMach())
 
         # Conversion finale des unités
@@ -177,10 +174,10 @@ class ReseauMoteur(Moteur):
     ### HOLDING ###
 
     def calculateFHolding(self):
+        # Calcul par équilibre des forces
         Cz = self.Avion.Aero.getCz()
         Cx = self.Avion.Aero.getCx()
         finesse = Cz / Cx
-
         self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
 
     def calculateSFCHolding(self):
@@ -195,19 +192,22 @@ class ReseauMoteur(Moteur):
     ### Diversion ###
 
     def calculateFCruiseDiversion(self):
+        # Calcul par équilibre des forces
         Cz = self.Avion.Aero.getCz()
         Cx = self.Avion.Aero.getCx()
         finesse = Cz / Cx
         self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
 
     def calculateSFCCruiseDiversion(self):
-        h_ft = 25000  # ft
+        # Même calcul qu'en croisière
+        self.calculateSFCCruise()
+        # h_ft = 25000  # ft
 
-        SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.cruise_data[h_ft]['fn'] * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
-                                               self.DonneesMoteur.mach_table_crl,
-                                               self.DonneesMoteur.cruise_data[h_ft]['sfc'],
-                                               self.F_t/2, self.Avion.Aero.getMach())
+        # SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.cruise_data[h_ft]['fn'] * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
+        #                                        self.DonneesMoteur.mach_table_crl,
+        #                                        self.DonneesMoteur.cruise_data[h_ft]['sfc'],
+        #                                        self.F_t/2, self.Avion.Aero.getMach())
     
-        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        # self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
 
 

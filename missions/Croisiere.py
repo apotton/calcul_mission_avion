@@ -7,24 +7,26 @@ import numpy as np
 
 class Croisiere:
     @staticmethod
-    def Croisiere(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_cruise):
+    def Croisiere(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_cruise):
         ''' Réalise toute la croisière de la mission principale.
         
-        Avion : instance de la classe Avion
-        Atmosphere : instance de la classe Atmosphere
-        dt : pas de temps (s)
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
+        :param dt: pas de temps (s)
         '''
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
-        Croisiere.cruiseMachSAR(Avion, Atmosphere, l_end, dt)
+        Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
 
     @staticmethod
-    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_cruise):
+    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_cruise):
         '''
         Montée iso-Mach à Mach constant jusqu'à ce que les critères de montée ne soient plus vérifiés.
 
-        Avion : instance de la classe Avion
-        Atmosphere : instance de la classe Atmosphere
-        dt : pas de temps (s)
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
+        :param dt: pas de temps (s)
         '''
         h_init = Avion.geth()
 
@@ -78,7 +80,13 @@ class Croisiere:
     ##
 
     @staticmethod
-    def checkUp(Avion : Avion, Atmosphere : Atmosphere):
+    def checkUp(Avion : Avion, Atmosphere: Atmosphere):
+            '''
+            Vérifie si la montée en croisière est intéressante
+            
+            :param Avion: Instance de la classe Avion
+            :param Atmosphere: Instance de la classe Atmosphere
+            '''
             # Stockage des paramètres avant évaluation de montée
             Avion.Aero.calculateECCF(Atmosphere) 
             Avion.Aero.calculateSGR(Atmosphere)
@@ -164,13 +172,14 @@ class Croisiere:
         
 
     @staticmethod
-    def cruiseMachSAR(Avion: Avion, Atmosphere: Atmosphere, l_end, dt=60.0):
+    def cruiseMachSAR(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, l_end, dt = Inputs.dt_cruise):
         """
         Croisière en palier à Mach constant.
 
-        Avion : instance de la classe Avion
-        Atmosphere : instance de la classe Atmosphere
-        l_end : distance à parcourir en croisière avant de commencer la descente (m)
+        :param Avion: instance de la classe Avion
+        :param Atmosphere: instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
+        :param l_end: distance à parcourir en croisière avant de commencer la descente (m)
         """
 
         # Tant que l'on n'a pas parcouru assez de distance
@@ -197,10 +206,11 @@ class Croisiere:
             Avion.Moteur.calculateFCruise()
             Avion.Moteur.calculateSFCCruise()
 
-            # Condition de montée iso-Mach
-            if (Croisiere.checkUp(Avion, Atmosphere)):
-                Croisiere.climbIsoMach(Avion,Atmosphere, dt=1)
-            else : 
+            # Condition de montée iso-Mach (on ne monte pas si on est très avancé dans la mission)
+            if (Avion.getl() < 7/10*Inputs.l_mission_NM and Croisiere.checkUp(Avion, Atmosphere)):
+                # print("Je monte")
+                Croisiere.climbIsoMach(Avion,Atmosphere,Enregistrement, dt=1)
+            else :
                 # Fuel burn
                 Avion.Masse.burnFuel(dt)
 

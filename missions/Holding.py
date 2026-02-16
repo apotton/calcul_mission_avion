@@ -9,13 +9,14 @@ from avions.Avion import Avion
 class Holding:
 
     @staticmethod
-    def Hold(Avion: Avion, Atmosphere: Atmosphere,  dt = Inputs.dt_cruise):
+    def Hold(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_cruise):
         '''
         Réalisation de l'opération de holding: l'avion atteint la vitesse target et vole
         en palier pendant un temps déterminé.
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
         
@@ -24,22 +25,23 @@ class Holding:
 
         if (Avion.Aero.getCAS() < Inputs.KCAS_holding):
             # Accélération en palier
-            Montee.climbPalier(Avion, Atmosphere, CAS_target, dt = Inputs.dt_climb)
+            Montee.climbPalier(Avion, Atmosphere, Enregistrement, CAS_target, dt = Inputs.dt_climb)
         elif (Avion.Aero.getCAS() > Inputs.KCAS_holding):
             # Décélération palier avec moteur en idle 
-            Descente.descentePalier(Avion, Atmosphere, CAS_target, dt = Inputs.dt_climb)
+            Descente.descentePalier(Avion, Atmosphere, Enregistrement, CAS_target, dt = Inputs.dt_climb)
 
         #  Vol en palier
-        Holding.holdPalier(Avion, Atmosphere, dt)
+        Holding.holdPalier(Avion, Atmosphere, Enregistrement, dt)
         
 
     @staticmethod
-    def holdPalier(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_cruise):
+    def holdPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_cruise):
         '''
         Vol en palier à vitesse constante pendant une durée définie.
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (dt)
         '''
         # Nombre de pas de temps de holding

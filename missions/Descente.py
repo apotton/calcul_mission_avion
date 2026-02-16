@@ -7,62 +7,65 @@ import numpy as np
 
 class Descente:
     @staticmethod
-    def Descendre(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_descent):
+    def Descendre(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
         '''
         Réalise toute la descente depuis la fin de la croisière jusqu'à l'altitude finale.
 
         :param Avion: instance de la classe Avion
         :param Atmosphere: instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: pas de temps (s)
         '''
         # Reset de la distance de descente pour une estimation plus précise
         Avion.setl_descent(0.)
 
         # Première phase
-        Descente.descenteIsoMach(Avion, Atmosphere, dt)
+        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, dt)
 
         # Seconde phase
         h_target = Inputs.h_decel_ft * Constantes.conv_ft_m
-        Descente.descenteIsoMaxCAS(Avion, Atmosphere, h_target, dt)
+        Descente.descenteIsoMaxCAS(Avion, Atmosphere, Enregistrement, h_target, dt)
 
         # Dernière phase
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
-        Descente.descentePalier(Avion, Atmosphere, CAS_target, dt)
-        Descente.descenteFinaleIsoCAS(Avion, Atmosphere, dt)
+        Descente.descentePalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
+        Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, dt)
 
 
     @staticmethod
-    def descendreDiversion(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_descent):
+    def descendreDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
         '''
         Réalise les opérations de descente à la fin de la diversion.
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (dt)
         '''
         # Reset de la distance de descente pour une estimation plus précise
         Avion.setl_descent_diversion(0.)
 
         # Première phase
-        Descente.descenteIsoMach(Avion, Atmosphere, dt)
+        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, dt)
 
         # Deuxième phase
         h_target = Inputs.h_decel_ft * Constantes.conv_ft_m
-        Descente.descenteIsoMaxCAS(Avion, Atmosphere, h_target, dt)
+        Descente.descenteIsoMaxCAS(Avion, Atmosphere, Enregistrement, h_target, dt)
 
         # Troisième phase
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
-        Descente.descentePalier(Avion, Atmosphere, CAS_target, dt)
-        Descente.descenteFinaleIsoCAS(Avion, Atmosphere, dt)
+        Descente.descentePalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
+        Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, dt)
 
     # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod
-    def descenteIsoMach(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_descent):
+    def descenteIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
         '''
         Laisse l'avion initier une descente libre pour atteindre la vitesse maximale autorisée en CAS (Vmax_CAS) avant de passer à la phase 2.
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
         # CAS max en m/s
@@ -121,12 +124,13 @@ class Descente:
             
 
     @staticmethod
-    def descenteIsoMaxCAS(Avion: Avion, Atmosphere: Atmosphere, h_end, dt = Inputs.dt_descent):
+    def descenteIsoMaxCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_end, dt = Inputs.dt_descent):
         '''
         Phase 2 : Descente jusqu'à 10000ft à vitesse constante Max CAS
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param h_end: Altitude finale de la phase de la descente (m)
         :param dt: Pas de temps (s)
         '''
@@ -191,12 +195,13 @@ class Descente:
             
 
     @staticmethod
-    def descentePalier(Avion: Avion, Atmosphere: Atmosphere, CAS_target, dt = Inputs.dt_descent):
+    def descentePalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, CAS_target, dt = Inputs.dt_descent):
         '''
         Phase 3 : Décélération en palier: l'altitude est fixée et l'avion décélère.
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param CAS_target: CAS à viser à la fin du palier
         :param dt: Pas de temps (s)
         '''
@@ -263,12 +268,13 @@ class Descente:
 
     # Phase 4 : Descente finale jusqu'à h_final
     @staticmethod
-    def descenteFinaleIsoCAS(Avion: Avion, Atmosphere: Atmosphere, dt = Inputs.dt_descent):
+    def descenteFinaleIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
         '''
         Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale de 1500ft
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
         

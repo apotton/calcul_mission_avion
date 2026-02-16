@@ -2,16 +2,19 @@ from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
 
 class Masse:
-    def __init__(self, Avion):
+    def __init__(self, Avion, m_payload):
         '''
         Initialisation de la sous-classe Masse d'un avion: les masses de fuel nécessaires à la mission, la contingence,
         la diversion et le holding sont définies (pour l'instant seule la masse mission est définie à la MFW, les 
         autres à 0). Les masses dynamiques sont également initialisées.
+
+        :param Avion: Instance de la classe Avion
+        :param m_payload: Masse de la payload (m)
         '''
         self.Avion = Avion
 
         # Masses mission
-        self.m_payload          = Inputs.m_payload          # Payload de la mission
+        self.m_payload          = m_payload                 # Payload de la mission
         self.m_fuel_mission     = Avion.getMaxFuelWeight()  # Fuel nécessaire à la mission (set au max au début)
         self.m_fuel_contingency = 0.0                       # Fuel de contingence, ce qu'il doit obligatoirement resté au minimum à la fin de la mission (typiquement 5%)
         self.m_fuel_diversion   = 0.0                       # Fuel en cas de diversion vers un aéroport de dégagement

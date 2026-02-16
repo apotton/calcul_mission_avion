@@ -20,12 +20,13 @@ class Inputs:
     dt_climb = 10.      # s
     dt_cruise = 60.0    # s
     dt_descent = 10.    # s
+    max_iteration = 100  # Nombre d'itérations max
 
     # =====================
     # MISSION
     # =====================
-    m_payload = 18000
-    l_mission_NM = 2000 # NM
+    m_payload = 10000   # kg
+    l_mission_NM = 1000  # NM
 
     # =====================
     # MONTEE
@@ -81,7 +82,7 @@ class Inputs:
     # =====================
     # VALIDATION
     # =====================
-    precision = 0.01 # %
+    precision = 0.1 # %
     
     @staticmethod
     def validate():
