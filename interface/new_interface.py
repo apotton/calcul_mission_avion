@@ -5,7 +5,7 @@ from tkinter import filedialog, messagebox
 from pathlib import Path
 root = tk.Tk()
 root.title("PIE COA26")
-root.geometry("1300x900")
+root.geometry("1400x1000")
 
 #le zoom de vieux
 root.tk.call('tk', 'scaling', 2.2)
@@ -93,10 +93,6 @@ CAS_below_10000_mont_kt = tk.Entry(frame_Montee, width=10)
 CAS_below_10000_mont_kt.grid(row=10, column=1)
 tk.Label(frame_Montee, text="kt", **COMMUN).grid(row=10, column=3, sticky="w")
 
-tk.Label(frame_Montee, text="CAS de montée", **COMMUN).grid(row=11, column=0, sticky="e")
-CAS_climb_kt = tk.Entry(frame_Montee, width=10)
-CAS_climb_kt.grid(row=11, column=1)
-tk.Label(frame_Montee, text="kt", **COMMUN).grid(row=11, column=3, sticky="w")
 
 tk.Label(frame_Montee, text="Mach de montée", **COMMUN).grid(row=12, column=0, sticky="e")
 Mach_climb = tk.Entry(frame_Montee, width=10)
@@ -105,33 +101,133 @@ Mach_climb.grid(row=12, column=1)
 frame_Montee.rowconfigure(13, minsize=20)
 # --- Partie Croisière ---
 
-tk.Label(frame_Croisiere, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
+croisiere_choisie = tk.StringVar()
+menu_deroulant_croisiere = ttk.Combobox(frame_Croisiere, textvariable = croisiere_choisie, state="readonly")
+menu_deroulant_croisiere['values'] = ('Mach SAR', "Alt SAR", "Alt Mach", "CI")
+menu_deroulant_croisiere.grid(row=0, column =0,columnspan = 3, sticky= "ew")
 
-tk.Label(frame_Croisiere, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
-h_cruise_init = tk.Entry(frame_Croisiere, width=10)
+#-----SubFrame Mach_Sar------------
+frame_mach_sar = tk.Frame(frame_Croisiere)
+
+tk.Label(frame_mach_sar, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
+
+tk.Label(frame_mach_sar, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
+h_cruise_init = tk.Entry(frame_mach_sar, width=10)
 h_cruise_init.grid(row=8, column=1)
-tk.Label(frame_Croisiere, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
+tk.Label(frame_mach_sar, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
 
-tk.Label(frame_Croisiere, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
-step_climb_ft = tk.Entry(frame_Croisiere, width=10)
+tk.Label(frame_mach_sar, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
+step_climb_ft = tk.Entry(frame_mach_sar, width=10)
 step_climb_ft.grid(row=9, column=1)
-tk.Label(frame_Croisiere, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
+tk.Label(frame_mach_sar, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
 
-tk.Label(frame_Croisiere, text="Plafond pressurisation", **COMMUN).grid(row=10, column=0, sticky="e")
-pressurisation_ceiling_ft = tk.Entry(frame_Croisiere, width=10)
-pressurisation_ceiling_ft.grid(row=10, column=1)
-tk.Label(frame_Croisiere, text="ft", **COMMUN).grid(row=10, column=2, sticky="w")
+tk.Label(frame_mach_sar, text="Borne Inf montée", **COMMUN).grid(row=10, column=0, sticky="e")
+step_climb_ft = tk.Entry(frame_mach_sar, width=10)
+step_climb_ft.grid(row=10, column=1)
+tk.Label(frame_mach_sar, text="% distance mission", **COMMUN).grid(row=10, column=2, sticky="w")
 
-tk.Label(frame_Croisiere, text="Vitesse montée min", **COMMUN).grid(row=11, column=0, sticky="e")
-RRoC_min_ft_min = tk.Entry(frame_Croisiere, width=10)
+tk.Label(frame_mach_sar, text="Borne Sup déscente", **COMMUN).grid(row=11, column=0, sticky="e")
+step_climb_ft = tk.Entry(frame_mach_sar, width=10)
+step_climb_ft.grid(row=11, column=1)
+tk.Label(frame_mach_sar, text="% distance mission", **COMMUN).grid(row=11, column=2, sticky="w")
+
+
+
+tk.Label(frame_mach_sar, text="Vitesse montée min", **COMMUN).grid(row=12, column=0, sticky="e")
+RRoC_min_ft_min = tk.Entry(frame_mach_sar, width=10)
+RRoC_min_ft_min.grid(row=12, column=1)
+tk.Label(frame_mach_sar, text="ft/min", **COMMUN).grid(row=12, column=2, sticky="w")
+
+tk.Label(frame_mach_sar, text="Mach de croisière", **COMMUN).grid(row=13, column=0, sticky="e")
+Mach_cruise = tk.Entry(frame_mach_sar, width=10)
+Mach_cruise.grid(row=13, column=1)
+
+frame_mach_sar.rowconfigure(14, minsize=20)
+#-----------Fin subframe Mach_Sar
+
+#-----SubFrame Alt_Sar------------
+frame_alt_sar = tk.Frame(frame_Croisiere)
+
+tk.Label(frame_alt_sar, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
+
+tk.Label(frame_alt_sar, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
+h_cruise_init = tk.Entry(frame_alt_sar, width=10)
+h_cruise_init.grid(row=8, column=1)
+tk.Label(frame_alt_sar, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
+
+tk.Label(frame_alt_sar, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
+step_climb_ft = tk.Entry(frame_alt_sar, width=10)
+step_climb_ft.grid(row=9, column=1)
+tk.Label(frame_alt_sar, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
+
+
+tk.Label(frame_alt_sar, text="Vitesse montée min", **COMMUN).grid(row=11, column=0, sticky="e")
+RRoC_min_ft_min = tk.Entry(frame_alt_sar, width=10)
 RRoC_min_ft_min.grid(row=11, column=1)
-tk.Label(frame_Croisiere, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
+tk.Label(frame_alt_sar, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
 
-tk.Label(frame_Croisiere, text="Mach de croisière", **COMMUN).grid(row=12, column=0, sticky="e")
-Mach_cruise = tk.Entry(frame_Croisiere, width=10)
+tk.Label(frame_alt_sar, text="Mach de croisière", **COMMUN).grid(row=12, column=0, sticky="e")
+Mach_cruise = tk.Entry(frame_alt_sar, width=10)
 Mach_cruise.grid(row=12, column=1)
 
-frame_Croisiere.rowconfigure(13, minsize=20)
+frame_alt_sar.rowconfigure(13, minsize=20)
+#-------------Fin Subframe alt Sar ------------------------------------
+
+#-----SubFrame Alt_Mach------------
+frame_alt_mach = tk.Frame(frame_Croisiere)
+
+tk.Label(frame_alt_mach, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
+
+tk.Label(frame_alt_mach, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
+h_cruise_init = tk.Entry(frame_alt_mach, width=10)
+h_cruise_init.grid(row=8, column=1)
+tk.Label(frame_alt_mach, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
+
+tk.Label(frame_alt_mach, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
+step_climb_ft = tk.Entry(frame_alt_mach, width=10)
+step_climb_ft.grid(row=9, column=1)
+tk.Label(frame_alt_mach, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
+
+
+tk.Label(frame_alt_mach, text="Vitesse montée min", **COMMUN).grid(row=11, column=0, sticky="e")
+RRoC_min_ft_min = tk.Entry(frame_alt_mach, width=10)
+RRoC_min_ft_min.grid(row=11, column=1)
+tk.Label(frame_alt_mach, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
+
+tk.Label(frame_alt_mach, text="Mach de croisière", **COMMUN).grid(row=12, column=0, sticky="e")
+Mach_cruise = tk.Entry(frame_alt_mach, width=10)
+Mach_cruise.grid(row=12, column=1)
+
+frame_alt_mach.rowconfigure(13, minsize=20)
+#-----------Fin subframe Alt Mach --------------------------
+
+#-----SubFrame CI------------
+frame_ci = tk.Frame(frame_Croisiere)
+
+tk.Label(frame_ci, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
+
+tk.Label(frame_ci, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
+h_cruise_init = tk.Entry(frame_ci, width=10)
+h_cruise_init.grid(row=8, column=1)
+tk.Label(frame_ci, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
+
+tk.Label(frame_ci, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
+step_climb_ft = tk.Entry(frame_ci, width=10)
+step_climb_ft.grid(row=9, column=1)
+tk.Label(frame_ci, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
+
+
+tk.Label(frame_ci, text="Vitesse montée min", **COMMUN).grid(row=11, column=0, sticky="e")
+RRoC_min_ft_min = tk.Entry(frame_ci, width=10)
+RRoC_min_ft_min.grid(row=11, column=1)
+tk.Label(frame_ci, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
+
+tk.Label(frame_ci, text="Mach de croisière", **COMMUN).grid(row=12, column=0, sticky="e")
+Mach_cruise = tk.Entry(frame_ci, width=10)
+Mach_cruise.grid(row=12, column=1)
+
+frame_ci.rowconfigure(13, minsize=20)
+#-----------Fin subframe CI --------------------------
 
 #-----------Partie descente----------------------
 tk.Label(frame_descente, text="Descente", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
@@ -203,4 +299,24 @@ tk.Label(frame_pasdetemps, text="s", **COMMUN).grid(row=2, column=2, sticky="w")
 
 #-----------------------Fin de l'onglet pas de temps--------------------------
 
+def affichage_croisiere(event):
+    if menu_deroulant_croisiere.get() == "Mach SAR":
+        frame_mach_sar.grid(row=1, column=2, sticky="ew")
+    else :
+        frame_mach_sar.grid_forget()
+    if menu_deroulant_croisiere.get() == "Alt SAR":
+        frame_alt_sar.grid(row=1, column=2, sticky="ew")
+    else :
+        frame_alt_sar.grid_forget()
+    if menu_deroulant_croisiere.get() == "Alt Mach":
+        frame_alt_mach.grid(row=1, column=2, sticky="ew")
+    else :
+        frame_alt_mach.grid_forget()
+    if menu_deroulant_croisiere.get() == "CI":
+        frame_ci.grid(row=1, column=2, sticky="ew")
+    else :
+        frame_ci.grid_forget()
+menu_deroulant_croisiere.bind("<<ComboboxSelected>>", affichage_croisiere)
+menu_deroulant_croisiere.current(0) 
+affichage_croisiere(None)
 root.mainloop()
