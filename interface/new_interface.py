@@ -8,7 +8,7 @@ root.title("PIE COA26")
 root.geometry("1400x1000")
 
 #le zoom de vieux
-root.tk.call('tk', 'scaling', 2.2)
+root.tk.call('tk', 'scaling', 1.5)
 
 
 COMMUN = {"font": ("Helvetica", 10)}
@@ -63,7 +63,7 @@ payload = tk.Entry(frame_generale, width=10)
 payload.grid(row=2, column=1)
 tk.Label(frame_generale, text="kg", **COMMUN).grid(row=2, column=3, sticky="w")
 
-tk.Label(frame_generale, text="Ditance", **COMMUN).grid(row=3, column=0, sticky="e")
+tk.Label(frame_generale, text="Distance", **COMMUN).grid(row=3, column=0, sticky="e")
 distance_de_diversion = tk.Entry(frame_generale, width=10)
 distance_de_diversion.grid(row=3, column=1)
 tk.Label(frame_generale, text="nm", **COMMUN).grid(row=3, column=3, sticky="w")
