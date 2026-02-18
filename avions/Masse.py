@@ -23,8 +23,8 @@ class Masse:
                                 +  self.m_fuel_diversion
                                 +  self.m_fuel_holding)     # Fuel de reserve : diversion + holding + contingency
 
-        # Si on a mis trop d'essence au début
-        assert self.m_fuel_mission + self.m_fuel_reserve <= Avion.getMaxFuelWeight(), "Trop d'essence dans l'avion"
+        # Si on a mis trop de carburant au début
+        assert self.m_fuel_mission + self.m_fuel_reserve <= Avion.getMaxFuelWeight(), "Trop de carburant dans l'avion"
 
         # Masses dynamiques
         self.m_fuel_remaining_t = self.m_fuel_mission + self.m_fuel_reserve # Fuel dans l'avion à l'instant t
@@ -47,7 +47,7 @@ class Masse:
 
         self.m_fuel_reserve     = self.m_fuel_contingency + self.m_fuel_diversion + self.m_fuel_holding
 
-        assert self.m_fuel_mission + self.m_fuel_remaining_t <= self.Avion.getMaxFuelWeight(), "La mission demande trop d'essence"
+        assert self.m_fuel_mission + self.m_fuel_remaining_t <= self.Avion.getMaxFuelWeight(), "La mission demande trop de carburant"
 
         self.m_fuel_remaining_t = self.m_fuel_mission + self.m_fuel_reserve
         self.m_burned_total_t   = 0.0
@@ -99,7 +99,7 @@ class Masse:
 
     def getFuelReserve(self):
         '''
-        Renvoie la masse d'essence pour la réserve (kg).
+        Renvoie la masse de carburant pour la réserve (kg).
         '''
         return self.m_fuel_reserve
 
