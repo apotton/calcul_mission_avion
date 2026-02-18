@@ -113,14 +113,53 @@ class ReseauMoteur(Moteur):
         mach_vector = self.DonneesMoteur.mach_table_crl  # Vecteur Mach (vecteur colonnes)
 
         # Interpolation de la table de SFC (poussée en lbf)
-        sfc_lbf_raw = ReseauMoteur.interp2d_linear(fn_lbf_vector,
+        sfc_lbf_closest_h = ReseauMoteur.interp2d_linear(fn_lbf_vector,
                                                    mach_vector,
                                                    sfc_matrix,
                                                    self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g,
                                                    self.Avion.Aero.getMach())
+        
 
-        # Conversion finale des unités
-        self.SFC_t = sfc_lbf_raw / 3600.0 / Constantes.g
+        if abs(h_ft - closest_h) < 20:  # Si l'altitude est proche de plus de 20 ft de la base de données, on affiche un avertissement
+            print(f"Attention : altitude {h_ft} ft proche de la base de données ({closest_h} ft)")
+
+            # Conversion finale des unités
+            self.SFC_t = sfc_lbf_closest_h / 3600.0 / Constantes.g
+            self.FF_t = self.SFC_t * self.F_t
+
+        else:
+            print(f"Attention : altitude {h_ft} ft éloignée de la base de données ({closest_h} ft), interpolation moins fiable")
+
+            # comme c'est éloigné, on fait une interpolation linéaire entre les deux altitudes les plus proches pour essayer d'améliorer la précision
+            # Trouve les deux altitudes les plus proches sachant qu'on garde closest_h comme l'une d'entre elle
+            if h_ft < closest_h:
+                second_closest_h = max([h for h in self.available_alts if h < closest_h], default=closest_h)
+                #print(f"Altitude de référence pour interpolation : {closest_h} ft et {second_closest_h} ft et altitude actuelle {h_ft} ft")
+            else:
+                second_closest_h = min([h for h in self.available_alts if h > closest_h], default=closest_h)
+                #print(f"Altitude de référence pour interpolation : {closest_h} ft et {second_closest_h} ft et altitude actuelle {h_ft} ft")
+
+            # Interpolation linéaire entre les deux altitudes
+            ratio = (h_ft - closest_h) / (second_closest_h - closest_h) if second_closest_h != closest_h else 0
+            data2 = self.DonneesMoteur.cruise_data[second_closest_h]
+
+            fn_lbf_vector_2 = data2['fn']                       # Vecteur Poussée en lbf (vecteur lignes)
+            sfc_matrix_2 = data2['sfc']                         # Matrice SFC (Lignes=Fn, Colonnes=Mach)
+
+
+            sfc_lbf_second_closest_h = ReseauMoteur.interp2d_linear(fn_lbf_vector_2,
+                                                   mach_vector,
+                                                   sfc_matrix_2,
+                                                   self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g,
+                                                   self.Avion.Aero.getMach())
+
+            # Interpolation des valeurs SFC
+            sfc_lbf_interp = (1 - ratio) * sfc_lbf_closest_h + ratio * sfc_lbf_second_closest_h  # Simplification pour un seul point
+
+            # Conversion finale des unités
+            self.SFC_t = sfc_lbf_interp / 3600.0 / Constantes.g
+            self.FF_t = self.SFC_t * self.F_t
+
 
     #### MONTÉE ####
 
@@ -146,6 +185,7 @@ class ReseauMoteur(Moteur):
                                                self.Avion.Aero.getMach(), h_ft)
     
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        self.FF_t = self.SFC_t * self.F_t
     
     #### DESENTE ####
 
@@ -169,6 +209,7 @@ class ReseauMoteur(Moteur):
                                                     self.Avion.Aero.getMach(), h_ft)
         
         self.SFC_t = float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t
+        self.FF_t = self.SFC_t * self.F_t
 
 
     ### HOLDING ###
@@ -187,6 +228,7 @@ class ReseauMoteur(Moteur):
                                                self.F_t / 2, self.Avion.Aero.getMach())
     
         self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        self.FF_t = self.SFC_t * self.F_t
 
 
     ### Diversion ###
