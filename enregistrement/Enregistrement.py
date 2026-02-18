@@ -32,6 +32,7 @@ class Enregistrement:
             # Propulsion
             "F_N" : np.zeros(self.default_size, dtype=np.float32),
             "SFC" : np.zeros(self.default_size, dtype=np.float32),
+            "FF" : np.zeros(self.default_size, dtype=np.float32),
 
             # Masse / carburant
             "FB" : np.zeros(self.default_size, dtype=np.float32),
@@ -79,6 +80,7 @@ class Enregistrement:
 
         self.data["F_N"][self.counter] = Avion.Moteur.getF()
         self.data["SFC"][self.counter] = Avion.Moteur.getSFC()
+        self.data["FF"][self.counter] = Avion.Moteur.getFF()
 
         self.data["FB"][self.counter] = Avion.Masse.getFuelBurned()
         self.data["m"][self.counter] = Avion.Masse.getCurrentMass()

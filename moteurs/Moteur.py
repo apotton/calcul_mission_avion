@@ -38,6 +38,12 @@ class Moteur:
         Renvoie la SFC du moteur (kg/(N.s))
         '''
         return self.SFC_t
+    
+    def getFF(self):
+        '''
+        Renvoie la consommation de carburant du moteur (kg/s)
+        '''
+        return self.FF_t
 
     ## Poussée ##
     def calculateFClimb(self):
