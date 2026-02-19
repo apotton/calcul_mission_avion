@@ -3,6 +3,9 @@ from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
 from avions.Avion import Avion
+from avions.Aero import Aero
+from avions.Masse import Masse
+from moteurs.Moteur import Moteur
 import numpy as np
 
 class Croisiere:
@@ -17,8 +20,8 @@ class Croisiere:
         '''
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
         # Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
-        Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, l_end, dt)
-        # Croisiere.cruiseAltSAR(Avion,Atmosphere,Enregistrement,l_end, 99/100, dt)
+        # Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, l_end, dt)
+        Croisiere.cruiseAltSAR(Avion,Atmosphere,Enregistrement,l_end, dt)
 
     @staticmethod
     def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_cruise):
@@ -176,7 +179,7 @@ class Croisiere:
     @staticmethod
     def cruiseMachSAR(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, l_end, dt = Inputs.dt_cruise):
         """
-        Croisière en palier à Mach constant.
+        Croisière en palier à Mach constant, avec des éventuelles montées d'un pallier d'altitude.
 
         :param Avion: instance de la classe Avion
         :param Atmosphere: instance de la classe Atmosphere
@@ -271,7 +274,7 @@ class Croisiere:
 
 
     @staticmethod
-    def cruiseAltSAR(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, l_end, k_SAR_cruise=99/100, dt=Inputs.dt_cruise):
+    def cruiseAltSAR(Avion:Avion, Atmosphere:Atmosphere, Enregistrement:Enregistrement, l_end, dt=Inputs.dt_cruise):
         """
         Croisière à altitude constante avec optimisation du SAR.
         Le Mach est recalculé à chaque pas pour atteindre k * SAR_max.
@@ -279,107 +282,78 @@ class Croisiere:
         :param Avion: instance Avion
         :param Atmosphere: instance Atmosphere
         :param Enregistrement: instance Enregistrement
-        :param l_end: distance à parcourir en croisière avant de commencer la descente (m) 
-        :param k_SAR_cruise: facteur appliqué au SAR max (ex: 0.99)
+        :param l_end: distance à parcourir en croisière avant de commencer la descente (m)
         :param dt: pas de temps
         """
+        # Grille de Mach
+        Mach_grid = np.arange(0.6, 0.82, 0.001)
+        
+        while Avion.getl() < l_end - Avion.getl_descent():
+            # Atmosphere
+            Atmosphere.CalculateRhoPT(Avion.geth())
 
-        # -------------------------------------------------
-        # Atmosphère
-        # -------------------------------------------------
-        Atmosphere.CalculateRhoPT(Avion.geth())
+            ## CALCUL VECTORISÉ DU SAR (les attributs de Avion deviennent des arrays)
+            
+            # TAS pour toute la grille
+            Avion.Aero.setMach_t(Mach_grid)
+            Avion.Aero.convertMachToTAS(Atmosphere)
+            
+            # Aérodynamique
+            Avion.Aero.calculateCz(Atmosphere)
 
-        while Avion.Masse.getFuelReserve()  < Avion.Masse.getFuelRemaining() and Avion.getl() < l_end - Avion.getl_descent() :
+            # Cx_grid : Ici, il faut que ta fonction accepte un vecteur Cz_grid
+            if Inputs.Aero_simplified:
+                # Cx = Cx0 + k * Cz^2 (Formule simplifiée typique)
+                Avion.Aero.calculateCxCruise_Simplified()
+            else:
+                # Appel à ta polaire aérodynamique (doit supporter les arrays)
+                Avion.Aero.calculateCx(Atmosphere)
 
+            finesse_grid = Avion.Aero.getCz() / Avion.Aero.getCx()
 
-            # -------------------------------------------------
-            # Balayage Mach
-            # -------------------------------------------------
-            Mach_grid = np.arange(0.2, 0.82, 0.01)
-            SAR_list = []
+            # Calculs vectorisés moteur
+            Avion.Moteur.calculateFCruise() # Equilibre
+            Avion.Moteur.calculateSFC_Vectorized() # Verion vectorisée: plus lente pour des floats simples
 
-            for i in range(len(Mach_grid)) : 
+            # SAR pour toute la grille
+            SAR_grid = Avion.Aero.getTAS() * finesse_grid / (Avion.Moteur.getSFC() * Avion.Masse.getCurrentWeight())
 
-                Avion.Aero.setMach_t(Mach_grid[i])
-
-                Avion.Aero.convertMachToTAS(Atmosphere)
-                Avion.Aero.convertMachToCAS(Atmosphere)
-
-                Avion.Aero.calculateCz(Atmosphere)
-                
-
-                # ---- Traînée
-                if Inputs.Aero_simplified:
-                    Avion.Aero.calculateCxCruise_Simplified()
-                else:
-                    Avion.Aero.calculateCx(Atmosphere)
-
-                finesse_grid = Avion.Aero.getCz() / Avion.Aero.getCx()
-
-
-                # ---- SFC
-                Avion.Moteur.calculateFCruise()
-                Avion.Moteur.calculateSFCCruise()
-
-                # -------------------------------------------------
-                # SAR
-                # -------------------------------------------------
-                SAR_grid = Avion.Aero.getTAS() * finesse_grid / (Avion.Moteur.getSFC() * Avion.Masse.getCurrentWeight())
-
-                SAR_list.append(SAR_grid)
-
-
-
-            #On ne se place pas forcément à l'optimum
-            SAR_max = np.max(SAR_list)
-            SAR_target = k_SAR_cruise * SAR_max
-            idx_max = np.argmax(SAR_list)
-            SAR_array = np.array(SAR_list) #pour l'interpolation
+            #On ne se place pas à l'optimum
+            SAR_max = np.max(SAR_grid)
+            SAR_target = SAR_max * (1 - Inputs.k_SAR_cruise/100)
+            idx_max = np.argmax(SAR_grid)
 
             # On interpole seulement après le maximum
-            SAR_sub = SAR_array[idx_max:]
+            SAR_sub = SAR_grid[idx_max:]
             Mach_sub = Mach_grid[idx_max:]
+            # On inverse l'interpolation car np.interp exige une croissance, ici on est décroissant après SAR_max
+            Mach_opt = np.interp(SAR_target, SAR_sub[::-1], Mach_sub[::-1])
 
-            Mach_opt = np.interp(SAR_target, SAR_sub[::-1], Mach_sub[::-1]) #On inverse l'interpolation car np.interp exige une croissance, ici on est décroissant après SAR_max
-
-            # -------------------------------------------------
-            # Mise à jour avion en fonction du Mach optimal
-            # -------------------------------------------------
-
+            ## Mise à jour avion en fonction du Mach optimal, tout repasse en scalaire
             Avion.Aero.setMach_t(Mach_opt)
-
             Avion.Aero.convertMachToTAS(Atmosphere)
             Avion.Aero.convertMachToCAS(Atmosphere)
 
+            # Aérodynamique
             Avion.Aero.calculateCz(Atmosphere)
-                
 
-            # ---- Traînée
             if Inputs.Aero_simplified:
                 Avion.Aero.calculateCxCruise_Simplified()
             else:
                 Avion.Aero.calculateCx(Atmosphere)
 
-            # ---- SFC et F
+            # Moteur
             Avion.Moteur.calculateFCruise()
             Avion.Moteur.calculateSFCCruise()
 
-            # -------------------------------------------------
-            # Intégration temporelle
-            # -------------------------------------------------
-
-            # Vitesses
-            Vx = Avion.Aero.getTAS() + Atmosphere.getVwind()
-
-            # Distance
-            Avion.Add_dl(Vx * dt)
+            # Intégration
+            Avion.Add_dl(Avion.Aero.getTAS() * dt)
 
             # Consommation
             Avion.Masse.burnFuel(dt)
 
             # Enregistrement au pas de temps
             Enregistrement.save(Avion, Atmosphere, dt)
-
 
 
 

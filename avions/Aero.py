@@ -98,10 +98,8 @@ class Aero:
         M_cr = MDD - (0.1/80)**(1/3)
 
         # Choix selon le critère de compressibilité :
-        if self.getMach() > M_cr :
-            Cx_compressibility = 20 * (self.getMach()-M_cr)**4
-        else:
-            Cx_compressibility = 0
+        delta = np.maximum(self.getMach() - M_cr, 0)
+        Cx_compressibility = 20 * delta**4
         
         # Résultat final
         self.Cx_t = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
@@ -265,7 +263,7 @@ class Aero:
         '''
         self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
 
-    def setMach_t(self, Mach: float):
+    def setMach_t(self, Mach):
         '''
         Définit la vitesse Mach actuelle de l'avion (m/s).
         
@@ -273,7 +271,7 @@ class Aero:
         '''
         self.Mach_t = Mach
 
-    def setTAS_t(self, TAS: float):
+    def setTAS_t(self, TAS):
         '''
         Définit la vitesse TAS actuelle de l'avion (m/s).
         

@@ -37,11 +37,30 @@ print("Taille tableau: " + str(Saving.counter))
 
 Saving.cut()
 
+plt.figure()
+plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("Mach")
+plt.show()
+
+# # Test vectorisé
+# Mach_grid = np.arange(0.2, 0.82, 0.001)
+# A320.Aero.setMach_t(Mach_grid) # Pas d'erreur
+# A320.Aero.calculateCz(test_atmos)
+# A320.Aero.calculateCx(test_atmos)
+# A320.Moteur.calculateFCruise()
+
 # plt.figure()
-# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
-# plt.xlabel("Distance parcourue (NM)")
-# plt.ylabel("Mach")
+# plt.plot(A320.Aero.getMach(), A320.Aero.getCz())
+# plt.plot(A320.Aero.getMach(), A320.Aero.getCx())
 # plt.show()
+
+# A320.Aero.convertMachToTAS(test_atmos)
+
+# plt.figure()
+# plt.plot(A320.Aero.getMach(), A320.Moteur.getF())
+# plt.show()
+# print("Mach avion: " + str(A320.Aero.getMach()))
 
 # plt.figure()
 # plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Cx"])
@@ -73,14 +92,14 @@ Saving.cut()
 # plt.ylabel("Altitude (ft)")
 # plt.show()
 
-# plt.figure()
-# plt.plot(np.log10(Saving.data_simu["ecart_mission"]))
-# plt.show()
+plt.figure()
+plt.plot(np.log10(Saving.data_simu["ecart_mission"]))
+plt.show()
 
-# plt.figure()
-# plt.plot(Saving.data_simu["l_descent"])
-# plt.plot(Saving.data_simu["l_descent_diversion"])
-# plt.show()
+plt.figure()
+plt.plot(Saving.data_simu["l_descent"])
+plt.plot(Saving.data_simu["l_descent_diversion"])
+plt.show()
 
 # plt.figure()
 # plt.plot(Saving.data_simu["FB_mission"])

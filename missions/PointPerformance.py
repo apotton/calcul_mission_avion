@@ -80,6 +80,7 @@ class PointPerformance():
 
         # Structuration des résultats pour l'affichage
         donnees_perf = {
+            "Avion: " + Avion.getName():[],
             "Conditions Atmosphériques": [
                 ("Altitude", Avion.geth() / Constantes.conv_ft_m , "ft"),
                 ("Température", T - 273.15 , "°C"),
@@ -113,29 +114,40 @@ class PointPerformance():
             ]
         }
 
-        PointPerformance.afficher_point_performance(donnees_perf)
+        string = PointPerformance.formater_point_performance(donnees_perf)
+        print(string)
 
     @staticmethod
-    def afficher_point_performance(donnees):
+    def formater_point_performance(donnees):
         """
         Prend en entrée un dictionnaire de catégories contenant des listes de tuples 
-        (nom, valeur, unité) et les affiche proprement dans la console.
+        (nom, valeur, unité) et retourne une unique chaîne de caractères formatée.
         """
-        ligne = "=" * 65
-        print(f"\n{ligne}")
-        print(f"{'RÉSUMÉ DU POINT PERFORMANCE':^65}")
-        print(f"{ligne}")
+        largeur = 65
+        separateur = "=" * largeur
+        
+        # Création d'une liste qui va contenir toutes nos lignes de texte
+        lignes_texte = []
+        
+        # En-tête
+        lignes_texte.append(f"\n{separateur}")
+        lignes_texte.append(f"{'RÉSUMÉ DU POINT PERFORMANCE':^{largeur}}")
+        lignes_texte.append(separateur)
 
+        # Parcours des données
         for categorie, variables in donnees.items():
-            print(f"\n--- {categorie.upper()}")
+            lignes_texte.append(f"\n--- {categorie.upper()}")
             
             for nom, valeur, unite in variables:
-                # <30  : Nom aligné à gauche sur 30 caractères
-                # >12.4f : Valeur alignée à droite sur 12 caractères avec 4 décimales
-                # <8   : Unité alignée à gauche sur 8 caractères
-                print(f"    {nom:<30} : {valeur:>12.4f}  {unite:<8}")
+                # On formate la ligne exactement comme avant, mais on l'ajoute à la liste
+                ligne = f"    {nom:<30} : {valeur:>12.4f}  {unite:<8}"
+                lignes_texte.append(ligne)
                 
-        print(f"\n{ligne}\n")
+        # Pied de page
+        lignes_texte.append(f"\n{separateur}\n")
+        
+        # On assemble toutes les lignes de la liste en y insérant un saut de ligne (\n) entre chaque
+        return "\n".join(lignes_texte)
 
 
 

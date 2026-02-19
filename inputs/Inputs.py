@@ -40,11 +40,16 @@ class Inputs:
     # =====================
     # CROISIERE
     # =====================
+    # Croisière classique
     h_cruise_init = 35000       # ft
     Mach_cruise = 0.78
     step_climb_ft = 2000.0      # ft
+    
+    # Croisière Mach SAR
     RRoC_min_ft_min = 300.0     # ft/min
-    pressurisation_ceiling_ft = 40000.0
+
+    # Croisière alt SAR (dégradation du SAR)
+    k_SAR_cruise = 1 # %
 
     # =====================
     # DESCENTE

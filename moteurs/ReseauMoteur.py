@@ -6,6 +6,8 @@ import moteurs.DonneesMoteur as DonneesMoteur
 from pathlib import Path
 import numpy as np
 
+from scipy.interpolate import RegularGridInterpolator
+
 
 class ReseauMoteur(Moteur):
     def __init__(self, Avion):
@@ -242,3 +244,75 @@ class ReseauMoteur(Moteur):
         self.calculateSFCCruise()
 
 
+    # ====================
+    # calcul vectorisé de la SFC pour la croisière Alt SAR
+    # ====================
+
+    def calculateSFC_Vectorized(self):
+        """
+        Version vectorisée du calcul de SFC.
+        """
+        h_ft = self.Avion.geth() / Constantes.conv_ft_m
+        
+        # Altitude de référence
+        closest_h = min(self.available_alts, key=lambda x: abs(x - h_ft))
+        
+        # Détermination de la deuxième altitude pour l'interpolation 3D (Alt)
+        if abs(h_ft - closest_h) < 20:
+            h_refs = [closest_h]
+        else:
+            if h_ft < closest_h:
+                second_closest_h = max([h for h in self.available_alts if h < closest_h], default=closest_h)
+            else:
+                second_closest_h = min([h for h in self.available_alts if h > closest_h], default=closest_h)
+
+            if second_closest_h != closest_h:
+                h_refs = [closest_h, second_closest_h]
+            else:
+                h_refs = [closest_h]
+
+
+        # 2. Calcul du SFC pour chaque altitude de référence
+        sfc_results = []
+        for h_ref in h_refs:
+            data = self.DonneesMoteur.cruise_data[h_ref]
+            
+            # Récupération des axes de la table
+            # Note : On s'assure que les axes sont strictement croissants pour RegularGridInterpolator
+            fn_axis = data['fn'] 
+            mach_axis = self.DonneesMoteur.mach_table_crl
+            sfc_table = data['sfc'] # Dimension (Mach, Fn) ou (Fn, Mach) selon ton dictionnaire
+            
+            # Création de l'interpolateur vectorisé
+            # /!\ Attention à l'ordre des axes : il doit correspondre à la forme de sfc_table
+            # Si sfc_table a Mach en lignes et Fn en colonnes :
+            # print("Je suis ici")
+            # print("Tableau Mach: " + str(mach_axis))
+            # print("Tableau poussée: " + str(fn_axis))
+            interp_func = RegularGridInterpolator(
+                (fn_axis, mach_axis), 
+                sfc_table, 
+                bounds_error=False,
+                method='linear', 
+                # fill_value=None
+            )
+            
+            # On interpole pour tous les couples (Mach, Fn) d'un coup
+            # np.vstack crée une matrice de points de requête [[m1, f1], [m2, f2], ...]
+            query_points = np.vstack((self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g, self.Avion.Aero.getMach())).T
+            # print("Taille queries: " + str(query_points.shape))
+            sfc_lbf = interp_func(query_points)
+            # print("Taille dans l'interpolation: " + str(sfc_lbf.shape))
+            sfc_results.append(sfc_lbf)
+
+        # 3. Interpolation finale entre les deux altitudes (si nécessaire)
+        if len(h_refs) == 1:
+            sfc_lbf_final = sfc_results[0]
+        else:
+            # Interpolation linéaire entre les deux plans d'altitude
+            ratio = (h_ft - h_refs[0]) / (h_refs[1] - h_refs[0])
+            sfc_lbf_final = (1 - ratio) * sfc_results[0] + ratio * sfc_results[1]
+
+        # 4. Conversion finale (lbf/lbf/h -> kg/N/s)
+        self.SFC_t = sfc_lbf_final / 3600.0 / Constantes.g
+        # self.FF_t = self.SFC_t * self.F_t
