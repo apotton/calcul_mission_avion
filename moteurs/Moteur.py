@@ -7,6 +7,7 @@ class Moteur:
         self.Avion = Avion
         self.F_t = 0          # Poussée actuelle (N)
         self.SFC_t = 0        # SFC actuelle (kg/(N.s))
+        self.FF_t = 0         # Consommation de carburant actuelle (kg/s), calculé dans tous les méthodes de SFC
 
     # Setters
 
@@ -37,6 +38,12 @@ class Moteur:
         Renvoie la SFC du moteur (kg/(N.s))
         '''
         return self.SFC_t
+    
+    def getFF(self):
+        '''
+        Renvoie la consommation de carburant du moteur (kg/s)
+        '''
+        return self.FF_t
 
     ## Poussée ##
     def calculateFClimb(self):
@@ -73,31 +80,31 @@ class Moteur:
 
     def calculateSFCCruise(self):
         '''
-        Calcule la poussée spécifique du moteur pendant la croisière (kg/(N.s)).
+        Calcule la poussée spécifique du moteur pendant la croisière (kg/(N.s)) ainsi que la consommation de carburant (kg/s).
         '''
         pass  # Méthode à implémenter dans les classes filles
 
     def calculateSFCClimb(self):
         '''
-        Calcule la poussée spécifique du moteur pendant la montée (kg/(N.s)).
+        Calcule la poussée spécifique du moteur pendant la montée (kg/(N.s)) ainsi que la consommation de carburant (kg/s).
         '''
         pass  # Méthode à implémenter dans les classes filles
 
     def calculateSFCDecent(self):
         '''
-        Calcule la poussée spécifique du moteur pendant la descente (kg/(N.s)).
+        Calcule la poussée spécifique du moteur pendant la descente (kg/(N.s)) ainsi que la consommation de carburant (kg/s).
         '''
         pass  # Méthode à implémenter dans les classes filles
 
     def calculateSFCHolding(self):
         '''
-        Calcule la poussée spécifique du moteur pendant la phase de holding (kg/(N.s)).
+        Calcule la poussée spécifique du moteur pendant la phase de holding (kg/(N.s)) ainsi que la consommation de carburant (kg/s).
         '''
         pass  # Méthode à implémenter dans les classes filles
 
     def calculateSFCCruiseDiversion(self):
         '''
-        Calcule la poussée spécifique du moteur pendant la croisière de la diversion (kg/(N.s)).
+        Calcule la poussée spécifique du moteur pendant la croisière de la diversion (kg/(N.s)) ainsi que la consommation de carburant (kg/s).
         '''
         pass  # Méthode à implémenter dans les classes filles
 

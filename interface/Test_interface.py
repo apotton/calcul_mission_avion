@@ -8,7 +8,7 @@ root.title("PIE COA26")
 root.geometry("1400x1000")
 
 #le zoom de vieux
-root.tk.call('tk', 'scaling', 1.5)
+root.tk.call('tk', 'scaling', 2.2)
 
 
 COMMUN = {"font": ("Helvetica", 10)}
@@ -27,55 +27,18 @@ DOSSIER_SORTIE = Path(__file__).parent
 notebook = ttk.Notebook(main_frame_gauche)
 notebook.grid(row=0, column=0, sticky="nsew")
 
-
+frame_Caracteristiques = tk.Frame(notebook)
 frame_Mission = tk.Frame(notebook)
+frame_diversion = tk.Frame(notebook)
 frame_pasdetemps = tk.Frame(notebook)
+notebook.add(frame_Caracteristiques, text="  Caractéristiques  ")
 notebook.add(frame_Mission, text="  Mission  ")
+notebook.add(frame_diversion, text="  Diversion  ")
 notebook.add(frame_pasdetemps, text="  Pas de temps  ")
 
 
-#--------------Frame Mission -----------------------------
-frame_Montee = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_Croisiere = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_generale = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_descente = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_generale1= tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_diversion = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_autre = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-
-frame_generale.grid(row=0, column=2, padx=10, pady=10)
-frame_generale1.grid(row=0, column = 0, padx=10, pady=10)
-frame_Montee.grid(row=7, column=0, padx=10, pady=10)
-frame_Croisiere.grid(row=7, column=2, padx=10, pady=10)
-frame_descente.grid(row=7, column=4, padx= 10, pady = 10)
-frame_diversion.grid(row =15, column=2, padx=10, pady=10)
-frame_autre.grid(row =15, column=4, padx=10, pady=10)
-
-
-
-
-
-# ----------Partie générale (Payload Distance)------------------------
-frame_generale.rowconfigure(0, minsize=20)
-
-tk.Label(frame_generale, text="Payload", **COMMUN).grid(row=2, column=0, sticky="e")
-payload = tk.Entry(frame_generale, width=10)
-payload.grid(row=2, column=1)
-tk.Label(frame_generale, text="kg", **COMMUN).grid(row=2, column=3, sticky="w")
-
-tk.Label(frame_generale, text="Distance", **COMMUN).grid(row=3, column=0, sticky="e")
-distance_de_diversion = tk.Entry(frame_generale, width=10)
-distance_de_diversion.grid(row=3, column=1)
-tk.Label(frame_generale, text="nm", **COMMUN).grid(row=3, column=3, sticky="w")
-
-
-#--------Fin de payload distance -------------
-
-#-----------Partie générale 1 (Avion Moteur)-------------------------
-frame_generale1.rowconfigure(0, minsize=20)
-tk.Label(frame_generale1, text="Avion", **COMMUN).grid(row=2, column=0, sticky="e")
-
-def obtenir_noms_fichiers_avion():
+#--------------Frame Caracteristiques -----------------------------
+def obtenir_noms_fichiers():
     """
     Scanne le dossier du script pour trouver les fichiers .csv
     et retourne une liste de noms sans l'extension.
@@ -89,52 +52,59 @@ def obtenir_noms_fichiers_avion():
     print(noms)
     return sorted(noms) # On trie par ordre alphabétique
 
-def mettre_a_jour_menu_avion():
+def mettre_a_jour_menu():
     """
     Fonction appelée juste avant l'ouverture du menu.
     Elle met à jour les valeurs possibles.
     """
-    nouveaux_choix = obtenir_noms_fichiers_avion()
-    menu_deroulant_avion['values'] = nouveaux_choix
+    choix_avions = []
+    nouveaux_choix = obtenir_noms_fichiers()
+    menu_avions['values'] = nouveaux_choix
 
-avion_choisi = tk.StringVar()
-menu_deroulant_avion = ttk.Combobox(frame_generale1, postcommand=mettre_a_jour_menu_avion, state="readonly")
-menu_deroulant_avion.grid(row=2, column =1,columnspan = 2, sticky= "ew")
+menu_avions = ttk.Combobox(frame_Caracteristiques, postcommand=mettre_a_jour_menu, state="readonly")
+menu_avions.grid(row=0, column=0)
 
-tk.Label(frame_generale1, text="Moteur", **COMMUN).grid(row=3, column=0, sticky="e")
-
-def obtenir_noms_fichiers_moteur():
-    """
-    Scanne le dossier du script pour trouver les fichiers .csv
-    et retourne une liste de noms sans l'extension.
-    """
-    # Chemin du dossier où se trouve ce script
-    dossier_courant = Path(__file__).parent.parent / "data" / "moteurs"
-    # On cherche tous les fichiers .csv
-    fichiers = dossier_courant.glob("*.py")
-    # On garde seulement le nom du fichier (stem) sans le .csv
-    noms = [f.stem for f in fichiers]
-    print(noms)
-    return sorted(noms) # On trie par ordre alphabétique
-
-def mettre_a_jour_menu_moteur():
-    """
-    Fonction appelée juste avant l'ouverture du menu.
-    Elle met à jour les valeurs possibles.
-    """
-    nouveaux_choix = obtenir_noms_fichiers_moteur()
-    menu_deroulant_moteur['values'] = nouveaux_choix
-
-moteur_choisi = tk.StringVar()
-menu_deroulant_moteur = ttk.Combobox(frame_generale1,postcommand=mettre_a_jour_menu_moteur, state="readonly")
-menu_deroulant_moteur.grid(row=3, column =1,columnspan = 2, sticky= "ew")
-
-frame_generale1.rowconfigure(6, minsize=20)
+#--------------Fin du Frame Caracteristiques -----------------------------
 
 
-#-----------Fin de Avion et Moteur ---------------------------
 
 
+#--------------Frame Mission -----------------------------
+frame_Montee = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
+frame_Croisiere = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
+frame_generale = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
+frame_descente = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
+
+frame_generale.grid(row=0, column=2, padx=10, pady=10)
+frame_Montee.grid(row=7, column=0, padx=10, pady=10)
+frame_Croisiere.grid(row=7, column=2, padx=10, pady=10)
+frame_descente.grid(row=7, column=4, padx= 10, pady = 10)
+
+
+
+
+
+# ---Partie générale ---
+frame_generale.rowconfigure(0, minsize=20)
+tk.Label(frame_generale, text="Payload", **COMMUN).grid(row=2, column=0, sticky="e")
+distance_de_diversion = tk.Entry(frame_generale, width=10)
+distance_de_diversion.grid(row=2, column=1)
+tk.Label(frame_generale, text="kg", **COMMUN).grid(row=2, column=3, sticky="w")
+
+tk.Label(frame_generale, text="Holding Time", **COMMUN).grid(row=3, column=0, sticky="e")
+temps_attente = tk.Entry(frame_generale, width=10)
+temps_attente.grid(row=3, column=1)
+tk.Label(frame_generale, text="min", **COMMUN).grid(row=3, column=3, sticky="w")
+
+tk.Label(frame_generale, text="Contingency Fuel Rule", **COMMUN).grid(row=4, column=0, sticky="e")
+carburant_de_reserve = tk.Entry(frame_generale, width=10)
+carburant_de_reserve.grid(row=4, column=1)
+
+tk.Label(frame_generale, text="KCAS holding", **COMMUN).grid(row=5, column=0, sticky="e")
+KCAS_holding = tk.Entry(frame_generale, width=10)
+KCAS_holding.grid(row=5, column=1)
+tk.Label(frame_generale, text="kt", **COMMUN).grid(row=5, column=3, sticky="w")
+frame_generale.rowconfigure(6, minsize=20)
 
 
 # --- Partie Montée ---
@@ -206,7 +176,7 @@ Mach_cruise = tk.Entry(frame_mach_sar, width=10)
 Mach_cruise.grid(row=13, column=1)
 
 frame_mach_sar.rowconfigure(14, minsize=20)
-#-----------Fin subframe Mach_Sar--------------------------
+#-----------Fin subframe Mach_Sar
 
 #-----SubFrame Alt_Sar------------
 frame_alt_sar = tk.Frame(frame_Croisiere)
@@ -300,66 +270,48 @@ h_decel_ft = tk.Entry(frame_descente, width=10)
 h_decel_ft.grid(row=8, column=1)
 tk.Label(frame_descente, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
 
-tk.Label(frame_descente, text="CAS < 10000 pieds", **COMMUN).grid(row=9, column=0, sticky="e")
-CAS_below_10000_desc_kt = tk.Entry(frame_descente, width=10)
-CAS_below_10000_desc_kt.grid(row=9, column=1)
+tk.Label(frame_descente, text="Altitude finale", **COMMUN).grid(row=9, column=0, sticky="e")
+h_final_ft = tk.Entry(frame_descente, width=10)
+h_final_ft.grid(row=9, column=1)
 tk.Label(frame_descente, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
 
-
-tk.Label(frame_descente, text="Altitude finale", **COMMUN).grid(row=10, column=0, sticky="e")
-h_final_ft = tk.Entry(frame_descente, width=10)
-h_final_ft.grid(row=10, column=1)
+tk.Label(frame_descente, text="CAS < 10000 pieds", **COMMUN).grid(row=10, column=0, sticky="e")
+CAS_below_10000_desc_kt = tk.Entry(frame_descente, width=10)
+CAS_below_10000_desc_kt.grid(row=10, column=1)
 tk.Label(frame_descente, text="ft", **COMMUN).grid(row=10, column=2, sticky="w")
 
+tk.Label(frame_descente, text="CAS max de descente", **COMMUN).grid(row=11, column=0, sticky="e")
+CAS_max_descent_kt = tk.Entry(frame_descente, width=10)
+CAS_max_descent_kt.grid(row=11, column=1)
+tk.Label(frame_descente, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
+
+tk.Label(frame_descente, text="Rien", **COMMUN).grid(row=12, column=0, sticky="e")
+Mach_cruise = tk.Entry(frame_descente, width=10)
+Mach_cruise.grid(row=12, column=1)
 
 frame_descente.rowconfigure(13, minsize=20)
 
-#--------------Fin Partie descente -------------------------
+#---------------Fin de l'onglet Mission -------------------------------
 
-#-----------Partie diversion----------------------
-tk.Label(frame_diversion, text="Diversion", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
 
-tk.Label(frame_diversion, text="Altitude finale montée diversion", **COMMUN).grid(row=8, column=0, sticky="e")
+#------------------------Onglet Diversion-----------------------
+tk.Label(frame_diversion, text="Altitude finale montée diversion", **COMMUN).grid(row=0, column=0, pady=5)
 Final_climb_altitude_diversion_ft = tk.Entry(frame_diversion, width=10)
-Final_climb_altitude_diversion_ft.grid(row=8, column=1)
-tk.Label(frame_diversion, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
+Final_climb_altitude_diversion_ft.grid(row=0, column=1)
+tk.Label(frame_diversion, text="ft", **COMMUN).grid(row=0, column=2, sticky="w")
 
-tk.Label(frame_diversion, text="Distance max en diversion", **COMMUN).grid(row=9, column=0, sticky="e")
+tk.Label(frame_diversion, text="Distance max en diversion", **COMMUN).grid(row=1, column=0, pady=5)
 Range_diversion_NM = tk.Entry(frame_diversion, width=10)
-Range_diversion_NM.grid(row=9, column=1)
-tk.Label(frame_diversion, text="nm", **COMMUN).grid(row=9, column=2, sticky="w")
+Range_diversion_NM.grid(row=1, column=1)
+tk.Label(frame_diversion, text="nm", **COMMUN).grid(row=1, column=2, sticky="w")
 
-
-tk.Label(frame_diversion, text="Mach de croisière en diversion", **COMMUN).grid(row=10, column=0, sticky="e")
+tk.Label(frame_diversion, text="Mach de croisière en diversion", **COMMUN).grid(row=2, column=0, pady=5)
 Mach_cruise_div = tk.Entry(frame_diversion, width=10)
-Mach_cruise_div.grid(row=10, column=1)
-tk.Label(frame_diversion, text="", **COMMUN).grid(row=10, column=2) 
+Mach_cruise_div.grid(row=2, column=1)
+# Note: j'ai corrigé "nm" en sans unité ou Mach ici si c'est un Mach
+tk.Label(frame_diversion, text="", **COMMUN).grid(row=2, column=2) 
 
-
-
-tk.Label(frame_diversion, text="KCAS holding", **COMMUN).grid(row=13, column=0, sticky="e")
-KCAS_holding = tk.Entry(frame_diversion, width=10)
-KCAS_holding.grid(row=13, column=1)
-tk.Label(frame_diversion, text="kt", **COMMUN).grid(row=13, column=2, sticky="w")
-
-frame_diversion.rowconfigure(13, minsize=20)
-
-#---------------Fin de la partie diversion -------------------------------
-
-#------------------Partie Autre--------------------------------
-tk.Label(frame_autre, text="Autre", **COMMUNTITRE).grid(row=0, column=0, columnspan=3, sticky= "ew")
-
-tk.Label(frame_autre, text="Contingency Fuel Rule", **COMMUN).grid(row=1, column=0, sticky="e")
-carburant_de_reserve = tk.Entry(frame_autre, width=10)
-carburant_de_reserve.grid(row=1, column=1)
-tk.Label(frame_autre, text="%", **COMMUN).grid(row=1, column=2, sticky="w")
-
-tk.Label(frame_autre, text="Holding Time", **COMMUN).grid(row=2, column=0, sticky="e")
-temps_attente = tk.Entry(frame_autre, width=10)
-temps_attente.grid(row=2, column=1)
-tk.Label(frame_autre, text="min", **COMMUN).grid(row=2, column=2, sticky="w")
-
-#--------------Fin de la partie Autre----------------------
+#-------------------------Fin de l'onglet Diversion-------------------------
 
 
 #-----------------------------Onglet pas de temps------------------------
@@ -381,7 +333,6 @@ tk.Label(frame_pasdetemps, text="s", **COMMUN).grid(row=2, column=2, sticky="w")
 #-----------------------Fin de l'onglet pas de temps--------------------------
 
 def affichage_croisiere(event):
-    
     if menu_deroulant_croisiere.get() == "Mach SAR":
         frame_mach_sar.grid(row=1, column=2, sticky="ew")
     else :
@@ -398,7 +349,6 @@ def affichage_croisiere(event):
         frame_ci.grid(row=1, column=2, sticky="ew")
     else :
         frame_ci.grid_forget()
-
 menu_deroulant_croisiere.bind("<<ComboboxSelected>>", affichage_croisiere)
 menu_deroulant_croisiere.current(0) 
 affichage_croisiere(None)
