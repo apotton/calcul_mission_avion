@@ -59,32 +59,32 @@ notebook.add(onglet_pointperformance, text = "Point Performance")
 #--------------Les différentes sous frames -----------------------------
 #--------------------------------------------------------------------
 
-frame_generale = tk.Frame(main_frame_haut, bd = 2, relief = "sunken")
-frame_generale1= tk.Frame(main_frame_haut, bd = 2, relief = "sunken")
+frame_generale = tk.Frame(main_frame_haut, bd = 10, relief = "sunken")
+frame_generale1= tk.Frame(main_frame_haut, bd = 10, relief = "sunken")
 frame_generale.grid(row=0, column=2, padx=10, pady=10)
 frame_generale1.grid(row=0, column = 0, padx=10, pady=10)
 #---------------Sous Frames de Mission------------------------------------
 
-frame_Montee = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_Croisiere = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
-frame_descente = tk.Frame(frame_Mission, bd = 2, relief = "sunken")
+frame_Montee = tk.Frame(frame_Mission, bd = 10, relief = "sunken")
+frame_Croisiere = tk.Frame(frame_Mission, bd = 10, relief = "sunken")
+frame_descente = tk.Frame(frame_Mission, bd = 10, relief = "sunken")
 frame_Montee.grid(row=7, column=0, padx=10, pady=10)
 frame_Croisiere.grid(row=15, column=0, padx=10, pady=10)
 frame_descente.grid(row=22, column=0, padx= 10, pady = 10)
 #---------------Sous Frame de Autres---------------------------------------------
 
-frame_diversion = tk.Frame(onglet_diversion, bd = 2, relief = "sunken")
-frame_autre = tk.Frame(onglet_diversion, bd = 2, relief = "sunken")
-frame_coeff = tk.Frame(onglet_diversion, bd = 2, relief = "sunken")
+frame_diversion = tk.Frame(onglet_diversion, bd = 10, relief = "sunken")
+frame_autre = tk.Frame(onglet_diversion, bd = 10, relief = "sunken")
+frame_coeff = tk.Frame(onglet_diversion, bd = 10, relief = "sunken")
 frame_diversion.grid(row =0, column=0, padx=10, pady=10)
 frame_autre.grid(row =7, column=0, padx=10, pady=10)
 frame_coeff.grid(row = 15, column=0, padx = 10, pady = 10)
 #----------------Sous Frame de Options---------------------------------------------------------
 
-frame_pasdetemps = tk.Frame(onglet_options, bd = 2, relief = "sunken")
+frame_pasdetemps = tk.Frame(onglet_options, bd = 10, relief = "sunken")
 frame_pasdetemps.grid(row =0, column=0, padx=10, pady=10)
 #----------------Sous Frame de Pointperformance---------------------------------------------------------
-frame_pp = tk.Frame(onglet_pointperformance, bd = 2, relief = "sunken" )
+frame_pp = tk.Frame(onglet_pointperformance, bd = 10, relief = "sunken" )
 frame_pp.grid(row = 0, column=0, padx=10, pady=10)
 
 # ----------Partie générale (Payload Distance)------------------------
@@ -590,13 +590,18 @@ def sauvegarder_donnees():
         messagebox.showerror("Erreur", f"Impossible de créer le fichier : {e}")
 
 
-def charger_donnees():
-    chemin = filedialog.askopenfilename(
-        initialdir=DOSSIER_SORTIE,
-        filetypes=[("Fichier CSV", "*.csv"), ("Fichier texte", "*.txt")]
-    )
-    
-    if not chemin:
+def charger_donnees(chemin_fichier=None):
+    # On vérifie si un chemin est fourni (démarrage) ou non (clic sur le bouton)
+    if chemin_fichier is None:
+        chemin = filedialog.askopenfilename(
+            initialdir=DOSSIER_SORTIE,
+            filetypes=[("Fichier CSV", "*.csv"), ("Fichier texte", "*.txt")]
+        )
+    else:
+        chemin = chemin_fichier
+        
+    # On annule si aucun chemin n'est sélectionné ou si le fichier d'init n'existe pas
+    if not chemin or not os.path.exists(chemin):
         return
         
     try:
@@ -649,7 +654,6 @@ def charger_donnees():
             "Pas de temps descente": dt_descent, 
             "Precision" : precision,
             
-            
             # --- Point Performance ---
             "Type de vitesse (PP)": menu_deroulant_vitesse,
             "Vitesse (PP)": vitesse,
@@ -666,20 +670,28 @@ def charger_donnees():
                     if len(parts) == 2:
                         cle, valeur = parts
                         
-                        # On ignore la ligne d'en-tête si on tombe dessus
                         if cle == "Attribut": 
                             continue
                             
                         if cle in mapping:
                             widget = mapping[cle]
-                            # On vide et on remplit
-                            if widget: # Sécurité si widget est None
-                                widget.delete(0, tk.END)
-                                widget.insert(0, valeur)
+                            if widget:
+                                # Particularité pour les Combobox (menu déroulant)
+                                if isinstance(widget, ttk.Combobox):
+                                    widget.set(valeur)
+                                else:
+                                    widget.delete(0, tk.END)
+                                    widget.insert(0, valeur)
 
-        messagebox.showinfo("Succès", "Données importées avec succès.")
+        # On affiche le message de succès uniquement si on a cliqué sur le bouton
+        if chemin_fichier is None:
+            messagebox.showinfo("Succès", "Données importées avec succès.")
+            
     except Exception as e:
-        messagebox.showerror("Erreur", f"Erreur lors de la lecture : {e}")
+        if chemin_fichier is None:
+            messagebox.showerror("Erreur", f"Erreur lors de la lecture : {e}")
+        else:
+            print(f"Erreur lors du chargement automatique : {e}")
 
 
 def action_go():
@@ -716,98 +728,8 @@ txt_console.pack(side="left", fill="both", padx=10, pady=10)
 #-------------------------Fin de la page blanche à droite
 
 
-
-#-----------------------Chargement d'un fichier CSV de base pour que les cases ne soient pas vides-----------------------------
-def chargement_initial(chemin):
-    # On vérifie si le fichier existe bien avant d'essayer de l'ouvrir
-    if not os.path.exists(chemin):
-        print(f"Fichier d'initialisation introuvable : {chemin}")
-        return
-        
-    try:
-        mapping = {
-            # --- Général ---
-            "Payload (kg)": payload,
-            "Distance de diversion (nm)": distance_de_diversion,
-            "Avion": menu_deroulant_avion,
-            "Moteur": menu_deroulant_moteur,
-            
-            # --- Montée ---
-            "Altitude initiale montee (ft)": h_initial_ft,
-            "Altitude acceleration (ft)": h_accel_ft,
-            "CAS < 10000ft montee (kt)": CAS_below_10000_mont_kt,
-            "Mach montee": Mach_climb,
-            
-            # --- Croisière ---
-            "Type de croisiere": menu_deroulant_croisiere,
-            "Altitude initiale croisiere (ft)": h_cruise_init,
-            "Step climb (ft)": step_climb_ft,
-            "Borne inf montée (%)" : borne_inf_montee,
-            "Borne sup montée (%)" : borne_sup_montee,
-            "Vitesse montee min (ft/min)": RRoC_min_ft_min,
-            "Mach croisiere": Mach_cruise,
-            
-            # --- Descente ---
-            "Altitude de deceleration (ft)": h_decel_ft,
-            "CAS < 10000 pieds descente (kt)": CAS_below_10000_desc_kt,
-            "Altitude finale (ft)": h_final_ft,
-            
-            # --- Diversion ---
-            "Altitude finale montee diversion (ft)": Final_climb_altitude_diversion_ft,
-            "Distance max en diversion (nm)": Range_diversion_NM,
-            "Mach de croisiere en diversion": Mach_cruise_div,
-            
-            # --- Autre ---
-            "Contingency Fuel Rule (%)": carburant_de_reserve,
-            "Holding Time (min)": temps_attente,
-            "KCAS holding (kt)": KCAS_holding,
-            
-            # --- Coefficients ---
-            "Cx": cx,
-            "Cz": cz,
-            "cFF": cff,
-            "cFn": cfn,
-            
-            # --- Options ---
-            "Pas de temps montee (s)": dt_climb,
-            "Pas de temps croisiere (s)": dt_cruise,
-            "Pas de temps descente": dt_descent, 
-            "Precision" : precision,
-            
-            # --- Point Performance ---
-            "Type de vitesse (PP)": menu_deroulant_vitesse,
-            "Vitesse (PP)": vitesse,
-            "Altitude (PP)": altitude,
-            "Poids (PP)": poids,
-            "Delta ISA (PP)": isa
-        }
-
-        with open(chemin, "r", encoding="utf-8") as f:
-            for ligne in f:
-                ligne = ligne.strip()
-                if ";" in ligne:
-                    parts = ligne.split(";", 1)
-                    if len(parts) == 2:
-                        cle, valeur = parts
-                        
-                        # On ignore l'en-tête
-                        if cle == "Attribut": 
-                            continue
-                            
-                        # Si la clé est dans notre dictionnaire, on remplit la case
-                        if cle in mapping:
-                            widget = mapping[cle]
-                            if widget:
-                                widget.delete(0, tk.END)
-                                widget.insert(0, valeur)
-                                
-        # On écrit un petit mot discret dans la console au lieu d'un gros pop-up
-        print("Chargement initial réussi.")
-        
-    except Exception as e:
-        print(f"Erreur lors du chargement initial automatique : {e}")
 fichier_initialisation = DOSSIER_SORTIE / "init.csv"
-chargement_initial(fichier_initialisation)
+charger_donnees(fichier_initialisation)
 
  #----------------------------------------------------
 
