@@ -244,24 +244,24 @@ frame_alt_sar = tk.Frame(frame_Croisiere)
 tk.Label(frame_alt_sar, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
 
 tk.Label(frame_alt_sar, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
-h_cruise_init = tk.Entry(frame_alt_sar, width=10)
-h_cruise_init.grid(row=8, column=1)
+h_cruise_init_alt_sar = tk.Entry(frame_alt_sar, width=10)
+h_cruise_init_alt_sar.grid(row=8, column=1)
 tk.Label(frame_alt_sar, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
 
 tk.Label(frame_alt_sar, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
-step_climb_ft = tk.Entry(frame_alt_sar, width=10)
-step_climb_ft.grid(row=9, column=1)
+step_climb_ft_alt_sar = tk.Entry(frame_alt_sar, width=10)
+step_climb_ft_alt_sar.grid(row=9, column=1)
 tk.Label(frame_alt_sar, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
 
 
 tk.Label(frame_alt_sar, text="Vitesse montée min", **COMMUN).grid(row=11, column=0, sticky="e")
-RRoC_min_ft_min = tk.Entry(frame_alt_sar, width=10)
-RRoC_min_ft_min.grid(row=11, column=1)
+RRoC_min_ft_min_alt_sar = tk.Entry(frame_alt_sar, width=10)
+RRoC_min_ft_min_alt_sar.grid(row=11, column=1)
 tk.Label(frame_alt_sar, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
 
 tk.Label(frame_alt_sar, text="Mach de croisière", **COMMUN).grid(row=12, column=0, sticky="e")
-Mach_cruise = tk.Entry(frame_alt_sar, width=10)
-Mach_cruise.grid(row=12, column=1)
+Mach_cruise_alt_sar = tk.Entry(frame_alt_sar, width=10)
+Mach_cruise_alt_sar.grid(row=12, column=1)
 
 frame_alt_sar.rowconfigure(13, minsize=20)
 #-------------Fin Subframe alt Sar ------------------------------------
@@ -272,24 +272,24 @@ frame_alt_mach = tk.Frame(frame_Croisiere)
 tk.Label(frame_alt_mach, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
 
 tk.Label(frame_alt_mach, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
-h_cruise_init = tk.Entry(frame_alt_mach, width=10)
-h_cruise_init.grid(row=8, column=1)
+h_cruise_init_alt_mach = tk.Entry(frame_alt_mach, width=10)
+h_cruise_init_alt_mach.grid(row=8, column=1)
 tk.Label(frame_alt_mach, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
 
 tk.Label(frame_alt_mach, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
-step_climb_ft = tk.Entry(frame_alt_mach, width=10)
-step_climb_ft.grid(row=9, column=1)
+step_climb_ft_alt_mach = tk.Entry(frame_alt_mach, width=10)
+step_climb_ft_alt_mach.grid(row=9, column=1)
 tk.Label(frame_alt_mach, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
 
 
 tk.Label(frame_alt_mach, text="Vitesse montée min", **COMMUN).grid(row=11, column=0, sticky="e")
-RRoC_min_ft_min = tk.Entry(frame_alt_mach, width=10)
-RRoC_min_ft_min.grid(row=11, column=1)
+RRoC_min_ft_min_alt_mach = tk.Entry(frame_alt_mach, width=10)
+RRoC_min_ft_min_alt_mach.grid(row=11, column=1)
 tk.Label(frame_alt_mach, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
 
 tk.Label(frame_alt_mach, text="Mach de croisière", **COMMUN).grid(row=12, column=0, sticky="e")
-Mach_cruise = tk.Entry(frame_alt_mach, width=10)
-Mach_cruise.grid(row=12, column=1)
+Mach_cruise_alt_mach = tk.Entry(frame_alt_mach, width=10)
+Mach_cruise_alt_mach.grid(row=12, column=1)
 
 frame_alt_mach.rowconfigure(13, minsize=20)
 #-----------Fin subframe Alt Mach --------------------------
@@ -300,24 +300,24 @@ frame_ci = tk.Frame(frame_Croisiere)
 tk.Label(frame_ci, text="Croisière", **COMMUNTITRE).grid(row=7, column=0, columnspan=3, sticky= "ew")
 
 tk.Label(frame_ci, text="Altitude initiale", **COMMUN).grid(row=8, column=0, sticky="e")
-h_cruise_init = tk.Entry(frame_ci, width=10)
-h_cruise_init.grid(row=8, column=1)
+h_cruise_init_ci = tk.Entry(frame_ci, width=10)
+h_cruise_init_ci.grid(row=8, column=1)
 tk.Label(frame_ci, text="ft", **COMMUN).grid(row=8, column=2, sticky="w")
 
 tk.Label(frame_ci, text="Step climb", **COMMUN).grid(row=9, column=0, sticky="e")
-step_climb_ft = tk.Entry(frame_ci, width=10)
-step_climb_ft.grid(row=9, column=1)
+step_climb_ft_ci = tk.Entry(frame_ci, width=10)
+step_climb_ft_ci.grid(row=9, column=1)
 tk.Label(frame_ci, text="ft", **COMMUN).grid(row=9, column=2, sticky="w")
 
 
 tk.Label(frame_ci, text="Vitesse montée min", **COMMUN).grid(row=11, column=0, sticky="e")
-RRoC_min_ft_min = tk.Entry(frame_ci, width=10)
-RRoC_min_ft_min.grid(row=11, column=1)
+RRoC_min_ft_min_ci = tk.Entry(frame_ci, width=10)
+RRoC_min_ft_min_ci.grid(row=11, column=1)
 tk.Label(frame_ci, text="ft/min", **COMMUN).grid(row=11, column=2, sticky="w")
 
 tk.Label(frame_ci, text="Mach de croisière", **COMMUN).grid(row=12, column=0, sticky="e")
-Mach_cruise = tk.Entry(frame_ci, width=10)
-Mach_cruise.grid(row=12, column=1)
+Mach_cruise_ci = tk.Entry(frame_ci, width=10)
+Mach_cruise_ci.grid(row=12, column=1)
 
 frame_ci.rowconfigure(13, minsize=20)
 #-----------Fin subframe CI --------------------------
@@ -714,6 +714,102 @@ tk.Button(main_frame_tres_bas, text = "Go", command=action_go).grid(row=12, colu
 txt_console = tk.Text(main_frame_droite, font=("Consolas", 9), bd=0)
 txt_console.pack(side="left", fill="both", padx=10, pady=10)
 #-------------------------Fin de la page blanche à droite
+
+
+
+#-----------------------Chargement d'un fichier CSV de base pour que les cases ne soient pas vides-----------------------------
+def chargement_initial(chemin):
+    # On vérifie si le fichier existe bien avant d'essayer de l'ouvrir
+    if not os.path.exists(chemin):
+        print(f"Fichier d'initialisation introuvable : {chemin}")
+        return
+        
+    try:
+        mapping = {
+            # --- Général ---
+            "Payload (kg)": payload,
+            "Distance de diversion (nm)": distance_de_diversion,
+            "Avion": menu_deroulant_avion,
+            "Moteur": menu_deroulant_moteur,
+            
+            # --- Montée ---
+            "Altitude initiale montee (ft)": h_initial_ft,
+            "Altitude acceleration (ft)": h_accel_ft,
+            "CAS < 10000ft montee (kt)": CAS_below_10000_mont_kt,
+            "Mach montee": Mach_climb,
+            
+            # --- Croisière ---
+            "Type de croisiere": menu_deroulant_croisiere,
+            "Altitude initiale croisiere (ft)": h_cruise_init,
+            "Step climb (ft)": step_climb_ft,
+            "Borne inf montée (%)" : borne_inf_montee,
+            "Borne sup montée (%)" : borne_sup_montee,
+            "Vitesse montee min (ft/min)": RRoC_min_ft_min,
+            "Mach croisiere": Mach_cruise,
+            
+            # --- Descente ---
+            "Altitude de deceleration (ft)": h_decel_ft,
+            "CAS < 10000 pieds descente (kt)": CAS_below_10000_desc_kt,
+            "Altitude finale (ft)": h_final_ft,
+            
+            # --- Diversion ---
+            "Altitude finale montee diversion (ft)": Final_climb_altitude_diversion_ft,
+            "Distance max en diversion (nm)": Range_diversion_NM,
+            "Mach de croisiere en diversion": Mach_cruise_div,
+            
+            # --- Autre ---
+            "Contingency Fuel Rule (%)": carburant_de_reserve,
+            "Holding Time (min)": temps_attente,
+            "KCAS holding (kt)": KCAS_holding,
+            
+            # --- Coefficients ---
+            "Cx": cx,
+            "Cz": cz,
+            "cFF": cff,
+            "cFn": cfn,
+            
+            # --- Options ---
+            "Pas de temps montee (s)": dt_climb,
+            "Pas de temps croisiere (s)": dt_cruise,
+            "Pas de temps descente": dt_descent, 
+            "Precision" : precision,
+            
+            # --- Point Performance ---
+            "Type de vitesse (PP)": menu_deroulant_vitesse,
+            "Vitesse (PP)": vitesse,
+            "Altitude (PP)": altitude,
+            "Poids (PP)": poids,
+            "Delta ISA (PP)": isa
+        }
+
+        with open(chemin, "r", encoding="utf-8") as f:
+            for ligne in f:
+                ligne = ligne.strip()
+                if ";" in ligne:
+                    parts = ligne.split(";", 1)
+                    if len(parts) == 2:
+                        cle, valeur = parts
+                        
+                        # On ignore l'en-tête
+                        if cle == "Attribut": 
+                            continue
+                            
+                        # Si la clé est dans notre dictionnaire, on remplit la case
+                        if cle in mapping:
+                            widget = mapping[cle]
+                            if widget:
+                                widget.delete(0, tk.END)
+                                widget.insert(0, valeur)
+                                
+        # On écrit un petit mot discret dans la console au lieu d'un gros pop-up
+        print("Chargement initial réussi.")
+        
+    except Exception as e:
+        print(f"Erreur lors du chargement initial automatique : {e}")
+fichier_initialisation = DOSSIER_SORTIE / "init.csv"
+chargement_initial(fichier_initialisation)
+
+ #----------------------------------------------------
 
 
 root.mainloop()
