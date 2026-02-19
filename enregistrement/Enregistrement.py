@@ -24,6 +24,7 @@ class Enregistrement:
             # Aérodynamique
             "Cz" : np.zeros(self.default_size, dtype=np.float32),
             "Cx" : np.zeros(self.default_size, dtype=np.float32),
+            "f"  : np.zeros(self.default_size, dtype=np.float32),
 
             # Vitesses composantes
             "Vx" : np.zeros(self.default_size, dtype=np.float32),
@@ -77,6 +78,7 @@ class Enregistrement:
 
         self.data["Cz"][self.counter] = Avion.Aero.getCz()
         self.data["Cx"][self.counter] = Avion.Aero.getCx()
+        self.data["f"][self.counter]  = Avion.Aero.getCz() / Avion.Aero.getCx()
 
         self.data["F_N"][self.counter] = Avion.Moteur.getF()
         self.data["SFC"][self.counter] = Avion.Moteur.getSFC()

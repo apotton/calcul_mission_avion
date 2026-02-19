@@ -1,6 +1,7 @@
 from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
+from missions.PointPerformance import PointPerformance
 from missions.Mission import Mission
 from inputs.Inputs import Inputs
 import matplotlib.pyplot as plt
@@ -31,26 +32,50 @@ print("Essence réserve: " + str(A320.Masse.getFuelReserve()) + " kg")
 
 
 
-# print("Taille tableau: " + str(Saving.counter))
+print("Taille tableau: " + str(Saving.counter))
 
 
 Saving.cut()
 
-plt.figure()
-plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
-plt.xlabel("Distance parcourue (NM)")
-plt.ylabel("Mach")
-plt.show()
+# plt.figure()
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
+# plt.xlabel("Distance parcourue (NM)")
+# plt.ylabel("Mach")
+# plt.show()
 
-plt.figure()
-plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)
-plt.xlabel("Distance parcourue (NM)")
-plt.ylabel("Altitude (ft)")
-plt.show()
+# plt.figure()
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Cx"])
+# plt.xlabel("Distance parcourue (NM)")
+# plt.ylabel("Cx")
+# plt.show()
 
-plt.figure()
-plt.plot(np.log10(Saving.data_simu["ecart_mission"]))
-plt.show()
+# plt.figure()
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Cz"])
+# plt.xlabel("Distance parcourue (NM)")
+# plt.ylabel("Cz")
+# plt.show()
+
+# plt.figure()
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["f"])
+# plt.xlabel("Distance parcourue (NM)")
+# plt.ylabel("Finesse")
+# plt.show()
+
+# plt.figure()
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["m"])
+# plt.xlabel("Distance parcourue (NM)")
+# plt.ylabel("Masse (kg)")
+# plt.show()
+
+# plt.figure()
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)
+# plt.xlabel("Distance parcourue (NM)")
+# plt.ylabel("Altitude (ft)")
+# plt.show()
+
+# plt.figure()
+# plt.plot(np.log10(Saving.data_simu["ecart_mission"]))
+# plt.show()
 
 # plt.figure()
 # plt.plot(Saving.data_simu["l_descent"])
@@ -64,3 +89,7 @@ plt.show()
 
 # Profilage : python -m cProfile -o output.prof alexandre.py
 # Visualisation du profilage : snakeviz output.prof
+
+
+# Calcul de Point Performance
+PointPerformance.Performance(A320, test_atmos)

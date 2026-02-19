@@ -83,7 +83,7 @@ class Masse:
             print("Masse plus faible que la masse à vide: calcul effectué à masse vide.")
             return
         
-        masse = masse_kg - self.Avion.getEmptyWeigth()
+        masse = masse_kg - self.Avion.getEmptyWeight()
 
         # Si la masse restante est plus petite que le max fuel
         if masse < self.Avion.getMaxFuelWeight():
@@ -91,10 +91,10 @@ class Masse:
             self.m_fuel_remaining_t = masse
             return
         
-        self.m_fuel_mission = self.Avion.getMaxFuelWeigth()
-        self.m_fuel_remaining_t = self.Avion.getMaxFuelWeigth()
+        self.m_fuel_mission = self.Avion.getMaxFuelWeight()
+        self.m_fuel_remaining_t = self.Avion.getMaxFuelWeight()
 
-        masse = masse - self.Avion.getMaxFuelWeigth()
+        masse = masse - self.Avion.getMaxFuelWeight()
 
         # Si la masse restante est plus petite que la max payload
         if masse <= self.Avion.getMaxPLWeight():
