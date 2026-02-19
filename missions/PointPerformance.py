@@ -55,6 +55,20 @@ class PointPerformance():
 
         # Cz, Cx, finesse
         Avion.Aero.calculateCz(Atmosphere)
+
+        # Montee
+        Avion.Aero.calculateCxClimb_Simplified()
+        CxSimplifieMontee = Avion.Aero.getCx()
+
+        # Croisiere
+        Avion.Aero.calculateCxCruise_Simplified()
+        CxSimplifieCroisiere = Avion.Aero.getCx()
+
+        # Descente
+        Avion.Aero.calculateCxDescent_Simplified()
+        CxSimplifieDescente = Avion.Aero.getCx()
+
+        # Cx non simplifie
         Avion.Aero.calculateCx(Atmosphere)
         Cx = Avion.Aero.getCx()
         Cz = Avion.Aero.getCz()
@@ -96,6 +110,9 @@ class PointPerformance():
             "Aérodynamique": [
                 ("Cz", Cz, "-"),
                 ("Cx", Cx, "-"),
+                ("Cx simplifié montée", CxSimplifieMontee, "-"),
+                ("Cx simplifié croisière", CxSimplifieCroisiere, "-"),
+                ("Cx simplifié descente", CxSimplifieDescente, "-"),
                 ("Finesse (L/D)", finesse, "-"),
                 ("Traînée (Rx)", R_X, "N")
             ],

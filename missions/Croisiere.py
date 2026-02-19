@@ -19,9 +19,9 @@ class Croisiere:
         :param dt: pas de temps (s)
         '''
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
-        # Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
+        Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
         # Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, l_end, dt)
-        Croisiere.cruiseAltSAR(Avion,Atmosphere,Enregistrement,l_end, dt)
+        # Croisiere.cruiseAltSAR(Avion,Atmosphere,Enregistrement,l_end, dt)
 
     @staticmethod
     def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_cruise):
@@ -60,7 +60,7 @@ class Croisiere:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.calculateFCruise()
+            Avion.Moteur.calculateFClimb()
             F_N = Avion.Moteur.getF()
             Avion.Moteur.calculateSFCClimb() #On prend quelles tables du coup ? 
 
@@ -142,7 +142,7 @@ class Croisiere:
             Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
 
             # Poussée moteur
-            Avion.Moteur.calculateFCruise()
+            Avion.Moteur.calculateFClimb()
             F_N_up = Avion.Moteur.getF()
             Avion.Moteur.calculateSFCCruise()
             
@@ -212,9 +212,10 @@ class Croisiere:
             Avion.Moteur.calculateSFCCruise()
 
             # Condition de montée iso-Mach (on ne monte pas si on est très avancé dans la mission)
-            if (Avion.getl() < 7/10*Inputs.l_mission_NM and Croisiere.checkUp(Avion, Atmosphere)):
-                # print("Je monte")
-                Croisiere.climbIsoMach(Avion,Atmosphere,Enregistrement, dt=1)
+            if (Avion.getl() < Inputs.cruiseClimbStop*Inputs.l_mission_NM*Constantes.conv_NM_m/100 \
+                and Avion.getl() > Inputs.cruiseClimbInit*Inputs.l_mission_NM*Constantes.conv_NM_m/100 \
+                and Croisiere.checkUp(Avion, Atmosphere)):
+                Croisiere.climbIsoMach(Avion,Atmosphere,Enregistrement, dt = Inputs.dt_climb)
             else :
                 # Fuel burn
                 Avion.Masse.burnFuel(dt)

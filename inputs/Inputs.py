@@ -20,13 +20,13 @@ class Inputs:
     dt_climb = 10.      # s
     dt_cruise = 60.0    # s
     dt_descent = 10.    # s
-    max_iteration = 100  # Nombre d'itérations max
+    max_iteration = 10  # Nombre d'itérations max
 
     # =====================
     # MISSION
     # =====================
-    m_payload = 10000   # kg
-    l_mission_NM = 2000  # NM
+    m_payload = 18000   # kg
+    l_mission_NM = 800  # NM
 
     # =====================
     # MONTEE
@@ -41,12 +41,14 @@ class Inputs:
     # CROISIERE
     # =====================
     # Croisière classique
-    h_cruise_init = 35000       # ft
+    h_cruise_init = 31000       # ft
     Mach_cruise = 0.78
-    step_climb_ft = 2000.0      # ft
     
     # Croisière Mach SAR
+    step_climb_ft = 2000.0      # ft
     RRoC_min_ft_min = 300.0     # ft/min
+    cruiseClimbInit = 20 # % de la distance mission
+    cruiseClimbStop = 80 # % de la distance mission
 
     # Croisière alt SAR (dégradation du SAR)
     k_SAR_cruise = 1 # %
