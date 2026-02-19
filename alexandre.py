@@ -36,12 +36,16 @@ print("Essence réserve: " + str(A320.Masse.getFuelReserve()) + " kg")
 
 Saving.cut()
 
-# plt.figure()
-# plt.plot(Saving.data["t"]/60, Saving.data["CAS"])
-# plt.show()
+plt.figure()
+plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("Mach")
+plt.show()
 
 plt.figure()
 plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("Altitude (ft)")
 plt.show()
 
 plt.figure()

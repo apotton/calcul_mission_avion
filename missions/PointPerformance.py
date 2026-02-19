@@ -38,17 +38,37 @@ class PointPerformance():
     def Performance(Avion: Avion, Atmosphere:Atmosphere):
         # Setup avec les inputs
         PointPerformance.setupAvion(Avion, Atmosphere)
+        
+        # Conditions atmosphérique
+        Atmosphere.CalculateRhoPT(Avion.geth())
+        rho = Atmosphere.getRho_t()
+        P = Atmosphere.getP_t()
+        T = Atmosphere.getT_t()
+
+        # Cz, Cx, finesse, vitesses
+        Avion.Aero.calculateCz(Atmosphere)
+        Avion.Aero.calculateCx(Atmosphere)
+        Cx = Avion.Aero.getCx()
+        Cz = Avion.Aero.getCz()
+        finesse = Cz/Cx
+
 
         # Poussée / SFC / FF max
+        Avion.Moteur.calculateFClimb()
+        Avion.Moteur.calculateSFCClimb()
+        F_N_max = Avion.Moteur.getF()
+        F_F_max = Avion.Moteur.getFF()
+        SFC_max = Avion.Moteur.getSFC()
 
 
         # Poussée / SFC / FF équilibre
+        Avion.Moteur.calculateFCruise()
+        Avion.Moteur.calculateSFCCruise()
+        F_N_max = Avion.Moteur.getF()
+        F_F_max = Avion.Moteur.getFF()
+        SFC_max = Avion.Moteur.getSFC()
 
 
-        # Cz, Cx, finesse, vitesses
-
-
-        # Conditions atmosphérique
 
         
 

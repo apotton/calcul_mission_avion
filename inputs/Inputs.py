@@ -26,7 +26,7 @@ class Inputs:
     # MISSION
     # =====================
     m_payload = 10000   # kg
-    l_mission_NM = 1000  # NM
+    l_mission_NM = 2000  # NM
 
     # =====================
     # MONTEE
@@ -82,7 +82,7 @@ class Inputs:
     # =====================
     # VALIDATION
     # =====================
-    precision = 0.1 # %
+    precision = 1 # %
     
     @staticmethod
     def validate():

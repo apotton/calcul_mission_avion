@@ -89,14 +89,11 @@ class ReseauMoteur(Moteur):
     
     def calculateFCruise(self):
         # Altitude (conversion)
-        h_ft = self.Avion.geth()/ Constantes.conv_ft_m
-
-        resultat = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
-                                                self.DonneesMoteur.alt_table_ft,
-                                                self.DonneesMoteur.Fn_MCL_table,
-                                                self.Avion.Aero.getMach(), h_ft)
-
-        self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
+        # Calcul par équilibre des forces
+        Cz = self.Avion.Aero.getCz()
+        Cx = self.Avion.Aero.getCx()
+        finesse = Cz / Cx
+        self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
     
     def calculateSFCCruise(self):
         # Altitude
@@ -114,21 +111,21 @@ class ReseauMoteur(Moteur):
 
         # Interpolation de la table de SFC (poussée en lbf)
         sfc_lbf_closest_h = ReseauMoteur.interp2d_linear(fn_lbf_vector,
-                                                   mach_vector,
-                                                   sfc_matrix,
-                                                   self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g,
-                                                   self.Avion.Aero.getMach())
+                                                         mach_vector,
+                                                         sfc_matrix,
+                                                         self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g,
+                                                         self.Avion.Aero.getMach())
         
 
         if abs(h_ft - closest_h) < 20:  # Si l'altitude est proche de plus de 20 ft de la base de données, on affiche un avertissement
-            print(f"Attention : altitude {h_ft} ft proche de la base de données ({closest_h} ft)")
+            # print(f"Attention : altitude {h_ft} ft proche de la base de données ({closest_h} ft)")
 
             # Conversion finale des unités
             self.SFC_t = sfc_lbf_closest_h / 3600.0 / Constantes.g
             self.FF_t = self.SFC_t * self.F_t
 
         else:
-            print(f"Attention : altitude {h_ft} ft éloignée de la base de données ({closest_h} ft), interpolation moins fiable")
+            # print(f"Attention : altitude {h_ft} ft éloignée de la base de données ({closest_h} ft), interpolation moins fiable")
 
             # comme c'est éloigné, on fait une interpolation linéaire entre les deux altitudes les plus proches pour essayer d'améliorer la précision
             # Trouve les deux altitudes les plus proches sachant qu'on garde closest_h comme l'une d'entre elle
@@ -243,13 +240,5 @@ class ReseauMoteur(Moteur):
     def calculateSFCCruiseDiversion(self):
         # Même calcul qu'en croisière
         self.calculateSFCCruise()
-        # h_ft = 25000  # ft
-
-        # SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.cruise_data[h_ft]['fn'] * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
-        #                                        self.DonneesMoteur.mach_table_crl,
-        #                                        self.DonneesMoteur.cruise_data[h_ft]['sfc'],
-        #                                        self.F_t/2, self.Avion.Aero.getMach())
-    
-        # self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
 
 
