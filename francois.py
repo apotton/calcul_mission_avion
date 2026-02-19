@@ -13,7 +13,7 @@ A320 = Avion()
 
 Mach_cruise_step = 0.78
 
-A320.Aero.setMach_t(0.78)
+A320.Aero.setMach(0.78)
 print(A320.Aero.getMach())
 
 h_cruise_step_ft = 3.7012e+04

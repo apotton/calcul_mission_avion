@@ -16,23 +16,24 @@ class Inputs:
     # =====================
     # Paramètres généraux
     # =====================
-    Aero_simplified = False
-    dt_climb = 10.      # s
-    dt_cruise = 60.0    # s
-    dt_descent = 10.    # s
-    max_iteration = 10  # Nombre d'itérations max
+    AeroSimplified = False
+    dtClimb = 10.      # s
+    dtCruise = 60.0    # s
+    dtDescent = 10.    # s
+    maxIter = 10  # Nombre d'itérations max
+    precision = 1 # %
 
     # =====================
     # MISSION
     # =====================
     m_payload = 18000   # kg
-    l_mission_NM = 800  # NM
+    l_mission_NM = 1000  # NM
 
     # =====================
     # MONTEE
     # =====================
-    h_initial_ft = 1500.0      # ft
-    h_accel_ft = 10000.0        # ft
+    hInit_ft = 1500.0      # ft
+    hAccel_ft = 10000.0        # ft
     CAS_below_10000_mont_kt = 250.0  # kt 
     CAS_climb_kt = None         # kt (None -> KVMO)
     Mach_climb = 0.78
@@ -41,32 +42,32 @@ class Inputs:
     # CROISIERE
     # =====================
     # Croisière classique
-    h_cruise_init = 31000       # ft
-    Mach_cruise = 0.78
+    hCruise_ft = 38000       # ft
+    MachCruise = 0.78
     
     # Croisière Mach SAR
-    step_climb_ft = 2000.0      # ft
-    RRoC_min_ft_min = 300.0     # ft/min
+    stepClimb_ft = 2000.0      # ft
+    RRoC_min_ft = 300.0     # ft/min
     cruiseClimbInit = 20 # % de la distance mission
     cruiseClimbStop = 80 # % de la distance mission
 
     # Croisière alt SAR (dégradation du SAR)
-    k_SAR_cruise = 1 # %
+    kSARcruise = 1 # %
 
     # =====================
     # DESCENTE
     # =====================
     CAS_max_descent_kt = None   # kt (None -> KVMO)
     CAS_below_10000_desc_kt = 250.0  # kt
-    h_decel_ft = 10000.0
-    h_final_ft = 1500.0
+    hDecel_ft = 10000.0
+    hFinal_ft = 1500.0
 
     # =====================
     # Critère de diversion
     # =====================
-    Final_climb_altitude_diversion_ft = 25000
-    Range_diversion_NM = 200
-    Mach_cruise_div = 0.65
+    cruiseDiversionAlt_ft = 25000
+    rangeDiversion_NM = 200
+    MachCruiseDiversion = 0.65
     
     # =====================
     # Critère Holding
@@ -83,25 +84,29 @@ class Inputs:
     # Paramètres de l'environnement
     # =====================
     Vw = 0                   # kt
-    DISA_Cruise = 0          #K
-    DISA_sub_Cruise = 0      #K
+    DISA_Cruise = 0          # K
+    DISA_sub_Cruise = 0      # K
 
     # =====================
-    # VALIDATION
+    # Coefficients de déformation
     # =====================
-    precision = 1 # %
+    cCz = 1     # Coefficient sur le coefficient de portance
+    cCx = 1     # Coefficient sur le coefficient de traînée
+    cFF = 1     # Coefficient sur le fuel flow
+    cFN = 1     # Coefficient sur la poussée totale (uniquement en montée)
+    
     
     @staticmethod
     def validate():
         assert Inputs.Mach_climb < 0.9, "Mach climb incohérent"
-        assert Inputs.h_final_ft < Inputs.h_decel_ft, "Altitude finale supérieur à l'altitude de pallier en descente"
-        assert Inputs.h_initial_ft < Inputs.h_accel_ft, "Altitude initiale supérieur à l'altitude de pallier en montée"
+        assert Inputs.hFinal_ft < Inputs.hDecel_ft, "Altitude finale supérieur à l'altitude de pallier en descente"
+        assert Inputs.hInit_ft < Inputs.hAccel_ft, "Altitude initiale supérieur à l'altitude de pallier en montée"
         assert Inputs.CAS_below_10000_mont_kt < 250, "Vitesse de montée sous 10 000ft trop élevée"
         assert Inputs.CAS_below_10000_desc_kt < 250, "Vitesse de descente sous 10 000ft trop élevée"
 
     @staticmethod
     def getAirplaneFile():
-        ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe '''
+        ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe. '''
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
         data_folder = os.path.join(base_dir, "data") #Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
         csv_folder = os.path.join(data_folder, "avions") #Ajoute le terme "csv_avions" au Directory précédent pour se rendre dans le Directory des fichiers csv à lire
@@ -111,7 +116,7 @@ class Inputs:
     
     @staticmethod
     def getEngineFile():
-        ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe '''
+        ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe. '''
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
         data_folder = os.path.join(base_dir, "data") #Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
         py_folder = os.path.join(data_folder, "moteurs") #Ajoute le terme "csv_moteurs" au Directory précédent pour se rendre dans le Directory des fichiers csv de moteurs à lire

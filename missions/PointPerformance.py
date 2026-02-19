@@ -22,15 +22,15 @@ class PointPerformance():
         # Set des vitesses
         match SpeedType:
             case "Mach":
-                Avion.Aero.setMach_t(Speed)
+                Avion.Aero.setMach(Speed)
                 Avion.Aero.convertMachToCAS(Atmosphere)
                 Avion.Aero.convertMachToTAS(Atmosphere)
             case "TAS":
-                Avion.Aero.setTAS_t(Speed * Constantes.conv_kt_mps)
+                Avion.Aero.setTAS(Speed * Constantes.conv_kt_mps)
                 Avion.Aero.convertTASToMach(Atmosphere)
                 Avion.Aero.convertMachToCAS(Atmosphere)
             case "CAS":
-                Avion.Aero.setCAS_t(Speed * Constantes.conv_kt_mps)
+                Avion.Aero.setCAS(Speed * Constantes.conv_kt_mps)
                 Avion.Aero.convertCASToMach(Atmosphere)
                 Avion.Aero.convertMachToTAS(Atmosphere)
             case _:

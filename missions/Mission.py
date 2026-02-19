@@ -23,7 +23,7 @@ class Mission:
         Enregistrement.save_simu(Avion, ecart_mission)
         n_iter = 0
 
-        while ecart_mission > Inputs.precision and n_iter < Inputs.max_iteration:
+        while ecart_mission > Inputs.precision and n_iter < Inputs.maxIter:
             # Initialisations
             Enregistrement.reset()
             masse_init = Avion.Masse.getCurrentMass()

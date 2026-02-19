@@ -37,11 +37,11 @@ print("Taille tableau: " + str(Saving.counter))
 
 Saving.cut()
 
-# plt.figure()
-# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
-# plt.xlabel("Distance parcourue (NM)")
-# plt.ylabel("Mach")
-# plt.show()
+plt.figure()
+plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("Mach")
+plt.show()
 
 plt.figure()
 plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)

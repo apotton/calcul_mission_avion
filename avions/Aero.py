@@ -1,5 +1,6 @@
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
+from inputs.Inputs import Inputs
 import numpy as np
 
 class Aero:
@@ -27,7 +28,7 @@ class Aero:
 
         :param atmosphere: Instance de la classe Atmosphere
         '''
-        self.Cz_t = self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*atmosphere.getP_t()*self.Avion.getSref()*self.getMach()**2) 
+        self.Cz_t = (self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*atmosphere.getP_t()*self.Avion.getSref()*self.getMach()**2)) * Inputs.cCz
     
 
     #Calcul du simplifié de Cx en fonction de la configuration du vol
@@ -35,19 +36,19 @@ class Aero:
         '''
         Calcul simplifié du coefficient de traînée en montée.
         '''
-        self.Cx_t = self.Avion.getCx0Climb() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldClimb()) *self.Cz_t**2
+        self.Cx_t = (self.Avion.getCx0Climb() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldClimb()) *self.Cz_t**2) * Inputs.cCx
 
     def calculateCxCruise_Simplified(self):
         '''
         Calcul simplifié du coefficient de traînée en croisière.
         '''
-        self.Cx_t = self.Avion.getCx0Cruise() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldCruise()) *self.Cz_t**2
+        self.Cx_t = (self.Avion.getCx0Cruise() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldCruise()) *self.Cz_t**2) * Inputs.cCx
 
     def calculateCxDescent_Simplified(self):
         '''
         Calcul simplifié du coefficient de traînée en descente.
         '''
-        self.Cx_t = self.Avion.getCx0Descent() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldDescent()) *self.Cz_t**2
+        self.Cx_t = (self.Avion.getCx0Descent() + 1/(np.pi*self.Avion.getAspectRatio()*self.Avion.getOswaldDescent()) *self.Cz_t**2) * Inputs.cCx
 
     
 
@@ -102,7 +103,7 @@ class Aero:
         Cx_compressibility = 20 * delta**4
         
         # Résultat final
-        self.Cx_t = Cx_0 + Cx_i + Cx_trim + Cx_compressibility
+        self.Cx_t = (Cx_0 + Cx_i + Cx_trim + Cx_compressibility) * Inputs.cCx
     
     def calculateCzBuffet(self):
         """
@@ -263,7 +264,7 @@ class Aero:
         '''
         self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
 
-    def setMach_t(self, Mach):
+    def setMach(self, Mach):
         '''
         Définit la vitesse Mach actuelle de l'avion (m/s).
         
@@ -271,7 +272,7 @@ class Aero:
         '''
         self.Mach_t = Mach
 
-    def setTAS_t(self, TAS):
+    def setTAS(self, TAS):
         '''
         Définit la vitesse TAS actuelle de l'avion (m/s).
         
@@ -279,7 +280,7 @@ class Aero:
         '''
         self.TAS_t = TAS
 
-    def setCAS_t(self, CAS: float):
+    def setCAS(self, CAS: float):
         '''
         Définit la vitesse CAS actuelle de l'avion (m/s).
         

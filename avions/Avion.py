@@ -95,8 +95,8 @@ class Avion:
         '''
         Initialise les paramètres pour la première estimation de descente à partir des Inputs (règle de 3: il faut ~3 nautiques pour descendre de 1000 pieds).
         '''
-        self.l_descent = 3 * Inputs.h_cruise_init / 1000 * Constantes.conv_NM_m
-        self.l_descent_diversion = 3 * Inputs.Final_climb_altitude_diversion_ft / 1000 * Constantes.conv_NM_m
+        self.l_descent = 3 * Inputs.hCruise_ft / 1000 * Constantes.conv_NM_m
+        self.l_descent_diversion = 3 * Inputs.cruiseDiversionAlt_ft / 1000 * Constantes.conv_NM_m
 
     def setl_descent(self, l_descent: float):
         '''

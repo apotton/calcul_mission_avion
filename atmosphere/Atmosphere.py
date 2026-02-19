@@ -32,7 +32,7 @@ class Atmosphere:
         :param h_m: Altitude de l'avion (m)
         :param DISA_dC: Différence de température avec l'atmosphère standard, utilisée pour le point performance
         '''
-        if h_m < Inputs.h_cruise_init:
+        if h_m < Inputs.hCruise_ft:
             DISA = Inputs.DISA_sub_Cruise + DISA_dC
         else:
             DISA = Inputs.DISA_Cruise + DISA_dC

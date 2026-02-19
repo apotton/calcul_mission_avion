@@ -5,6 +5,7 @@ from inputs.Inputs import Inputs
 from avions.Avion import Avion
 from missions.Montee import Montee
 from missions.Descente import Descente
+from missions.Croisiere import Croisiere
 import numpy as np
 
 class Diversion:
@@ -21,64 +22,60 @@ class Diversion:
         Avion.diversion = True
 
         # Enregistrement de la distance actuelle pour mesurer la longueur de la diversion
-        l_fin_mission = Avion.getl()
+        l_end = Avion.getl() + Inputs.rangeDiversion_NM * Constantes.conv_NM_m
 
         # Montée de diversion
-        Montee.monterDiversion(Avion, Atmosphere, Enregistrement, dt = Inputs.dt_climb)
+        Montee.monterDiversion(Avion, Atmosphere, Enregistrement, dt = Inputs.dtClimb)
         
         # Croisière diversion
-        Diversion.croisiereDiversion(Avion, Atmosphere, Enregistrement, l_fin_mission, dt = Inputs.dt_cruise)
+        Diversion.cruiseAltSAR(Avion, Atmosphere, Enregistrement, l_end, dt = Inputs.dtCruise)
 
         # Descente de diversion
-        Descente.descendreDiversion(Avion, Atmosphere, Enregistrement, dt = Inputs.dt_descent)
+        Descente.descendreDiversion(Avion, Atmosphere, Enregistrement, dt = Inputs.dtDescent)
 
         # Fin de la diversion
         Avion.diversion = False
 
 
     @staticmethod
-    def croisiereDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, l_debut, dt = Inputs.dt_cruise):
-            '''
-            Croisière en palier à Mach constant
+    def cruiseAltSAR(Avion:Avion, Atmosphere:Atmosphere, Enregistrement:Enregistrement, l_end, dt=Inputs.dtCruise):
+        """
+        Croisière à altitude constante avec optimisation du SAR.
+        Le Mach est recalculé à chaque pas pour atteindre k * SAR_max.
 
-            :param Avion: instance de la classe Avion
-            :param Atmosphere: instance de la classe Atmosphere
-            :param Enregistrement: Instance de la classe Enregistrement
-            :param l_debut: début de la diversion, avant la montée (m)
-            :param dt: Pas de temps (s)
-            '''
+        :param Avion: instance Avion
+        :param Atmosphere: instance Atmosphere
+        :param Enregistrement: instance Enregistrement
+        :param l_end: distance à parcourir en croisière avant de commencer la descente (m)
+        :param dt: pas de temps
+        """
+        
+        while Avion.getl() < l_end - Avion.getl_descent_diversion():
+            Mach_opt, _ = Croisiere.calculateSpeed_target(Avion, Atmosphere)
 
-            l_end_diversion = Inputs.Range_diversion_NM * Constantes.conv_NM_m
-            l_descent_diversion = Avion.getl_descent_diversion()
+            ## Mise à jour avion en fonction du Mach optimal, tout passe en scalaire
+            Avion.Aero.setMach(Mach_opt)
+            Avion.Aero.convertMachToTAS(Atmosphere)
+            Avion.Aero.convertMachToCAS(Atmosphere)
 
-            # Tant que l'on n'a pas parcouru la distance de diversion
-            while (Avion.getl() < (l_debut + l_end_diversion - l_descent_diversion)):
+            # Aérodynamique
+            Avion.Aero.calculateCz(Atmosphere)
 
-                # Atmosphère
-                Atmosphere.CalculateRhoPT(Avion.geth())
-
-                # Vitesse
-                Avion.Aero.convertMachToTAS(Atmosphere)
-                Avion.Aero.convertMachToCAS(Atmosphere)
-
-                # Vitesses
-                Vx = Avion.Aero.getTAS() + Atmosphere.getVwind()
-
-                # Aérodynamique
-                Avion.Aero.calculateCz(Atmosphere)
+            if Inputs.AeroSimplified:
+                Avion.Aero.calculateCxCruise_Simplified()
+            else:
                 Avion.Aero.calculateCx(Atmosphere)
 
-                # Poussée moteur
-                Avion.Moteur.calculateFCruiseDiversion()
-                Avion.Moteur.calculateSFCCruiseDiversion()
+            # Moteur
+            Avion.Moteur.calculateFCruise()
+            Avion.Moteur.calculateSFCCruise()
 
-                # Fuel burn
-                Avion.Masse.burnFuel(dt)
+            # Intégration
+            Avion.Add_dl(Avion.Aero.getTAS() * dt)
 
-                # Mise à jour avion
-                Avion.Add_dl(Vx * dt)
+            # Consommation
+            Avion.Masse.burnFuel(dt)
 
-                Enregistrement.save(Avion, Atmosphere, dt)
-
-
+            # Enregistrement au pas de temps
+            Enregistrement.save(Avion, Atmosphere, dt)
 

@@ -167,7 +167,7 @@ class ReseauMoteur(Moteur):
             sfc_lbf_final = (1 - ratio) * sfc_results[0] + ratio * sfc_results[1]
 
         # Conversion finale (lbf/lbf/h -> kg/N/s)
-        self.SFC_t = sfc_lbf_final / 3600.0 / Constantes.g
+        self.SFC_t = (sfc_lbf_final / 3600.0 / Constantes.g) * Inputs.cFF
         self.FF_t = self.SFC_t * self.F_t
 
 
@@ -182,7 +182,7 @@ class ReseauMoteur(Moteur):
                                                 self.DonneesMoteur.Fn_MCL_table,
                                                 self.Avion.Aero.getMach(), h_ft)
 
-        self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
+        self.F_t = (2*float(resultat)* Constantes.g * Constantes.conv_lb_kg) * Inputs.cFN  # Conversion lbf -> N et pour 2 moteurs
 
 
     def calculateSFCClimb(self): 
@@ -194,7 +194,7 @@ class ReseauMoteur(Moteur):
                                                self.DonneesMoteur.SFC_MCL_table,
                                                self.Avion.Aero.getMach(), h_ft)
     
-        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        self.SFC_t = (float(SFC_lbf) / 3600.0 / Constantes.g) * Inputs.cFF  # Conversion lb/(lbf*h) -> kg/(N*s)
         self.FF_t = self.SFC_t * self.F_t
     
     #### DESENTE ####
@@ -218,7 +218,7 @@ class ReseauMoteur(Moteur):
                                                     self.DonneesMoteur.FF_FI_table,
                                                     self.Avion.Aero.getMach(), h_ft)
         
-        self.SFC_t = float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t
+        self.SFC_t = (float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t) * Inputs.cFF
         self.FF_t = self.SFC_t * self.F_t
 
 
@@ -237,7 +237,7 @@ class ReseauMoteur(Moteur):
                                                self.DonneesMoteur.sfc_crl_holding,
                                                self.F_t / 2, self.Avion.Aero.getMach())
     
-        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        self.SFC_t = (float(SFC_lbf) / 3600.0 / Constantes.g) * Inputs.cFF  # Conversion lb/(lbf*h) -> kg/(N*s)
         self.FF_t = self.SFC_t * self.F_t
 
 
@@ -307,5 +307,5 @@ class ReseauMoteur(Moteur):
             sfc_lbf_final = (1 - ratio) * sfc_results[0] + ratio * sfc_results[1]
 
         # Conversion finale (lbf/lbf/h -> kg/N/s)
-        self.SFC_t = sfc_lbf_final / 3600.0 / Constantes.g
-        # self.FF_t = self.SFC_t * self.F_t
+        self.SFC_t = (sfc_lbf_final / 3600.0 / Constantes.g) * Inputs.cFF
+        self.FF_t = self.SFC_t * self.F_t
