@@ -6,6 +6,8 @@ import moteurs.DonneesMoteur as DonneesMoteur
 from pathlib import Path
 import numpy as np
 
+from scipy.interpolate import RegularGridInterpolator
+
 
 class ReseauMoteur(Moteur):
     def __init__(self, Avion):
@@ -15,6 +17,25 @@ class ReseauMoteur(Moteur):
 
         # liste des différentes altitudes disponibles dans le DonneesMoteur
         self.available_alts = list(self.DonneesMoteur.cruise_data.keys())
+
+        # Création des interpolateurs pour le calcul vectorisé de la SFC
+        self.interpolateurs = {}
+        for alt in self.available_alts:
+            data = self.DonneesMoteur.cruise_data[alt]
+            
+            # Récupération des axes de la table
+            fn_axis = data['fn'] 
+            mach_axis = self.DonneesMoteur.mach_table_crl
+            sfc_table = data['sfc']
+
+            # Création de l'interpolateur
+            self.interpolateurs[alt] = RegularGridInterpolator(
+                (fn_axis, mach_axis), 
+                sfc_table, 
+                bounds_error=False,
+                method='linear', 
+                fill_value=None # type: ignore
+            )
 
 
     def _charger_donnees(self, chemin_fichier):
@@ -102,60 +123,52 @@ class ReseauMoteur(Moteur):
         # Obtention de l'altitude la plus proche dans la base de données (cruise_data)        
         closest_h = min(self.available_alts, key=lambda x: abs(x - h_ft))
 
-        # Récupération des tables correspondantes
-        data = self.DonneesMoteur.cruise_data[closest_h]
-        
-        fn_lbf_vector = data['fn']                       # Vecteur Poussée en lbf (vecteur lignes)
-        sfc_matrix = data['sfc']                         # Matrice SFC (Lignes=Fn, Colonnes=Mach)
-        mach_vector = self.DonneesMoteur.mach_table_crl  # Vecteur Mach (vecteur colonnes)
-
-        # Interpolation de la table de SFC (poussée en lbf)
-        sfc_lbf_closest_h = ReseauMoteur.interp2d_linear(fn_lbf_vector,
-                                                         mach_vector,
-                                                         sfc_matrix,
-                                                         self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g,
-                                                         self.Avion.Aero.getMach())
-        
-
-        if abs(h_ft - closest_h) < 20:  # Si l'altitude est proche de plus de 20 ft de la base de données, on affiche un avertissement
-            # print(f"Attention : altitude {h_ft} ft proche de la base de données ({closest_h} ft)")
-
-            # Conversion finale des unités
-            self.SFC_t = sfc_lbf_closest_h / 3600.0 / Constantes.g
-            self.FF_t = self.SFC_t * self.F_t
-
+        # Détermination de la deuxième altitude pour l'interpolation 3D (Alt)
+        if abs(h_ft - closest_h) < 20:
+            # On est suffisamment proche de l'altitude dans les tables
+            h_refs = [closest_h]
         else:
-            # print(f"Attention : altitude {h_ft} ft éloignée de la base de données ({closest_h} ft), interpolation moins fiable")
-
-            # comme c'est éloigné, on fait une interpolation linéaire entre les deux altitudes les plus proches pour essayer d'améliorer la précision
-            # Trouve les deux altitudes les plus proches sachant qu'on garde closest_h comme l'une d'entre elle
+            # Sinon on choisit la seconde plus proche altitude
             if h_ft < closest_h:
                 second_closest_h = max([h for h in self.available_alts if h < closest_h], default=closest_h)
-                #print(f"Altitude de référence pour interpolation : {closest_h} ft et {second_closest_h} ft et altitude actuelle {h_ft} ft")
             else:
                 second_closest_h = min([h for h in self.available_alts if h > closest_h], default=closest_h)
-                #print(f"Altitude de référence pour interpolation : {closest_h} ft et {second_closest_h} ft et altitude actuelle {h_ft} ft")
 
-            # Interpolation linéaire entre les deux altitudes
-            ratio = (h_ft - closest_h) / (second_closest_h - closest_h) if second_closest_h != closest_h else 0
-            data2 = self.DonneesMoteur.cruise_data[second_closest_h]
+            # Si la seconde altitude est la même, c'est qu'on est sur les bords des tables
+            if second_closest_h != closest_h:
+                h_refs = [closest_h, second_closest_h]
+            else:
+                h_refs = [closest_h]
 
-            fn_lbf_vector_2 = data2['fn']                       # Vecteur Poussée en lbf (vecteur lignes)
-            sfc_matrix_2 = data2['sfc']                         # Matrice SFC (Lignes=Fn, Colonnes=Mach)
+        # Calcul du SFC pour chaque altitude de référence
+        sfc_results = []
+        for h_ref in h_refs:
+            # Récupération des tables correspondantes
+            data = self.DonneesMoteur.cruise_data[h_ref]
+            
+            fn_lbf_vector = data['fn']                       # Vecteur Poussée en lbf (vecteur lignes)
+            sfc_matrix = data['sfc']                         # Matrice SFC (Lignes=Fn, Colonnes=Mach)
+            mach_vector = self.DonneesMoteur.mach_table_crl  # Vecteur Mach (vecteur colonnes)
 
-
-            sfc_lbf_second_closest_h = ReseauMoteur.interp2d_linear(fn_lbf_vector_2,
+            sfc_lbf = ReseauMoteur.interp2d_linear(fn_lbf_vector,
                                                    mach_vector,
-                                                   sfc_matrix_2,
-                                                   self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g,
+                                                   sfc_matrix,
+                                                   self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * Inputs.cFN_cruise,
                                                    self.Avion.Aero.getMach())
+            
+            sfc_results.append(sfc_lbf)
 
-            # Interpolation des valeurs SFC
-            sfc_lbf_interp = (1 - ratio) * sfc_lbf_closest_h + ratio * sfc_lbf_second_closest_h  # Simplification pour un seul point
+        # Interpolation finale entre les deux altitudes (si nécessaire)
+        if len(h_refs) == 1:
+            sfc_lbf_final = sfc_results[0]
+        else:
+            # Interpolation linéaire entre les deux plans d'altitude
+            ratio = (h_ft - h_refs[0]) / (h_refs[1] - h_refs[0])
+            sfc_lbf_final = (1 - ratio) * sfc_results[0] + ratio * sfc_results[1]
 
-            # Conversion finale des unités
-            self.SFC_t = sfc_lbf_interp / 3600.0 / Constantes.g
-            self.FF_t = self.SFC_t * self.F_t
+        # Conversion finale (lbf/lbf/h -> kg/N/s)
+        self.SFC_t = (sfc_lbf_final / 3600.0 / Constantes.g) * Inputs.cFF_cruise
+        self.FF_t = self.SFC_t * self.F_t
 
 
     #### MONTÉE ####
@@ -169,7 +182,7 @@ class ReseauMoteur(Moteur):
                                                 self.DonneesMoteur.Fn_MCL_table,
                                                 self.Avion.Aero.getMach(), h_ft)
 
-        self.F_t = 2*float(resultat)* Constantes.g * Constantes.conv_lb_kg  # Conversion lbf -> N et pour 2 moteurs
+        self.F_t = (2*float(resultat)* Constantes.g * Constantes.conv_lb_kg) * Inputs.cFN_climb  # Conversion lbf -> N et pour 2 moteurs
 
 
     def calculateSFCClimb(self): 
@@ -181,7 +194,7 @@ class ReseauMoteur(Moteur):
                                                self.DonneesMoteur.SFC_MCL_table,
                                                self.Avion.Aero.getMach(), h_ft)
     
-        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        self.SFC_t = (float(SFC_lbf) / 3600.0 / Constantes.g) * Inputs.cFF_climb  # Conversion lb/(lbf*h) -> kg/(N*s)
         self.FF_t = self.SFC_t * self.F_t
     
     #### DESENTE ####
@@ -194,7 +207,7 @@ class ReseauMoteur(Moteur):
                                                        self.DonneesMoteur.Fn_FI_table,
                                                        self.Avion.Aero.getMach(), h_ft)
         
-        self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g
+        self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g * Inputs.cFN_descent
 
     def calculateSFCDecent(self):
         # Altitude
@@ -205,7 +218,7 @@ class ReseauMoteur(Moteur):
                                                     self.DonneesMoteur.FF_FI_table,
                                                     self.Avion.Aero.getMach(), h_ft)
         
-        self.SFC_t = float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t
+        self.SFC_t = (float(FuelFlow_lbf) / 3600. / Constantes.g / self.F_t) * Inputs.cFF_descent
         self.FF_t = self.SFC_t * self.F_t
 
 
@@ -222,9 +235,9 @@ class ReseauMoteur(Moteur):
         SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.fn_lbf_crl_holding * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
                                                self.DonneesMoteur.mach_table_crl_holding,
                                                self.DonneesMoteur.sfc_crl_holding,
-                                               self.F_t / 2, self.Avion.Aero.getMach())
+                                               self.F_t / 2 * Inputs.cFN_cruise, self.Avion.Aero.getMach())
     
-        self.SFC_t = float(SFC_lbf) / 3600.0 / Constantes.g  # Conversion lb/(lbf*h) -> kg/(N*s)
+        self.SFC_t = (float(SFC_lbf) / 3600.0 / Constantes.g) * Inputs.cFF_cruise  # Conversion lb/(lbf*h) -> kg/(N*s)
         self.FF_t = self.SFC_t * self.F_t
 
 
@@ -242,3 +255,57 @@ class ReseauMoteur(Moteur):
         self.calculateSFCCruise()
 
 
+    # ====================
+    # calcul vectorisé de la SFC pour la croisière Alt SAR
+    # ====================
+
+    def calculateSFC_Vectorized(self):
+        """
+        Version vectorisée du calcul de SFC (en croisière).
+        """
+        h_ft = self.Avion.geth() / Constantes.conv_ft_m
+        
+        # Altitude de référence
+        closest_h = min(self.available_alts, key=lambda x: abs(x - h_ft))
+        
+        # Détermination de la deuxième altitude pour l'interpolation 3D (Alt)
+        if abs(h_ft - closest_h) < 20:
+            # On est suffisamment proche de l'altitude dans les tables
+            h_refs = [closest_h]
+        else:
+            # Sinon on choisit la seconde plus proche altitude
+            if h_ft < closest_h:
+                second_closest_h = max([h for h in self.available_alts if h < closest_h], default=closest_h)
+            else:
+                second_closest_h = min([h for h in self.available_alts if h > closest_h], default=closest_h)
+
+            # Si la seconde altitude est la même, c'est qu'on est sur les bords des tables
+            if second_closest_h != closest_h:
+                h_refs = [closest_h, second_closest_h]
+            else:
+                h_refs = [closest_h]
+
+
+        # Calcul du SFC pour chaque altitude de référence
+        sfc_results = []
+        for h_ref in h_refs:
+            # Récupération de l'interpolateur
+            interp_func = self.interpolateurs[h_ref]
+            
+            # On interpole pour tous les couples (Mach, Fn) d'un coup
+            query_points = np.vstack((self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * Inputs.cFN_cruise, self.Avion.Aero.getMach())).T
+
+            sfc_lbf = interp_func(query_points)
+            sfc_results.append(sfc_lbf)
+
+        # Interpolation finale entre les deux altitudes (si nécessaire)
+        if len(h_refs) == 1:
+            sfc_lbf_final = sfc_results[0]
+        else:
+            # Interpolation linéaire entre les deux plans d'altitude
+            ratio = (h_ft - h_refs[0]) / (h_refs[1] - h_refs[0])
+            sfc_lbf_final = (1 - ratio) * sfc_results[0] + ratio * sfc_results[1]
+
+        # Conversion finale (lbf/lbf/h -> kg/N/s)
+        self.SFC_t = (sfc_lbf_final / 3600.0 / Constantes.g) * Inputs.cFF_cruise
+        self.FF_t = self.SFC_t * self.F_t

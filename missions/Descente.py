@@ -7,7 +7,7 @@ import numpy as np
 
 class Descente:
     @staticmethod
-    def Descendre(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
+    def Descendre(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtDescent):
         '''
         Réalise toute la descente depuis la fin de la croisière jusqu'à l'altitude finale.
 
@@ -23,7 +23,7 @@ class Descente:
         Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, dt)
 
         # Seconde phase
-        h_target = Inputs.h_decel_ft * Constantes.conv_ft_m
+        h_target = Inputs.hDecel_ft * Constantes.conv_ft_m
         Descente.descenteIsoMaxCAS(Avion, Atmosphere, Enregistrement, h_target, dt)
 
         # Dernière phase
@@ -33,7 +33,7 @@ class Descente:
 
 
     @staticmethod
-    def descendreDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
+    def descendreDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtDescent):
         '''
         Réalise les opérations de descente à la fin de la diversion.
         
@@ -49,7 +49,7 @@ class Descente:
         Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, dt)
 
         # Deuxième phase
-        h_target = Inputs.h_decel_ft * Constantes.conv_ft_m
+        h_target = Inputs.hDecel_ft * Constantes.conv_ft_m
         Descente.descenteIsoMaxCAS(Avion, Atmosphere, Enregistrement, h_target, dt)
 
         # Troisième phase
@@ -59,7 +59,7 @@ class Descente:
 
     # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod
-    def descenteIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
+    def descenteIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtDescent):
         '''
         Laisse l'avion initier une descente libre pour atteindre la vitesse maximale autorisée en CAS (Vmax_CAS) avant de passer à la phase 2.
 
@@ -87,7 +87,7 @@ class Descente:
             Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
-            if Inputs.Aero_simplified:
+            if Inputs.AeroSimplified:
                 Avion.Aero.calculateCxDescent_Simplified()
             else:
                 Avion.Aero.calculateCx(Atmosphere)
@@ -115,6 +115,7 @@ class Descente:
             # Fuel burn
             Avion.Masse.burnFuel(dt)
 
+            # Update des distances de descente
             if (Avion.diversion):
                 Avion.Add_l_descent_diversion(Vx * dt)
             else:
@@ -124,7 +125,7 @@ class Descente:
             
 
     @staticmethod
-    def descenteIsoMaxCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_end, dt = Inputs.dt_descent):
+    def descenteIsoMaxCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_end, dt = Inputs.dtDescent):
         '''
         Phase 2 : Descente jusqu'à 10000ft à vitesse constante Max CAS
         
@@ -137,7 +138,7 @@ class Descente:
 
         # CAS imposée
         CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
-        Avion.Aero.setCAS_t(CAS_t)
+        Avion.Aero.setCAS(CAS_t)
 
         while Avion.geth() > h_end:
 
@@ -157,7 +158,7 @@ class Descente:
             Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
-            if Inputs.Aero_simplified:
+            if Inputs.AeroSimplified:
                 Avion.Aero.calculateCxDescent_Simplified()
             else:
                 Avion.Aero.calculateCx(Atmosphere)
@@ -186,6 +187,7 @@ class Descente:
             # Fuel burn
             Avion.Masse.burnFuel(dt)
 
+            # Update des distances de descente
             if (Avion.diversion):
                 Avion.Add_l_descent_diversion(Vx * dt)
             else:
@@ -195,7 +197,7 @@ class Descente:
             
 
     @staticmethod
-    def descentePalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, CAS_target, dt = Inputs.dt_descent):
+    def descentePalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, CAS_target, dt = Inputs.dtDescent):
         '''
         Phase 3 : Décélération en palier: l'altitude est fixée et l'avion décélère.
 
@@ -224,7 +226,7 @@ class Descente:
             Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
-            if Inputs.Aero_simplified:
+            if Inputs.AeroSimplified:
                 Avion.Aero.calculateCxDescent_Simplified()
             else:
                 Avion.Aero.calculateCx(Atmosphere)
@@ -244,7 +246,7 @@ class Descente:
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
             # Mise à jour des vitesses
-            Avion.Aero.setTAS_t(max(TAS_t + ax * dt, 0.0))
+            Avion.Aero.setTAS(max(TAS_t + ax * dt, 0.0))
             TAS_t = Avion.Aero.getTAS() #Calcul de la nouvelle vitesse avec la resistance longitudinale
 
             # Recalcul CAS depuis Mach/TAS
@@ -258,6 +260,7 @@ class Descente:
             # Fuel burn
             Avion.Masse.burnFuel(dt)
 
+            # Update des distances de descente
             if (Avion.diversion):
                 Avion.Add_l_descent_diversion(TAS_t * dt)
             else:
@@ -268,7 +271,7 @@ class Descente:
 
     # Phase 4 : Descente finale jusqu'à h_final
     @staticmethod
-    def descenteFinaleIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dt_descent):
+    def descenteFinaleIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtDescent):
         '''
         Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale de 1500ft
 
@@ -279,7 +282,7 @@ class Descente:
         '''
         
         # Descente jusqu'à altitude finale
-        while Avion.geth() > Inputs.h_final_ft * Constantes.conv_ft_m:
+        while Avion.geth() > Inputs.hFinal_ft * Constantes.conv_ft_m:
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
@@ -293,7 +296,7 @@ class Descente:
             Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
 
-            if Inputs.Aero_simplified:
+            if Inputs.AeroSimplified:
                 Avion.Aero.calculateCxDescent_Simplified()
             else:
                 Avion.Aero.calculateCx(Atmosphere)
@@ -324,6 +327,7 @@ class Descente:
             # Fuel burn
             Avion.Masse.burnFuel(dt)
 
+            # Update des distances de descente
             if (Avion.diversion):
                 Avion.Add_l_descent_diversion(Vx * dt)
             else:

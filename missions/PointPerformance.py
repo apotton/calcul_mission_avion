@@ -9,28 +9,22 @@ class PointPerformance():
 
     @staticmethod
     def setupAvion(Avion: Avion, Atmosphere: Atmosphere):
-        SpeedType = "Mach"  # Inputs.SpeedType
-        Speed = 0.78
-        alt_ft = 38_000 # Inputs.Altitude
-        mass_kg = 60_000 # Inputs.Mass
-        DISA_dC = 0
-
-        Avion.set_h(alt_ft * Constantes.conv_ft_m)
-        Atmosphere.CalculateRhoPT(alt_ft * Constantes.conv_ft_m, DISA_dC)
-        Avion.Masse.setMass(mass_kg)
+        Avion.set_h(Inputs.altPP_ft * Constantes.conv_ft_m)
+        Atmosphere.CalculateRhoPT(Inputs.altPP_ft * Constantes.conv_ft_m, Inputs.DISA_PP)
+        Avion.Masse.setMass(Inputs.massPP)
 
         # Set des vitesses
-        match SpeedType:
+        match Inputs.SpeedType:
             case "Mach":
-                Avion.Aero.setMach_t(Speed)
+                Avion.Aero.setMach(Inputs.Speed)
                 Avion.Aero.convertMachToCAS(Atmosphere)
                 Avion.Aero.convertMachToTAS(Atmosphere)
             case "TAS":
-                Avion.Aero.setTAS_t(Speed * Constantes.conv_kt_mps)
+                Avion.Aero.setTAS(Inputs.Speed * Constantes.conv_kt_mps)
                 Avion.Aero.convertTASToMach(Atmosphere)
                 Avion.Aero.convertMachToCAS(Atmosphere)
             case "CAS":
-                Avion.Aero.setCAS_t(Speed * Constantes.conv_kt_mps)
+                Avion.Aero.setCAS(Inputs.Speed * Constantes.conv_kt_mps)
                 Avion.Aero.convertCASToMach(Atmosphere)
                 Avion.Aero.convertMachToTAS(Atmosphere)
             case _:
@@ -46,6 +40,7 @@ class PointPerformance():
         rho = Atmosphere.getRho_t()
         P = Atmosphere.getP_t()
         T = Atmosphere.getT_t()
+        DISA = 0
 
         # Vitesses (en kt)
         Mach = Avion.Aero.getMach()
@@ -55,6 +50,20 @@ class PointPerformance():
 
         # Cz, Cx, finesse
         Avion.Aero.calculateCz(Atmosphere)
+
+        # Montee
+        Avion.Aero.calculateCxClimb_Simplified()
+        CxSimplifieMontee = Avion.Aero.getCx()
+
+        # Croisiere
+        Avion.Aero.calculateCxCruise_Simplified()
+        CxSimplifieCroisiere = Avion.Aero.getCx()
+
+        # Descente
+        Avion.Aero.calculateCxDescent_Simplified()
+        CxSimplifieDescente = Avion.Aero.getCx()
+
+        # Cx non simplifie
         Avion.Aero.calculateCx(Atmosphere)
         Cx = Avion.Aero.getCx()
         Cz = Avion.Aero.getCz()
@@ -80,9 +89,11 @@ class PointPerformance():
 
         # Structuration des résultats pour l'affichage
         donnees_perf = {
+            "Avion: " + Avion.getName():[],
             "Conditions Atmosphériques": [
                 ("Altitude", Avion.geth() / Constantes.conv_ft_m , "ft"),
                 ("Température", T - 273.15 , "°C"),
+                ("ΔISA", DISA, "°C"),
                 ("Pression", P, "Pa"),
                 ("Densité (rho)", rho, "kg/m³")
             ],
@@ -95,6 +106,9 @@ class PointPerformance():
             "Aérodynamique": [
                 ("Cz", Cz, "-"),
                 ("Cx", Cx, "-"),
+                ("Cx simplifié montée", CxSimplifieMontee, "-"),
+                ("Cx simplifié croisière", CxSimplifieCroisiere, "-"),
+                ("Cx simplifié descente", CxSimplifieDescente, "-"),
                 ("Finesse (L/D)", finesse, "-"),
                 ("Traînée (Rx)", R_X, "N")
             ],
@@ -113,29 +127,40 @@ class PointPerformance():
             ]
         }
 
-        PointPerformance.afficher_point_performance(donnees_perf)
+        string = PointPerformance.formater_point_performance(donnees_perf)
+        print(string)
 
     @staticmethod
-    def afficher_point_performance(donnees):
+    def formater_point_performance(donnees):
         """
         Prend en entrée un dictionnaire de catégories contenant des listes de tuples 
-        (nom, valeur, unité) et les affiche proprement dans la console.
+        (nom, valeur, unité) et retourne une unique chaîne de caractères formatée.
         """
-        ligne = "=" * 65
-        print(f"\n{ligne}")
-        print(f"{'RÉSUMÉ DU POINT PERFORMANCE':^65}")
-        print(f"{ligne}")
+        largeur = 65
+        separateur = "=" * largeur
+        
+        # Création d'une liste qui va contenir toutes nos lignes de texte
+        lignes_texte = []
+        
+        # En-tête
+        lignes_texte.append(f"\n{separateur}")
+        lignes_texte.append(f"{'RÉSUMÉ DU POINT PERFORMANCE':^{largeur}}")
+        lignes_texte.append(separateur)
 
+        # Parcours des données
         for categorie, variables in donnees.items():
-            print(f"\n--- {categorie.upper()}")
+            lignes_texte.append(f"\n--- {categorie.upper()}")
             
             for nom, valeur, unite in variables:
-                # <30  : Nom aligné à gauche sur 30 caractères
-                # >12.4f : Valeur alignée à droite sur 12 caractères avec 4 décimales
-                # <8   : Unité alignée à gauche sur 8 caractères
-                print(f"    {nom:<30} : {valeur:>12.4f}  {unite:<8}")
+                # On formate la ligne exactement comme avant, mais on l'ajoute à la liste
+                ligne = f"    {nom:<30} : {valeur:>12.4f}  {unite:<8}"
+                lignes_texte.append(ligne)
                 
-        print(f"\n{ligne}\n")
+        # Pied de page
+        lignes_texte.append(f"\n{separateur}\n")
+        
+        # On assemble toutes les lignes de la liste en y insérant un saut de ligne (\n) entre chaque
+        return "\n".join(lignes_texte)
 
 
 
