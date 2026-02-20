@@ -67,17 +67,22 @@ class Enregistrement:
         }
 
         self.mission_data = {
-            "FB_mission": [0.0],
-            "FB_climb": [0.0],
-            "FB_cruise": [0.0],
-            "FB_descent": [0.0],
-            "FB_reserve": [0.0],
-            "FB_diversion": [0.0],
-            "FB_holding": [0.0],
-            "mF_contingency": [0.0],
-            "l_climb": [0.0],
-            "l_cruise": [0.0],
-            "l_descent": [0.0]
+            "FB_mission": 0.0,
+            "FB_climb": 0.0,
+            "FB_cruise": 0.0,
+            "FB_descent": 0.0,
+            "FB_reserve": 0.0,
+            "FB_diversion": 0.0,
+            "FB_holding": 0.0,
+            "mF_contingency": 0.0,
+            "l_climb": 0.0,
+            "l_cruise": 0.0,
+            "l_descent": 0.0,
+            "t_climb": 0.0,
+            "t_cruise": 0.0,
+            "t_descent": 0.0,
+            "t_diversion": 0.0,
+            "t_holding": 0.0
         }
 
     
@@ -146,22 +151,96 @@ class Enregistrement:
         :param Avion: Instance de la classe avion
         '''
         # Masses mission
-        self.mission_data["FB_mission"][0] = Avion.Masse.m_fuel_mission
-        self.mission_data["FB_climb"][0] = Avion.Masse.m_fuel_climb
-        self.mission_data["FB_cruise"][0] = Avion.Masse.m_fuel_cruise
-        self.mission_data["FB_descent"][0] = Avion.Masse.m_fuel_descent
+        self.mission_data["FB_mission"] = Avion.Masse.m_fuel_mission
+        self.mission_data["FB_climb"] = Avion.Masse.m_fuel_climb
+        self.mission_data["FB_cruise"] = Avion.Masse.m_fuel_cruise
+        self.mission_data["FB_descent"] = Avion.Masse.m_fuel_descent
 
         # Masses réserve
-        self.mission_data["FB_reserve"][0] = Avion.Masse.m_fuel_reserve
-        self.mission_data["FB_diversion"][0] = Avion.Masse.m_fuel_diversion
-        self.mission_data["FB_holding"][0] = Avion.Masse.m_fuel_holding
-        self.mission_data["mF_contingency"][0] = Avion.Masse.m_fuel_contingency
+        self.mission_data["FB_reserve"] = Avion.Masse.m_fuel_reserve
+        self.mission_data["FB_diversion"] = Avion.Masse.m_fuel_diversion
+        self.mission_data["FB_holding"] = Avion.Masse.m_fuel_holding
+        self.mission_data["mF_contingency"] = Avion.Masse.m_fuel_contingency
 
         # Distances mission
-        self.mission_data["l_climb"][0] = Avion.l_climb
-        self.mission_data["l_cruise"][0] = Avion.l_cruise
-        self.mission_data["l_descent"][0] = Avion.l_descent
+        self.mission_data["l_climb"] = Avion.l_climb
+        self.mission_data["l_cruise"] = Avion.l_cruise
+        self.mission_data["l_descent"] = Avion.l_descent
+
+        # Temps mission
+        self.mission_data["t_climb"] = Avion.t_climb
+        self.mission_data["t_cruise"] = Avion.t_cruise
+        self.mission_data["t_descent"] = Avion.t_descent
+        self.mission_data["t_diversion"] = Avion.t_diversion
+        self.mission_data["t_holding"] = Avion.t_holding
+
+        valeurs_mises_en_forme = self.print_values()
+        print(valeurs_mises_en_forme)
         
+    def print_values(self):
+        NM_PER_METER = 1.0 / 1852.0
+        MIN_PER_SECOND = 1.0 / 60.0
+
+        phases = [
+            ("Montée", 
+            self.mission_data["l_climb"], 
+            self.mission_data["t_climb"], 
+            self.mission_data["FB_climb"]),
+
+            ("Croisière", 
+            self.mission_data["l_cruise"], 
+            self.mission_data["t_cruise"], 
+            self.mission_data["FB_cruise"]),
+
+            ("Descente", 
+            self.mission_data["l_descent"], 
+            self.mission_data["t_descent"], 
+            self.mission_data["FB_descent"]),
+
+            ("Diversion", 
+            0.0,  # pas de distance enregistrée
+            self.mission_data["t_diversion"], 
+            self.mission_data["FB_diversion"]),
+
+            ("Holding", 
+            0.0,  # pas de distance enregistrée
+            self.mission_data["t_holding"], 
+            self.mission_data["FB_holding"]),
+        ]
+
+        total_distance = 0.0
+        total_time = 0.0
+        total_fuel = 0.0
+
+        lines = []
+        header = f"{'Phase':<12}{'Distance (NM)':>15}{'Temps (min)':>15}{'Fuel Burn (kg)':>18}"
+        separator = "-" * len(header)
+
+        lines.append(header)
+        lines.append(separator)
+
+        for name, dist_m, time_s, fuel in phases:
+            dist_nm = dist_m * NM_PER_METER
+            time_min = time_s * MIN_PER_SECOND
+
+            total_distance += dist_nm
+            total_time += time_min
+            total_fuel += fuel
+
+            lines.append(
+                f"{name:<12}{dist_nm:>15.1f}{time_min:>15.1f}{fuel:>18.1f}"
+            )
+
+        lines.append(separator)
+        lines.append(
+            f"{'TOTAL':<12}{total_distance:>15.1f}{total_time:>15.1f}{total_fuel:>18.1f}"
+        )
+
+        lines.append("")
+        lines.append(f"Fuel contingence : {self.mission_data['mF_contingency']:.1f} kg")
+
+        return "\n".join(lines)
+
 
     def extend(self):
         '''
@@ -216,7 +295,8 @@ class Enregistrement:
 
             # Export des données principales ponctuelles
             for key, array in self.mission_data.items():
-                ligne = [key] + np.array(array).tolist()
+                ligne = [key, str(array)]
+                # ligne = [key] + np.array(array).tolist()
                 writer.writerow(ligne)
             
             # Export des données principales array

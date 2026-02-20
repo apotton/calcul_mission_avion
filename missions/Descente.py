@@ -18,6 +18,7 @@ class Descente:
         '''
         l_init = Avion.getl()
         m_init = Avion.Masse.getCurrentMass()
+        t_init = Avion.t
 
         # Première phase
         Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, dt)
@@ -35,6 +36,7 @@ class Descente:
         m_end = Avion.Masse.getCurrentMass()
 
         Avion.setl_descent(l_end - l_init)
+        Avion.t_descent = Avion.t - t_init
         Avion.Masse.m_fuel_descent = m_init - m_end
         Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_descent
 
@@ -121,7 +123,8 @@ class Descente:
 
             # Mise à jour des positions
             Avion.Add_dh(Vz * dt)
-            Avion.Add_dl(Vx * dt)        
+            Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
@@ -188,6 +191,7 @@ class Descente:
             # Mise à jour position
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
@@ -255,6 +259,7 @@ class Descente:
 
             # Cinématique
             Avion.Add_dl(TAS_t * dt)
+            Avion.Add_dt(dt)
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
@@ -316,6 +321,7 @@ class Descente:
             # Intégration
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)

@@ -19,6 +19,7 @@ class Montee:
         Avion.Masse.m_fuel_mission = 0
         l_init = Avion.getl()
         m_init = Avion.Masse.getCurrentMass()
+        t_init = Avion.t
 
         # Initialisations
         Avion.set_h(Inputs.hInit_ft*Constantes.conv_ft_m)
@@ -36,8 +37,10 @@ class Montee:
 
         l_end = Avion.getl()
         m_end = Avion.Masse.getCurrentMass()
+        t_end = Avion.t
 
         Avion.l_climb = l_end - l_init
+        Avion.t_climb = t_end - t_init
         Avion.Masse.m_fuel_climb = m_init - m_end
         Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_climb
 
@@ -118,6 +121,7 @@ class Montee:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
 
             Enregistrement.save(Avion, Atmosphere, dt)
 
@@ -183,6 +187,7 @@ class Montee:
 
             # Cinématique
             Avion.Add_dl(Avion.Aero.getTAS() * dt)
+            Avion.Add_dt(dt)
             
             # Pas de changement d'altitude en palier            
             Enregistrement.save(Avion, Atmosphere, dt)
@@ -247,6 +252,7 @@ class Montee:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
 
             Enregistrement.save(Avion, Atmosphere, dt)
 
@@ -308,5 +314,6 @@ class Montee:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
             
             Enregistrement.save(Avion, Atmosphere, dt)

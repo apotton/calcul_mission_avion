@@ -22,6 +22,7 @@ class Croisiere:
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
         l_init = Avion.getl()
         m_init = Avion.Masse.getCurrentMass()
+        t_init = Avion.t
 
         match Inputs.cruiseType:
             case "Mach_SAR":
@@ -38,6 +39,7 @@ class Croisiere:
                 exit()
 
         Avion.l_cruise = Avion.getl() - l_init
+        Avion.t_cruise = Avion.t - t_init
         Avion.Masse.m_fuel_cruise = m_init - Avion.Masse.getCurrentMass()
         Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_cruise
         Avion.cruise = False
@@ -96,6 +98,7 @@ class Croisiere:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
 
             # Paramètres économiques
             Avion.Aero.calculateSGR(Atmosphere)
@@ -317,6 +320,7 @@ class Croisiere:
 
                 # Mise à jour avion (pas de changement d'altitude)
                 Avion.Add_dl(Vx * dt)
+                Avion.Add_dt(dt)
 
                 # Paramètres économiques
                 Avion.Aero.calculateSGR(Atmosphere)
@@ -368,6 +372,7 @@ class Croisiere:
 
             # Mise à jour avion (pas de changement d'altitude)
             Avion.Add_dl(Vx * dt)
+            Avion.Add_dt(dt)
 
             # Paramètres économiques
             Avion.Aero.calculateSGR(Atmosphere)
@@ -419,6 +424,7 @@ class Croisiere:
 
             # Intégration
             Avion.Add_dl(Avion.Aero.getTAS() * dt)
+            Avion.Add_dt(dt)
 
             # Consommation
             Avion.Masse.burnFuel(dt)

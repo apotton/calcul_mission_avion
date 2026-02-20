@@ -34,12 +34,21 @@ class Avion:
     OswaldCruise            = 0.     # Coefficient d'Oswald en croisière ()
     OswaldDescent           = 0.     # Coefficient d'Oswald en descente ()
 
-    l_t                     = 0.     # Distance totale parcourue (m)    
+    t                       = 0.     # Temps écoulé
     h_t                     = 0.     # Altitude actuelle (m)
+
+    l_t                     = 0.     # Distance totale parcourue (m)    
     l_climb                 = 0.     # Distance nécessaire pour la montée (m)
     l_cruise                = 0.     # Distance nécessaire pour la croisière (m)
     l_descent               = 0.     # Distance nécessaire pour la descente (m)
     l_descent_diversion     = 0.     # Distance de la descente en diversion (m)
+
+    t_climb                 = 0.     # Temps nécessaire à la montée
+    t_cruise                = 0.     # Temps nécessaire à la croisière
+    t_descent               = 0.     # Temps nécessaire à la descente
+    t_diversion             = 0.     # Temps nécessaire à la diversion
+    t_holding               = 0.     # Temps nécessaire à la phase de holding
+
     diversion               = False  # Etat de l'avion (en diversion ou non)
     cruise                  = False  # Etat de l'avion (en croisière ou non)
 
@@ -89,10 +98,11 @@ class Avion:
         '''
         Remet l'avion à ses conditions initiales (altitude, distance, vitesse, masse).
         '''
-        self.l_t                     = 0.     # Distance totale parcourue (m)    
-        self.h_t                     = 0.     # Altitude actuelle (m)
-        self.diversion               = False  # Etat de l'avion (en diversion ou non)
-        self.cruise                  = False  # On est pas en croisière
+        self.t         = 0.     # Temps écoulé
+        self.l_t       = 0.     # Distance totale parcourue (m)    
+        self.h_t       = 0.     # Altitude actuelle (m)
+        self.diversion = False  # Etat de l'avion (en diversion ou non)
+        self.cruise    = False  # On est pas en croisière
         self.Masse.initializeMission()
 
     def setupDescentes(self):
@@ -141,6 +151,14 @@ class Avion:
         :param dl: Distance à ajouter (m)
         '''
         self.l_t += dl
+
+    def Add_dt(self, dt: float):
+        '''
+        Ajoute un pas de temps dt au compteur total.
+
+        :param dt: Pas de temps à ajouter
+        '''
+        self.t += dt
 
     def set_h(self, h: float):
         '''

@@ -25,7 +25,7 @@ class Holding:
         # La vitesse souhaitée est celle qui maximise la finesse
         Atmosphere.CalculateRhoPT(Avion.geth())
         _, CAS_target = Holding.calculateMach_target(Avion, Atmosphere)
-
+        t_init = Avion.t
 
         if (Avion.Aero.getCAS() < CAS_target):
             # Accélération en palier
@@ -38,6 +38,7 @@ class Holding:
         Holding.holdPalier(Avion, Atmosphere, Enregistrement, dt)
 
         m_end = Avion.Masse.getCurrentMass()
+        Avion.t_holding = Avion.t - t_init
         Avion.Masse.m_fuel_holding = m_init - m_end
         
     @staticmethod
@@ -120,6 +121,7 @@ class Holding:
 
             # Cinématique
             Avion.Add_dl(Avion.Aero.getTAS() * dt)
+            Avion.Add_dt(dt)
 
             # Enregistrement pour le pas de temps
             Enregistrement.save(Avion, Atmosphere, dt)
