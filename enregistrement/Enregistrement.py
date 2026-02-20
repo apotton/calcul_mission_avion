@@ -66,6 +66,20 @@ class Enregistrement:
             "FB_mission" : []
         }
 
+        self.mission_data = {
+            "FB_mission": [0.0],
+            "FB_climb": [0.0],
+            "FB_cruise": [0.0],
+            "FB_descent": [0.0],
+            "FB_reserve": [0.0],
+            "FB_diversion": [0.0],
+            "FB_holding": [0.0],
+            "mF_contingency": [0.0],
+            "l_climb": [0.0],
+            "l_cruise": [0.0],
+            "l_descent": [0.0]
+        }
+
     
     def save(self, Avion: Avion, Atmosphere: Atmosphere, dt):
         '''
@@ -125,6 +139,29 @@ class Enregistrement:
         self.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
         self.data_simu["FB_mission"].append(Avion.Masse.getFuelMission())
 
+    def save_final(self, Avion: Avion):
+        '''
+        Enregistre les valeurs finales des caractéristiques de la mission (masses, distances...)
+
+        :param Avion: Instance de la classe avion
+        '''
+        # Masses mission
+        self.mission_data["FB_mission"][0] = Avion.Masse.m_fuel_mission
+        self.mission_data["FB_climb"][0] = Avion.Masse.m_fuel_climb
+        self.mission_data["FB_cruise"][0] = Avion.Masse.m_fuel_cruise
+        self.mission_data["FB_descent"][0] = Avion.Masse.m_fuel_descent
+
+        # Masses réserve
+        self.mission_data["FB_reserve"][0] = Avion.Masse.m_fuel_reserve
+        self.mission_data["FB_diversion"][0] = Avion.Masse.m_fuel_diversion
+        self.mission_data["FB_holding"][0] = Avion.Masse.m_fuel_holding
+        self.mission_data["mF_contingency"][0] = Avion.Masse.m_fuel_contingency
+
+        # Distances mission
+        self.mission_data["l_climb"][0] = Avion.l_climb
+        self.mission_data["l_cruise"][0] = Avion.l_cruise
+        self.mission_data["l_descent"][0] = Avion.l_descent
+        
 
     def extend(self):
         '''
@@ -176,8 +213,13 @@ class Enregistrement:
         import csv
         with open(filepath, "w", encoding="utf-8", newline='') as f:
             writer = csv.writer(f, delimiter=';')
+
+            # Export des données principales ponctuelles
+            for key, array in self.mission_data.items():
+                ligne = [key] + np.array(array).tolist()
+                writer.writerow(ligne)
             
-            # Export des données principales
+            # Export des données principales array
             for key, array in self.data.items():
                 # On coupe le tableau à la taille réelle de la simulation
                 donnees_utiles = array[:self.counter]
@@ -190,3 +232,5 @@ class Enregistrement:
                 donnees_utiles = array[:self.cruise_counter]
                 ligne = [f"cruise_{key}"] + donnees_utiles.tolist()
                 writer.writerow(ligne)
+
+            

@@ -4,13 +4,13 @@ from missions.PointPerformance import PointPerformance
 from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
 from inputs.Inputs import Inputs
-from constantes.Constantes import Constantes  # Vérifie bien ce chemin d'import selon ton architecture !
+from constantes.Constantes import Constantes
 
 import os
 import sys
 import csv
 from datetime import datetime
-import customtkinter as ctk
+import customtkinter as ctk # pip install customtkinter
 from tkinter import filedialog, messagebox
 from pathlib import Path
 

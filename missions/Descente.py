@@ -16,8 +16,8 @@ class Descente:
         :param Enregistrement: Instance de la classe Enregistrement
         :param dt: pas de temps (s)
         '''
-        # Reset de la distance de descente pour une estimation plus précise
-        Avion.setl_descent(0.)
+        l_init = Avion.getl()
+        m_init = Avion.Masse.getCurrentMass()
 
         # Première phase
         Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, dt)
@@ -30,6 +30,13 @@ class Descente:
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
         Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, dt)
+
+        l_end = Avion.getl()
+        m_end = Avion.Masse.getCurrentMass()
+
+        Avion.setl_descent(l_end - l_init)
+        Avion.Masse.m_fuel_descent = m_init - m_end
+        Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_descent
 
 
     @staticmethod
@@ -44,6 +51,7 @@ class Descente:
         '''
         # Reset de la distance de descente pour une estimation plus précise
         Avion.setl_descent_diversion(0.)
+        l_init = Avion.getl()
 
         # Première phase
         Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, dt)
@@ -56,6 +64,9 @@ class Descente:
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
         Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, dt)
+
+        l_end = Avion.getl()
+        Avion.setl_descent_diversion(l_end - l_init)
 
     # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod
@@ -114,12 +125,6 @@ class Descente:
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
-
-            # Update des distances de descente
-            if (Avion.diversion):
-                Avion.Add_l_descent_diversion(Vx * dt)
-            else:
-                Avion.Add_l_descent(Vx * dt)
             
             Enregistrement.save(Avion, Atmosphere, dt)
             
@@ -186,12 +191,6 @@ class Descente:
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
-
-            # Update des distances de descente
-            if (Avion.diversion):
-                Avion.Add_l_descent_diversion(Vx * dt)
-            else:
-                Avion.Add_l_descent(Vx * dt)
             
             Enregistrement.save(Avion, Atmosphere, dt)
             
@@ -260,12 +259,6 @@ class Descente:
             # Fuel burn
             Avion.Masse.burnFuel(dt)
 
-            # Update des distances de descente
-            if (Avion.diversion):
-                Avion.Add_l_descent_diversion(TAS_t * dt)
-            else:
-                Avion.Add_l_descent(TAS_t * dt)
-
             Enregistrement.save(Avion, Atmosphere, dt)
             
 
@@ -326,12 +319,6 @@ class Descente:
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
-
-            # Update des distances de descente
-            if (Avion.diversion):
-                Avion.Add_l_descent_diversion(Vx * dt)
-            else:
-                Avion.Add_l_descent(Vx * dt)
         
             Enregistrement.save(Avion, Atmosphere, dt)
             

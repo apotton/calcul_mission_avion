@@ -23,6 +23,11 @@ class Masse:
                                 +  self.m_fuel_diversion
                                 +  self.m_fuel_holding)     # Fuel de reserve : diversion + holding + contingency
 
+        # Masses détaillées
+        self.m_fuel_climb       = 0.0
+        self.m_fuel_cruise      = 0.0
+        self.m_fuel_descent     = 0.0
+
         # Si on a mis trop de carburant au début
         assert self.m_fuel_mission + self.m_fuel_reserve <= Avion.getMaxFuelWeight(), "Trop de carburant dans l'avion"
 
@@ -30,24 +35,14 @@ class Masse:
         self.m_fuel_remaining_t = self.m_fuel_mission + self.m_fuel_reserve # Fuel dans l'avion à l'instant t
         self.m_burned_total_t   = 0.0 # Quantité de fuel consommée à l'instant t
 
-    def initializeMission(self, FB_mission, FB_diversion, FB_holding):
+    def initializeMission(self):
         '''
-        Méthode qui set les différentes masses selon les fuels burn données en entrée,
-        et remet à zéro les masses dynamiques.
-        
-        :param FB_mission: Masse de carburant brulée lors de la mission (kg).
-        :param FB_diversion: Masse de carburant brulée lors de la diversion (kg).
-        :param FB_holding: Masse de carburant brulée lors de la phase de holding (kg)
+        Méthode qui remet à zéro les masses dynamiques.
         '''
-        # Set des différentes masses en argument
-        self.m_fuel_mission     = FB_mission
-        self.m_fuel_contingency = FB_mission * Inputs.Contingency
-        self.m_fuel_diversion   = FB_diversion
-        self.m_fuel_holding     = FB_holding
-
+        self.m_fuel_contingency = Inputs.Contingency * self.m_fuel_mission
         self.m_fuel_reserve     = self.m_fuel_contingency + self.m_fuel_diversion + self.m_fuel_holding
 
-        assert self.m_fuel_mission + self.m_fuel_remaining_t <= self.Avion.getMaxFuelWeight(), "La mission demande trop de carburant"
+        assert self.m_fuel_mission + self.m_fuel_reserve <= self.Avion.getMaxFuelWeight(), "La mission demande trop de carburant"
 
         self.m_fuel_remaining_t = self.m_fuel_mission + self.m_fuel_reserve
         self.m_burned_total_t   = 0.0

@@ -36,6 +36,8 @@ class Avion:
 
     l_t                     = 0.     # Distance totale parcourue (m)    
     h_t                     = 0.     # Altitude actuelle (m)
+    l_climb                 = 0.     # Distance nécessaire pour la montée (m)
+    l_cruise                = 0.     # Distance nécessaire pour la croisière (m)
     l_descent               = 0.     # Distance nécessaire pour la descente (m)
     l_descent_diversion     = 0.     # Distance de la descente en diversion (m)
     diversion               = False  # Etat de l'avion (en diversion ou non)
@@ -83,15 +85,15 @@ class Avion:
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()
 
-    def reset(self, FB_mission, FB_diversion, FB_holding):
+    def reset(self):
         '''
-        Remet l'avion à ses conditions initiales (altitude, distance, vitesse), mais met à jour les masses
+        Remet l'avion à ses conditions initiales (altitude, distance, vitesse, masse).
         '''
         self.l_t                     = 0.     # Distance totale parcourue (m)    
         self.h_t                     = 0.     # Altitude actuelle (m)
         self.diversion               = False  # Etat de l'avion (en diversion ou non)
         self.cruise                  = False  # On est pas en croisière
-        self.Masse.initializeMission(FB_mission, FB_diversion, FB_holding)
+        self.Masse.initializeMission()
 
     def setupDescentes(self):
         '''

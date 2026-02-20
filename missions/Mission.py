@@ -29,38 +29,32 @@ class Mission:
         while ecart_mission > Inputs.precision and n_iter < Inputs.maxIter:
             # Initialisations
             Enregistrement.reset()
-            masse_init = Avion.Masse.getCurrentMass()
+            FB_mission = Avion.Masse.getFuelMission()
 
             # Mission principale (montée, croisière, descente)
             Montee.Monter(Avion, Atmosphere, Enregistrement)
             Croisiere.Croisiere(Avion, Atmosphere, Enregistrement)
             Descente.Descendre(Avion, Atmosphere, Enregistrement)
-            FB_mission = masse_init - Avion.Masse.getCurrentMass()
 
             # Diversion
-            masse_init = Avion.Masse.getCurrentMass()
             Diversion.Diversion(Avion, Atmosphere, Enregistrement)
-            FB_diversion = masse_init - Avion.Masse.getCurrentMass()
 
             # Holding
-            masse_init = Avion.Masse.getCurrentMass()
             Holding.Hold(Avion, Atmosphere, Enregistrement)
-            FB_holding = masse_init - Avion.Masse.getCurrentMass()
 
             # Calcul de précision (écart relatif)
-            ecart_mission = abs(FB_mission - Avion.Masse.getFuelMission()) / Avion.Masse.getFuelMission() * 100
+            ecart_mission = abs(FB_mission - Avion.Masse.getFuelMission()) / FB_mission * 100
             print(f"Ecart mission {ecart_mission:.3f}%")
 
             # Remise à zéro pour la boucle suivante
-            Avion.reset(FB_mission, FB_diversion, FB_holding)
+            Avion.reset()
             Enregistrement.save_simu(Avion, ecart_mission)
             n_iter += 1
         tend = timeit.default_timer()
         temps_total = (tend - tstart)
+        Enregistrement.save_final(Avion)
 
         print(f"Temps pour une boucle complète: {temps_total:.4f} secondes")
-        print("Carburant mission: " + str(Avion.Masse.getFuelMission()) + " kg")
-        print("Carburant réserve: " + str(Avion.Masse.getFuelReserve()) + " kg")
 
         # Fin de l'enregistrement
         Enregistrement.cut()

@@ -20,22 +20,12 @@ class Holding:
         :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
+        m_init = Avion.Masse.getCurrentMass()
         
         # La vitesse souhaitée est celle qui maximise la finesse
         Atmosphere.CalculateRhoPT(Avion.geth())
-        Mach_target = Holding.calculateMach_target(Avion, Atmosphere)
+        _, CAS_target = Holding.calculateMach_target(Avion, Atmosphere)
 
-        # Delta pression compressible
-        gamma = Constantes.gamma
-        Delta_p = Atmosphere.getP_t() * (
-            ((gamma - 1) / 2 * Mach_target**2 + 1) ** (gamma / (gamma - 1)) - 1
-        )
-
-        # CAS target
-        CAS_target = np.sqrt(
-            2 * gamma * Constantes.r * Constantes.T0_K / (gamma - 1)
-            * ((1 + Delta_p / Constantes.p0_Pa) ** (0.4 / gamma) - 1)
-        )
 
         if (Avion.Aero.getCAS() < CAS_target):
             # Accélération en palier
@@ -46,6 +36,9 @@ class Holding:
 
         #  Vol en palier
         Holding.holdPalier(Avion, Atmosphere, Enregistrement, dt)
+
+        m_end = Avion.Masse.getCurrentMass()
+        Avion.Masse.m_fuel_holding = m_init - m_end
         
     @staticmethod
     def calculateMach_target(Avion: Avion, Atmosphere: Atmosphere):
@@ -75,6 +68,9 @@ class Holding:
 
         idx_max = np.argmax(finesse)
         Mach_target = Mach_grid[idx_max]
+        Avion.Aero.setMach(Mach_target)
+        Avion.Aero.convertMachToCAS(Atmosphere)
+        CAS_target = Avion.Aero.getCAS()
 
         # Remise à zéro
         Avion.Aero.setMach(Mach)
@@ -84,7 +80,7 @@ class Holding:
         Avion.Aero.setCz(Cz)
         Avion.Aero.setCz(Cx)
 
-        return Mach_target
+        return Mach_target, CAS_target
 
     @staticmethod
     def holdPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtCruise):

@@ -20,6 +20,8 @@ class Croisiere:
         '''
         Avion.cruise = True
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
+        l_init = Avion.getl()
+        m_init = Avion.Masse.getCurrentMass()
 
         match Inputs.cruiseType:
             case "Mach_SAR":
@@ -35,6 +37,9 @@ class Croisiere:
                 print("Croisière " + Inputs.cruiseType + " inexistante.")
                 exit()
 
+        Avion.l_cruise = Avion.getl() - l_init
+        Avion.Masse.m_fuel_cruise = m_init - Avion.Masse.getCurrentMass()
+        Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_cruise
         Avion.cruise = False
 
     @staticmethod
