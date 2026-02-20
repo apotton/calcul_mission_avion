@@ -46,6 +46,7 @@ class PointPerformance():
         rho = Atmosphere.getRho_t()
         P = Atmosphere.getP_t()
         T = Atmosphere.getT_t()
+        DISA = 0
 
         # Vitesses (en kt)
         Mach = Avion.Aero.getMach()
@@ -98,6 +99,7 @@ class PointPerformance():
             "Conditions Atmosphériques": [
                 ("Altitude", Avion.geth() / Constantes.conv_ft_m , "ft"),
                 ("Température", T - 273.15 , "°C"),
+                ("ΔISA", DISA, "°C"),
                 ("Pression", P, "Pa"),
                 ("Densité (rho)", rho, "kg/m³")
             ],

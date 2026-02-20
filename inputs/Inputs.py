@@ -41,7 +41,7 @@ class Inputs:
     # =====================
     # CROISIERE
     # =====================
-    # Croisière classique
+    # Croisière Alt Mach
     hCruise_ft = 38000       # ft
     MachCruise = 0.78
     
