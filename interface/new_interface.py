@@ -3,6 +3,8 @@ from tkinter import ttk
 import os
 from tkinter import filedialog, messagebox
 from pathlib import Path
+import random
+
 root = tk.Tk()
 root.title("PIE COA26")
 root.geometry("1400x1000")
@@ -474,12 +476,12 @@ tk.Label(frame_pasdetemps, text="%", **COMMUN).grid(row=5, column=2, sticky="w")
 
 #------------------Onglet Point Performance ----------------------------
 
-vitesse_choisie = tk.StringVar()
-menu_deroulant_vitesse = ttk.Combobox(frame_pp, textvariable = vitesse_choisie, state="readonly")
-menu_deroulant_vitesse['values'] = ('Mach', "TAS", "CAS" )
-menu_deroulant_vitesse.grid(row=0, column =0,columnspan = 2, sticky= "ew")
+type_vitesse_choisie = tk.StringVar()
+menu_deroulant_vitesse = ttk.Combobox(frame_pp, textvariable = type_vitesse_choisie, state="readonly")
+menu_deroulant_vitesse['values'] = ("Mach", "TAS", "CAS")
+menu_deroulant_vitesse.grid(row=0, column =0,columnspan = 1, sticky= "ew")
 vitesse = tk.Entry(frame_pp, width = 10)
-vitesse.grid(row = 0, column = 2)
+vitesse.grid(row = 0, column = 1)
 
 frame_pp.rowconfigure(1, minsize=20)
 
@@ -498,6 +500,39 @@ isa = tk.Entry(frame_pp, width=10)
 isa.grid(row=4, column=1)
 tk.Label(frame_pp, text="", **COMMUN).grid(row=4, column=2, sticky="w")
 
+#-------------Les sous Frame juste pour avoir des unités différentes en fonction du choix dans le menu déroulant-----------------
+
+frame_Mach = tk.Frame(frame_pp)
+tk.Label(frame_Mach, text=" ", **COMMUN).grid(row=0, column=2, sticky= "w")
+
+frame_TAS = tk.Frame(frame_pp)
+tk.Label(frame_TAS, text="kt", **COMMUN).grid(row=0, column=2, sticky= "w")
+
+frame_CAS = tk.Frame(frame_pp)
+tk.Label(frame_CAS, text = 'kt', **COMMUN).grid(row=0, column = 2, sticky = "w")
+
+#------------Fin de ce truc chiant-----------------------------------------------------------
+
+
+
+def affichage_type_vitesse(event):
+
+    if menu_deroulant_vitesse.get() == "Mach":
+        frame_Mach.grid(row=0, column=2)
+    else :
+        frame_Mach.grid_forget()
+    if menu_deroulant_vitesse.get() == "TAS":
+        frame_TAS.grid(row=0, column=2)
+    else :
+        frame_TAS.grid_forget()
+    if menu_deroulant_vitesse.get() == "CAS":
+        frame_CAS.grid(row=0, column=2)
+    else :
+        frame_CAS.grid_forget()
+
+menu_deroulant_vitesse.bind("<<ComboboxSelected>>", affichage_type_vitesse)
+menu_deroulant_vitesse.current(0) 
+affichage_type_vitesse(None)
 
 #------------------Fin de l'Onglet Point Performance---------------------
 
@@ -693,6 +728,60 @@ def charger_donnees(chemin_fichier=None):
         else:
             print(f"Erreur lors du chargement automatique : {e}")
 
+def surprise():
+    # On récupère la taille actuelle de la zone de droite
+    largeur = main_frame_droite.winfo_width()
+    hauteur = main_frame_droite.winfo_height()
+    
+    # Sécurité si la fenêtre vient de s'ouvrir et que les tailles sont à 1
+    if largeur < 10: largeur = 500
+    if hauteur < 10: hauteur = 800
+
+    # Création du calque d'animation par-dessus la console
+    canvas_confetti = tk.Canvas(main_frame_droite, bg="white", highlightthickness=0)
+    canvas_confetti.place(x=0, y=0, relwidth=1, relheight=1)
+    
+    couleurs = ["#FF5733", "#33FF57", "#3357FF", "#F033FF", "#FFF033", "#33FFF0"]
+    confettis = []
+
+    # Génération de 150 confettis
+    for _ in range(150):
+        # Position de départ (au-dessus du cadre pour qu'ils tombent)
+        x = random.randint(0, largeur)
+        y = random.randint(-hauteur, 0) 
+        vitesse = random.randint(4, 12)
+        taille = random.randint(6, 12)
+        couleur = random.choice(couleurs)
+        
+        # Un mix de carrés et de ronds
+        if random.choice([True, False]):
+            item = canvas_confetti.create_oval(x, y, x+taille, y+taille, fill=couleur, outline="")
+        else:
+            item = canvas_confetti.create_rectangle(x, y, x+taille, y+taille, fill=couleur, outline="")
+            
+        confettis.append({"id": item, "vitesse": vitesse})
+
+    # Fonction interne pour animer image par image
+    def animer():
+        en_cours = False
+        for c in confettis:
+            # On déplace chaque confetti vers le bas
+            canvas_confetti.move(c["id"], 0, c["vitesse"])
+            coords = canvas_confetti.coords(c["id"])
+            
+            # S'il reste au moins un confetti visible, on continue l'animation
+            if coords and coords[1] < hauteur: 
+                en_cours = True
+        
+        if en_cours:
+            # On rappelle cette fonction toutes les 20 millisecondes
+            root.after(20, animer) 
+        else:
+            # Quand tout est tombé, on détruit le calque pour revoir la console
+            canvas_confetti.destroy()
+
+    # On lance la première image de l'animation
+    animer()
 
 def action_go():
    
@@ -711,6 +800,10 @@ def action_go():
     txt_console.insert(tk.END, "Calculs en cours...\n")
     txt_console.insert(tk.END, "Terminé !\n")
     txt_console.insert(tk.END, "-"*40 + "\n") # Ligne de séparation
+
+    surprise()
+
+
 #---------------------------------------------------------------
 
 #--------------------Frame du bas de page------------------------
