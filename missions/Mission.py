@@ -7,6 +7,7 @@ from missions.Holding import Holding
 from missions.Montee import Montee
 from inputs.Inputs import Inputs
 from avions.Avion import Avion
+import timeit
 
 class Mission:
     @staticmethod
@@ -20,9 +21,11 @@ class Mission:
         :param Enregistrement: Instance de la classe Enregistrement
         '''
         ecart_mission = 100 # %
+        Enregistrement.reset()
         Enregistrement.save_simu(Avion, ecart_mission)
         n_iter = 0
 
+        tstart = timeit.default_timer()
         while ecart_mission > Inputs.precision and n_iter < Inputs.maxIter:
             # Initialisations
             Enregistrement.reset()
@@ -52,6 +55,12 @@ class Mission:
             Avion.reset(FB_mission, FB_diversion, FB_holding)
             Enregistrement.save_simu(Avion, ecart_mission)
             n_iter += 1
+        tend = timeit.default_timer()
+        temps_total = (tend - tstart)
+
+        print(f"Temps pour une boucle complète: {temps_total:.4f} secondes")
+        print("Carburant mission: " + str(Avion.Masse.getFuelMission()) + " kg")
+        print("Carburant réserve: " + str(Avion.Masse.getFuelReserve()) + " kg")
 
         # Fin de l'enregistrement
         Enregistrement.cut()

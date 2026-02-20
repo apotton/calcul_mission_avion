@@ -20,9 +20,21 @@ class Croisiere:
         '''
         Avion.cruise = True
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
-        # Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
-        # Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, l_end, dt)
-        Croisiere.cruiseAltSAR(Avion,Atmosphere,Enregistrement,l_end, dt)
+
+        match Inputs.cruiseType:
+            case "Mach_SAR":
+                Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
+            case "Alt_Mach":
+                Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, l_end, dt)
+            case "Alt_SAR":
+                Croisiere.cruiseAltSAR(Avion,Atmosphere, Enregistrement, l_end, dt)
+            case "CI":
+                print("Pas encore implémentée")
+                exit()
+            case _:
+                print("Croisière " + Inputs.cruiseType + " inexistante.")
+                exit()
+
         Avion.cruise = False
 
     @staticmethod
@@ -79,6 +91,8 @@ class Croisiere:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+
+            # Paramètres économiques
             Avion.Aero.calculateSGR(Atmosphere)
             Avion.Aero.calculateECCF(Atmosphere)
             
@@ -299,6 +313,10 @@ class Croisiere:
                 # Mise à jour avion (pas de changement d'altitude)
                 Avion.Add_dl(Vx * dt)
 
+                # Paramètres économiques
+                Avion.Aero.calculateSGR(Atmosphere)
+                Avion.Aero.calculateECCF(Atmosphere)
+
                 # Enregistrement au pas de temps
                 Enregistrement.save(Avion, Atmosphere, dt)
 
@@ -345,6 +363,10 @@ class Croisiere:
 
             # Mise à jour avion (pas de changement d'altitude)
             Avion.Add_dl(Vx * dt)
+
+            # Paramètres économiques
+            Avion.Aero.calculateSGR(Atmosphere)
+            Avion.Aero.calculateECCF(Atmosphere)
 
             # Enregistrement au pas de temps
             Enregistrement.save(Avion, Atmosphere, dt)
@@ -395,6 +417,10 @@ class Croisiere:
 
             # Consommation
             Avion.Masse.burnFuel(dt)
+
+            # Paramètres économiques
+            Avion.Aero.calculateSGR(Atmosphere)
+            Avion.Aero.calculateECCF(Atmosphere)
 
             # Enregistrement au pas de temps
             Enregistrement.save(Avion, Atmosphere, dt)

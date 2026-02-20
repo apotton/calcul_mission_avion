@@ -24,7 +24,7 @@ class Atmosphere:
         self.T_t = 288.15   # Température standard au niveau de la mer (K)
         self.Vwind_t = Inputs.Vw*Constantes.conv_kt_mps  # Vitesse du vent à l'altitude t (m/s)
 
-    def CalculateRhoPT(self, h_m, DISA_dC = 0) :
+    def CalculateRhoPT(self, h_m, DISA_dC = 0.) :
         '''
         Calcule les conditions atmosphériques (rho, P, T) en unités SI d'un avion, en prenant en compte l'écart avec l'atmosphère standard.
         

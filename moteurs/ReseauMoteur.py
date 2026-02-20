@@ -10,10 +10,10 @@ from scipy.interpolate import RegularGridInterpolator
 
 
 class ReseauMoteur(Moteur):
-    def __init__(self, Avion):
+    def __init__(self, Avion, path = Inputs.getEngineFile()):
         super().__init__(Avion)
         # Spécifique à cette classe :
-        self.DonneesMoteur = self._charger_donnees(Inputs.getEngineFile())
+        self.DonneesMoteur = self._charger_donnees(path)
 
         # liste des différentes altitudes disponibles dans le DonneesMoteur
         self.available_alts = list(self.DonneesMoteur.cruise_data.keys())

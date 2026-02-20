@@ -34,18 +34,17 @@ class Inputs:
     # =====================
     hInit_ft = 1500.0      # ft
     hAccel_ft = 10000.0        # ft
-    CAS_below_10000_mont_kt = 250.0  # kt 
-    CAS_climb_kt = None         # kt (None -> KVMO)
+    CAS_below_10000_mont_kt = 250.0  # kt
     Mach_climb = 0.78
 
     # =====================
     # CROISIERE
     # =====================
     # Type de croisière
-    cruiseType = "Alt_Mach" # Ou "Alt_SAR", "Mach_SAR", "CI"
+    cruiseType = "Mach_SAR" # Ou "Alt_SAR", "Mach_SAR", "CI"
 
     # Croisière Alt Mach (et toutes les autres)
-    hCruise_ft = 38000       # ft
+    hCruise_ft = 31000       # ft
     MachCruise = 0.78
     
     # Croisière Mach SAR
@@ -105,9 +104,9 @@ class Inputs:
     # =====================
     SpeedType = "Mach"  # Soit Mach, soit  TAS (kt), soit CAS (kt)
     Speed = 0.78        # Valeur de la vitesse
-    altPP_ft = 38_000   # Altitude (ft)
-    massPP = 60_000     # Masse totale (kg)
-    DISA_PP = 0         # Delta ISA, différence de température avec l'atmosphère standard (°C)
+    altPP_ft = 38_000.   # Altitude (ft)
+    massPP = 60_000.     # Masse totale (kg)
+    DISA_PP = 0.0         # Delta ISA, différence de température avec l'atmosphère standard (°C)
     
     @staticmethod
     def validate():
@@ -136,3 +135,8 @@ class Inputs:
         full_path = os.path.join(py_folder, Inputs.nom_fichier_py) #Ajoute le nom du fichier csv au Directory afin de le compléter
         
         return full_path
+    
+    @staticmethod
+    def loadCSVFile(csv_path):
+        pass
+        # A coder

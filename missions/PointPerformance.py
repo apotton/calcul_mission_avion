@@ -36,11 +36,11 @@ class PointPerformance():
         PointPerformance.setupAvion(Avion, Atmosphere)
         
         # Conditions atmosphérique
-        Atmosphere.CalculateRhoPT(Avion.geth())
+        Atmosphere.CalculateRhoPT(Avion.geth(), Inputs.DISA_PP)
         rho = Atmosphere.getRho_t()
         P = Atmosphere.getP_t()
         T = Atmosphere.getT_t()
-        DISA = 0
+        DISA = Inputs.DISA_PP
 
         # Vitesses (en kt)
         Mach = Avion.Aero.getMach()
@@ -128,7 +128,7 @@ class PointPerformance():
         }
 
         string = PointPerformance.formater_point_performance(donnees_perf)
-        print(string)
+        return(string)
 
     @staticmethod
     def formater_point_performance(donnees):

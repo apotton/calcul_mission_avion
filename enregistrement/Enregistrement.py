@@ -10,6 +10,8 @@ class Enregistrement:
         # Compteur (pour la taille à chaque changement)
         self.counter = 0
 
+        self.cruise_counter = 0
+
         self.data = {
             # Cinématique
             "t" : np.zeros(self.default_size, dtype=np.float32),
@@ -43,6 +45,12 @@ class Enregistrement:
             "P" : np.zeros(self.default_size, dtype=np.float32),
             "T" : np.zeros(self.default_size, dtype=np.float32),
             "rho" : np.zeros(self.default_size, dtype=np.float32)
+        }
+
+        self.data_cruise = {
+            "t" : np.zeros(self.default_size, dtype = np.float32),
+            "SGR" : np.zeros(self.default_size, dtype = np.float32),
+            "ECCF": np.zeros(self.default_size, dtype = np.float32)
         }
 
         # Données de convergence simu
@@ -92,6 +100,13 @@ class Enregistrement:
         self.data["rho"][self.counter] = Atmosphere.getRho_t()
 
         self.counter += 1
+
+        if Avion.cruise:
+            self.data_cruise["t"][self.cruise_counter] = self.data_cruise["t"][self.cruise_counter - 1] + dt if self.cruise_counter > 1 else 0
+            self.data_cruise["SGR"][self.cruise_counter] = Avion.Aero.getSGR()
+            self.data_cruise["ECCF"][self.cruise_counter] = Avion.Aero.getECCF()
+
+        self.cruise_counter += 1
         
         if self.counter >= len(self.data["t"]):
             self.extend()
@@ -121,12 +136,22 @@ class Enregistrement:
                 np.zeros(self.default_size, dtype=np.float32)
             ])
 
+        for key in self.data_cruise:
+            self.data_cruise[key] = np.concatenate([
+                self.data[key],
+                np.zeros(self.default_size, dtype=np.float32)
+            ])
+
     def cut(self):
         '''
         Enlève toutes les valeurs non atteintes après le counter.
         '''
         for key in self.data:
             self.data[key] = self.data[key][:self.counter]
+
+        for key in self.data_cruise:
+            self.data_cruise[key] = self.data_cruise[key][:self.cruise_counter]
+
 
 
     def reset(self):
@@ -136,3 +161,32 @@ class Enregistrement:
         self.counter = 0
         for key in self.data:
             self.data[key] = np.zeros(self.default_size, dtype=np.float32)
+
+        self.cruise_counter = 0
+        for key in self.data_cruise:
+            self.data_cruise[key] = np.zeros(self.default_size, dtype=np.float32)
+
+    def export_csv(self, filepath):
+        '''
+        Exporte les données enregistrées sous forme de fichier CSV.
+        Format : NomVariable;Valeur1;Valeur2;...
+        
+        :param filepath: Chemin complet du fichier de destination
+        '''
+        import csv
+        with open(filepath, "w", encoding="utf-8", newline='') as f:
+            writer = csv.writer(f, delimiter=';')
+            
+            # Export des données principales
+            for key, array in self.data.items():
+                # On coupe le tableau à la taille réelle de la simulation
+                donnees_utiles = array[:self.counter]
+                # On crée une liste avec le nom de la variable suivi de ses valeurs
+                ligne = [key] + donnees_utiles.tolist()
+                writer.writerow(ligne)
+                
+            # Export des données de croisière (optionnel, on peut préfixer pour les différencier)
+            for key, array in self.data_cruise.items():
+                donnees_utiles = array[:self.cruise_counter]
+                ligne = [f"cruise_{key}"] + donnees_utiles.tolist()
+                writer.writerow(ligne)

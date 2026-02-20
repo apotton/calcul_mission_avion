@@ -20,6 +20,10 @@ class Aero:
         self.CAS_t = 0.
         self.TAS_t = 0.
 
+        # Paramètres de croisière
+        self.SGR_t = 0.
+        self.ECCF_t = 0.
+
     #Calcul du Cz
     def calculateCz(self, atmosphere: Atmosphere):
         '''
@@ -312,15 +316,15 @@ class Aero:
         :param atmosphere: Instance de la classe Atmosphere
         '''
         
-        TAS = self.getTAS()
+        TAS_t = self.getTAS()
         Vw = atmosphere.getVwind()
         finesse = self.getCz()/self.getCx()
-        CI = 1.0  # Constante d'Injection (à définir précisément selon le contexte)
+        CI_t = 1.0  # Constante d'Injection (à définir précisément selon le contexte)
         m = self.Avion.Masse.getCurrentMass()
-        SFC = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
-        self.ECCF_t = (CI / 60.0 / (TAS + Vw) 
-                     + (SFC * m * Constantes.g) 
-                     / ((TAS + Vw) * finesse) )
+        SFC_t = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
+        self.ECCF_t = (CI_t / 60.0 / (TAS_t + Vw) 
+                     + (SFC_t * m * Constantes.g) 
+                     / ((TAS_t + Vw) * finesse) )
         
     def calculateSGR(self, atmosphere: Atmosphere):
         '''
@@ -333,8 +337,8 @@ class Aero:
         Vw = atmosphere.getVwind()
         finesse = self.getCz()/self.getCx()
         m = self.Avion.Masse.getCurrentMass()
-        SFC = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
-        self.SGR_t = (self.TAS_t + Vw) * finesse / (SFC * m * Constantes.g)
+        SFC_actuelle = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
+        self.SGR_t = (self.TAS_t + Vw) * finesse / (SFC_actuelle * m * Constantes.g)
 
     #Getters 
     def getCx(self):

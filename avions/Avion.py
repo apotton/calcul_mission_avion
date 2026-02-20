@@ -41,7 +41,7 @@ class Avion:
     diversion               = False  # Etat de l'avion (en diversion ou non)
     cruise                  = False  # Etat de l'avion (en croisière ou non)
 
-    def __init__(self, m_payload = Inputs.m_payload):
+    def __init__(self, full_path = Inputs.getAirplaneFile(), engine_path = Inputs.getEngineFile(), m_payload = Inputs.m_payload):
         '''
         Initialise un objet Avion en lisant les paramètres depuis un fichier CSV.
 
@@ -78,7 +78,7 @@ class Avion:
         # Initialisation des sous-classes
         self.Masse = Masse(self, m_payload)
         self.Aero = Aero(self)
-        self.Moteur = ReseauMoteur(self)
+        self.Moteur = ReseauMoteur(self, engine_path)
 
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()
