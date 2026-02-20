@@ -39,6 +39,7 @@ class Avion:
     l_descent               = 0.     # Distance nécessaire pour la descente (m)
     l_descent_diversion     = 0.     # Distance de la descente en diversion (m)
     diversion               = False  # Etat de l'avion (en diversion ou non)
+    cruise                  = False  # Etat de l'avion (en croisière ou non)
 
     def __init__(self, m_payload = Inputs.m_payload):
         '''
@@ -89,6 +90,7 @@ class Avion:
         self.l_t                     = 0.     # Distance totale parcourue (m)    
         self.h_t                     = 0.     # Altitude actuelle (m)
         self.diversion               = False  # Etat de l'avion (en diversion ou non)
+        self.cruise                  = False  # On est pas en croisière
         self.Masse.initializeMission(FB_mission, FB_diversion, FB_holding)
 
     def setupDescentes(self):

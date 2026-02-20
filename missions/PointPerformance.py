@@ -9,28 +9,22 @@ class PointPerformance():
 
     @staticmethod
     def setupAvion(Avion: Avion, Atmosphere: Atmosphere):
-        SpeedType = "Mach"  # Inputs.SpeedType
-        Speed = 0.78
-        alt_ft = 38_000 # Inputs.Altitude
-        mass_kg = 60_000 # Inputs.Mass
-        DISA_dC = 0
-
-        Avion.set_h(alt_ft * Constantes.conv_ft_m)
-        Atmosphere.CalculateRhoPT(alt_ft * Constantes.conv_ft_m, DISA_dC)
-        Avion.Masse.setMass(mass_kg)
+        Avion.set_h(Inputs.altPP_ft * Constantes.conv_ft_m)
+        Atmosphere.CalculateRhoPT(Inputs.altPP_ft * Constantes.conv_ft_m, Inputs.DISA_PP)
+        Avion.Masse.setMass(Inputs.massPP)
 
         # Set des vitesses
-        match SpeedType:
+        match Inputs.SpeedType:
             case "Mach":
-                Avion.Aero.setMach(Speed)
+                Avion.Aero.setMach(Inputs.Speed)
                 Avion.Aero.convertMachToCAS(Atmosphere)
                 Avion.Aero.convertMachToTAS(Atmosphere)
             case "TAS":
-                Avion.Aero.setTAS(Speed * Constantes.conv_kt_mps)
+                Avion.Aero.setTAS(Inputs.Speed * Constantes.conv_kt_mps)
                 Avion.Aero.convertTASToMach(Atmosphere)
                 Avion.Aero.convertMachToCAS(Atmosphere)
             case "CAS":
-                Avion.Aero.setCAS(Speed * Constantes.conv_kt_mps)
+                Avion.Aero.setCAS(Inputs.Speed * Constantes.conv_kt_mps)
                 Avion.Aero.convertCASToMach(Atmosphere)
                 Avion.Aero.convertMachToTAS(Atmosphere)
             case _:

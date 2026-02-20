@@ -18,10 +18,12 @@ class Croisiere:
         :param Enregistrement: Instance de la classe Enregistrement
         :param dt: pas de temps (s)
         '''
+        Avion.cruise = True
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
         # Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
         # Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, l_end, dt)
         Croisiere.cruiseAltSAR(Avion,Atmosphere,Enregistrement,l_end, dt)
+        Avion.cruise = False
 
     @staticmethod
     def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtCruise):
@@ -77,6 +79,8 @@ class Croisiere:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
             Avion.Add_dl(Vx * dt)
+            Avion.Aero.calculateSGR(Atmosphere)
+            Avion.Aero.calculateECCF(Atmosphere)
             
             Enregistrement.save(Avion, Atmosphere, dt)
     

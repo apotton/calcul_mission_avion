@@ -4,8 +4,8 @@ class Inputs:
     # =====================
     # Fichiers des paramètres avions
     # =====================
-    csv_folder = "avions" #Dossier de stockage des fichiers csv
-    nom_fichier_csv = "Airbus_A320.csv" #Fichier csv des paramètres avions
+    csv_folder = "avions" # Dossier de stockage des fichiers csv
+    nom_fichier_csv = "Airbus_A320.csv" # Fichier csv des paramètres avions
 
     # =====================
     # Fichier des moteurs
@@ -41,15 +41,18 @@ class Inputs:
     # =====================
     # CROISIERE
     # =====================
-    # Croisière Alt Mach
+    # Type de croisière
+    cruiseType = "Alt_Mach" # Ou "Alt_SAR", "Mach_SAR", "CI"
+
+    # Croisière Alt Mach (et toutes les autres)
     hCruise_ft = 38000       # ft
     MachCruise = 0.78
     
     # Croisière Mach SAR
     stepClimb_ft = 2000.0      # ft
     RRoC_min_ft = 300.0     # ft/min
-    cruiseClimbInit = 20 # % de la distance mission
-    cruiseClimbStop = 80 # % de la distance mission
+    cruiseClimbInit = 20 # % de la distance mission (Moment à partir duquel on peut chosir de monter)
+    cruiseClimbStop = 80 # % de la distance mission (Moment jusqu'auquel on peut monter)
 
     # Croisière alt SAR (dégradation du SAR)
     kSARcruise = 1 # %
@@ -57,22 +60,20 @@ class Inputs:
     # =====================
     # DESCENTE
     # =====================
-    CAS_max_descent_kt = None   # kt (None -> KVMO)
     CAS_below_10000_desc_kt = 250.0  # kt
-    hDecel_ft = 10000.0
-    hFinal_ft = 1500.0
+    hDecel_ft = 10000.0 # ft, altitude finale de maxCAS
+    hFinal_ft = 1500.0 # ft, altitude finale mission
 
     # =====================
     # Critère de diversion
     # =====================
-    cruiseDiversionAlt_ft = 25000
-    rangeDiversion_NM = 200
-    MachCruiseDiversion = 0.65
+    cruiseDiversionAlt_ft = 25000 # ft, altitude de croisière diversion
+    rangeDiversion_NM = 200 # nm, longueur de la diversion
+    MachCruiseDiversion = 0.65 # Mach de croisière diversion
     
     # =====================
     # Critère Holding
     # =====================
-    KCAS_holding = 300 # kt
     Time_holding = 30  # min
     
     # =====================
@@ -88,13 +89,25 @@ class Inputs:
     DISA_sub_Cruise = 0      # K
 
     # =====================
-    # Coefficients de déformation
+    # Coefficients de déformation du réseau moteur
     # =====================
-    cCz = 1     # Coefficient sur le coefficient de portance
-    cCx = 1     # Coefficient sur le coefficient de traînée
-    cFF = 1     # Coefficient sur le fuel flow
-    cFN = 1     # Coefficient sur la poussée totale (uniquement en montée)
+    cCz = 1             # Coefficient sur le coefficient de portance
+    cCx = 1             # Coefficient sur le coefficient de traînée
+    cFF_climb = 1       # Coefficient sur le fuel flow (montée)
+    cFF_cruise = 1      # Coefficient sur le fuel flow (croisière)
+    cFF_descent = 1     # Coefficient sur le fuel flow (descente)
+    cFN_climb = 1       # Coefficient sur la poussée totale (montée)
+    cFN_cruise = 1      # Coefficient sur la poussée totale (croisière: n'affecte pas la poussée mais la leecture de la SFC)
+    cFN_descent = 1     # Coefficient sur la poussée totale (descente)
     
+    # =====================
+    # Input des calculs Point Performance
+    # =====================
+    SpeedType = "Mach"  # Soit Mach, soit  TAS (kt), soit CAS (kt)
+    Speed = 0.78        # Valeur de la vitesse
+    altPP_ft = 38_000   # Altitude (ft)
+    massPP = 60_000     # Masse totale (kg)
+    DISA_PP = 0         # Delta ISA, différence de température avec l'atmosphère standard (°C)
     
     @staticmethod
     def validate():

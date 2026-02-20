@@ -407,10 +407,10 @@ temps_attente = tk.Entry(frame_autre, width=10)
 temps_attente.grid(row=2, column=1)
 tk.Label(frame_autre, text="min", **COMMUN).grid(row=2, column=2, sticky="w")
 
-tk.Label(frame_autre, text="KCAS holding", **COMMUN).grid(row=3, column=0, sticky="e")
-KCAS_holding = tk.Entry(frame_autre, width=10)
-KCAS_holding.grid(row=3, column=1)
-tk.Label(frame_autre, text="kt", **COMMUN).grid(row=3, column=2, sticky="w")
+# tk.Label(frame_autre, text="KCAS holding", **COMMUN).grid(row=3, column=0, sticky="e")
+# KCAS_holding = tk.Entry(frame_autre, width=10)
+# KCAS_holding.grid(row=3, column=1)
+# tk.Label(frame_autre, text="kt", **COMMUN).grid(row=3, column=2, sticky="w")
 
 frame_autre.rowconfigure(4, minsize=20)
 
