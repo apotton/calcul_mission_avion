@@ -42,6 +42,8 @@ class Avion:
     l_cruise                = 0.     # Distance nécessaire pour la croisière (m)
     l_descent               = 0.     # Distance nécessaire pour la descente (m)
     l_descent_diversion     = 0.     # Distance de la descente en diversion (m)
+    l_diversion             = 0.     # Distance de la diversion (m)
+    l_holding               = 0.     # Distance de la holding
 
     t_climb                 = 0.     # Temps nécessaire à la montée
     t_cruise                = 0.     # Temps nécessaire à la croisière
@@ -49,24 +51,21 @@ class Avion:
     t_diversion             = 0.     # Temps nécessaire à la diversion
     t_holding               = 0.     # Temps nécessaire à la phase de holding
 
-    diversion               = False  # Etat de l'avion (en diversion ou non)
     cruise                  = False  # Etat de l'avion (en croisière ou non)
 
-    def __init__(self, full_path = Inputs.getAirplaneFile(), engine_path = Inputs.getEngineFile(), m_payload = Inputs.m_payload):
+    def __init__(self, Inputs: Inputs, plane_path, engine_path):
         '''
         Initialise un objet Avion en lisant les paramètres depuis un fichier CSV.
 
         :param m_payload: Masse de la payload (kg)
         '''
 
-        full_path = Inputs.getAirplaneFile() #On utilise la méthode statique de la classe Inputs pour obtenir le chemin complet du fichier csv de l'avion
-        
         # Si fichier non trouvé
-        if not os.path.isfile(full_path):
-            raise FileNotFoundError(f"Le fichier {full_path} n'a pas été trouvé. Veuillez vérifier le chemin et le nom du fichier CSV de l'avion.")
+        if not os.path.isfile(plane_path):
+            raise FileNotFoundError(f"Le fichier {plane_path} n'a pas été trouvé. Veuillez vérifier le chemin et le nom du fichier CSV de l'avion.")
 
         # Lecture CSV
-        with open(full_path, mode='r', encoding='utf-8') as f:
+        with open(plane_path, mode='r', encoding='utf-8') as f:
             # Ouverture du fichier
             lecteur = csv.reader(f, delimiter=';')
 
@@ -87,7 +86,8 @@ class Avion:
                     setattr(self, cle, valeur)
 
         # Initialisation des sous-classes
-        self.Masse = Masse(self, m_payload)
+        self.Inputs = Inputs
+        self.Masse = Masse(self)
         self.Aero = Aero(self)
         self.Moteur = ReseauMoteur(self, engine_path)
 
@@ -109,8 +109,8 @@ class Avion:
         '''
         Initialise les paramètres pour la première estimation de descente à partir des Inputs (règle de 3: il faut ~3 nautiques pour descendre de 1000 pieds).
         '''
-        self.l_descent = 3 * Inputs.hCruise_ft / 1000 * Constantes.conv_NM_m
-        self.l_descent_diversion = 3 * Inputs.cruiseDiversionAlt_ft / 1000 * Constantes.conv_NM_m
+        self.l_descent = 3 * self.Inputs.hCruise_ft / 1000 * Constantes.conv_NM_m
+        self.l_descent_diversion = 3 * self.Inputs.cruiseDiversionAlt_ft / 1000 * Constantes.conv_NM_m
 
     def setl_descent(self, l_descent: float):
         '''

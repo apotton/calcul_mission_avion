@@ -10,7 +10,7 @@ import numpy as np
 class Holding:
 
     @staticmethod
-    def Hold(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtCruise):
+    def Hold(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs):
         '''
         Réalisation de l'opération de holding: l'avion atteint la vitesse target et vole
         en palier pendant un temps déterminé.
@@ -21,28 +21,30 @@ class Holding:
         :param dt: Pas de temps (s)
         '''
         m_init = Avion.Masse.getCurrentMass()
+        l_init = Avion.getl()
         
         # La vitesse souhaitée est celle qui maximise la finesse
         Atmosphere.CalculateRhoPT(Avion.geth())
-        _, CAS_target = Holding.calculateMach_target(Avion, Atmosphere)
+        _, CAS_target = Holding.calculateMach_target(Avion, Atmosphere, Inputs)
         t_init = Avion.t
 
         if (Avion.Aero.getCAS() < CAS_target):
             # Accélération en palier
-            Montee.climbPalier(Avion, Atmosphere, Enregistrement, CAS_target, dt = Inputs.dtClimb)
+            Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
         elif (Avion.Aero.getCAS() > CAS_target):
             # Décélération palier avec moteur en idle 
-            Descente.descentePalier(Avion, Atmosphere, Enregistrement, CAS_target, dt = Inputs.dtClimb)
+            Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
 
         #  Vol en palier
-        Holding.holdPalier(Avion, Atmosphere, Enregistrement, dt)
+        Holding.holdPalier(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtCruise)
 
         m_end = Avion.Masse.getCurrentMass()
         Avion.t_holding = Avion.t - t_init
+        Avion.l_holding = Avion.getl() - l_init
         Avion.Masse.m_fuel_holding = m_init - m_end
         
     @staticmethod
-    def calculateMach_target(Avion: Avion, Atmosphere: Atmosphere):
+    def calculateMach_target(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
         # Sauvegarde des variables qui vont changer
         Mach = Avion.Aero.getMach()
         CAS  = Avion.Aero.getCAS()
@@ -84,7 +86,7 @@ class Holding:
         return Mach_target, CAS_target
 
     @staticmethod
-    def holdPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtCruise):
+    def holdPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
         '''
         Vol en palier à vitesse constante pendant une durée définie.
         

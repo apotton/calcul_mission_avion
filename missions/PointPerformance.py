@@ -8,7 +8,7 @@ class PointPerformance():
 
 
     @staticmethod
-    def setupAvion(Avion: Avion, Atmosphere: Atmosphere):
+    def setupAvion(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
         Avion.set_h(Inputs.altPP_ft * Constantes.conv_ft_m)
         Atmosphere.CalculateRhoPT(Inputs.altPP_ft * Constantes.conv_ft_m, Inputs.DISA_PP)
         Avion.Masse.setMass(Inputs.massPP)
@@ -31,9 +31,9 @@ class PointPerformance():
                 print("Erreur de vitesse (ni Mach, ni CAS, ni TAS)")
 
     @staticmethod
-    def Performance(Avion: Avion, Atmosphere:Atmosphere):
+    def Performance(Avion: Avion, Atmosphere:Atmosphere, Inputs: Inputs):
         # Setup avec les inputs
-        PointPerformance.setupAvion(Avion, Atmosphere)
+        PointPerformance.setupAvion(Avion, Atmosphere, Inputs)
         
         # Conditions atmosphérique
         Atmosphere.CalculateRhoPT(Avion.geth(), Inputs.DISA_PP)
@@ -96,6 +96,12 @@ class PointPerformance():
                 ("ΔISA", DISA, "°C"),
                 ("Pression", P, "Pa"),
                 ("Densité (rho)", rho, "kg/m³")
+            ],
+            "Masses": [
+                ("Masse totale", Avion.Masse.getCurrentMass(), "kg"),
+                ("Masse à vide", Avion.getEmptyWeight(), "kg"),
+                ("Masse carburant", Avion.Masse.getFuelRemaining(), "kg"),
+                ("Masse payload", Avion.Masse.m_payload, "kg")
             ],
             "Vitesses & Pressions": [
                 ("Mach", Mach, "-"),

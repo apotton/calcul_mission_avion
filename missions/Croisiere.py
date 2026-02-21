@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 class Croisiere:
     @staticmethod
-    def Croisiere(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtCruise):
+    def Croisiere(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
         ''' Réalise toute la croisière de la mission principale.
         
         :param Avion: Instance de la classe Avion
@@ -26,11 +26,11 @@ class Croisiere:
 
         match Inputs.cruiseType:
             case "Mach_SAR":
-                Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, l_end, dt)
+                Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, Inputs, l_end, dt)
             case "Alt_Mach":
-                Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, l_end, dt)
+                Croisiere.cruiseAltMach(Avion, Atmosphere, Enregistrement, Inputs, l_end, dt)
             case "Alt_SAR":
-                Croisiere.cruiseAltSAR(Avion,Atmosphere, Enregistrement, l_end, dt)
+                Croisiere.cruiseAltSAR(Avion,Atmosphere, Enregistrement, Inputs, l_end, dt)
             case "CI":
                 print("Pas encore implémentée")
                 exit()
@@ -45,7 +45,7 @@ class Croisiere:
         Avion.cruise = False
 
     @staticmethod
-    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtCruise):
+    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
         '''
         Montée iso-Mach à Mach constant jusqu'à ce que les critères de montée ne soient plus vérifiés.
 
@@ -111,7 +111,7 @@ class Croisiere:
     ##
 
     @staticmethod
-    def checkUp(Avion : Avion, Atmosphere: Atmosphere):
+    def checkUp(Avion : Avion, Atmosphere: Atmosphere, Inputs: Inputs):
             '''
             Vérifie si la montée en croisière est intéressante
             
@@ -202,7 +202,7 @@ class Croisiere:
                     SGR_up > SGR_init)
 
     @staticmethod
-    def calculateSpeed_target(Avion: Avion, Atmosphere: Atmosphere):
+    def calculateSpeed_target(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
         '''
         Calcule la vitesse Mach telle que l'on soit à k*SAR (souvent 99%)
 
@@ -275,7 +275,7 @@ class Croisiere:
         return Mach_opt, CAS_opt
 
     @staticmethod
-    def cruiseMachSAR(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, l_end, dt = Inputs.dtCruise):
+    def cruiseMachSAR(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, l_end, dt):
         """
         Croisière en palier à Mach constant, avec des éventuelles montées d'un pallier d'altitude.
 
@@ -312,8 +312,8 @@ class Croisiere:
             # Condition de montée iso-Mach (on ne monte pas si on est très avancé dans la mission)
             if (Avion.getl() < Inputs.cruiseClimbStop*Inputs.l_mission_NM*Constantes.conv_NM_m/100 \
                 and Avion.getl() > Inputs.cruiseClimbInit*Inputs.l_mission_NM*Constantes.conv_NM_m/100 \
-                and Croisiere.checkUp(Avion, Atmosphere)):
-                Croisiere.climbIsoMach(Avion,Atmosphere,Enregistrement, dt = Inputs.dtClimb)
+                and Croisiere.checkUp(Avion, Atmosphere, Inputs)):
+                Croisiere.climbIsoMach(Avion,Atmosphere,Enregistrement, Inputs, dt = Inputs.dtClimb)
             else :
                 # Fuel burn
                 Avion.Masse.burnFuel(dt)
@@ -331,7 +331,7 @@ class Croisiere:
 
 
     @staticmethod
-    def cruiseAltMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, l_end, dt = Inputs.dtCruise):
+    def cruiseAltMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, l_end, dt):
         """
         Croisière à altitude et Mach constant.
 
@@ -383,7 +383,7 @@ class Croisiere:
 
 
     @staticmethod
-    def cruiseAltSAR(Avion:Avion, Atmosphere:Atmosphere, Enregistrement:Enregistrement, l_end, dt=Inputs.dtCruise):
+    def cruiseAltSAR(Avion:Avion, Atmosphere:Atmosphere, Enregistrement:Enregistrement, Inputs: Inputs, l_end, dt):
         """
         Croisière à altitude constante avec optimisation du SAR.
         Le Mach est recalculé à chaque pas pour atteindre k * SAR_max.
@@ -396,14 +396,14 @@ class Croisiere:
         """
         
         while Avion.getl() < l_end - Avion.getl_descent():
-            Mach_opt, CAS_opt = Croisiere.calculateSpeed_target(Avion, Atmosphere)
+            Mach_opt, CAS_opt = Croisiere.calculateSpeed_target(Avion, Atmosphere, Inputs)
 
             # Si on est trop loin du Mach optimal, on rejoint la vitesse cible en palier
             if (abs(Avion.Aero.getMach() - Mach_opt) > 0.01):
                 if (Avion.Aero.getMach() < Mach_opt):
-                    Montee.climbPalier(Avion, Atmosphere, Enregistrement, CAS_opt, dt = Inputs.dtClimb)
+                    Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_opt, dt = Inputs.dtClimb)
                 else:
-                    Descente.descentePalier(Avion, Atmosphere, Enregistrement, CAS_opt, dt = Inputs.dtDescent)
+                    Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_opt, dt = Inputs.dtDescent)
 
             ## Mise à jour avion en fonction du Mach optimal, tout passe en scalaire
             Avion.Aero.setMach(Mach_opt)

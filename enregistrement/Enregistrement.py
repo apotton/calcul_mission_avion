@@ -26,7 +26,7 @@ class Enregistrement:
             # Aérodynamique
             "Cz" : np.zeros(self.default_size, dtype=np.float32),
             "Cx" : np.zeros(self.default_size, dtype=np.float32),
-            "f"  : np.zeros(self.default_size, dtype=np.float32),
+            "finesse"  : np.zeros(self.default_size, dtype=np.float32),
 
             # Vitesses composantes
             "Vx" : np.zeros(self.default_size, dtype=np.float32),
@@ -67,6 +67,7 @@ class Enregistrement:
         }
 
         self.mission_data = {
+            # Fuel burn
             "FB_mission": 0.0,
             "FB_climb": 0.0,
             "FB_cruise": 0.0,
@@ -75,9 +76,13 @@ class Enregistrement:
             "FB_diversion": 0.0,
             "FB_holding": 0.0,
             "mF_contingency": 0.0,
+            # Distances
             "l_climb": 0.0,
             "l_cruise": 0.0,
             "l_descent": 0.0,
+            "l_diversion": 0.0,
+            "l_holding": 0.0,
+            # Temps
             "t_climb": 0.0,
             "t_cruise": 0.0,
             "t_descent": 0.0,
@@ -105,7 +110,7 @@ class Enregistrement:
 
         self.data["Cz"][self.counter] = Avion.Aero.getCz()
         self.data["Cx"][self.counter] = Avion.Aero.getCx()
-        self.data["f"][self.counter]  = Avion.Aero.getCz() / Avion.Aero.getCx()
+        self.data["finesse"][self.counter]  = Avion.Aero.getCz() / Avion.Aero.getCx()
 
         self.data["F_N"][self.counter] = Avion.Moteur.getF()
         self.data["SFC"][self.counter] = Avion.Moteur.getSFC()
@@ -166,6 +171,8 @@ class Enregistrement:
         self.mission_data["l_climb"] = Avion.l_climb
         self.mission_data["l_cruise"] = Avion.l_cruise
         self.mission_data["l_descent"] = Avion.l_descent
+        self.mission_data["l_diversion"] = Avion.l_diversion
+        self.mission_data["l_holding"] = Avion.l_holding
 
         # Temps mission
         self.mission_data["t_climb"] = Avion.t_climb
@@ -197,15 +204,25 @@ class Enregistrement:
             self.mission_data["t_descent"], 
             self.mission_data["FB_descent"]),
 
+            ("Mission", 
+            self.mission_data["l_climb"] + self.mission_data["l_cruise"] + self.mission_data["l_descent"], 
+            self.mission_data["t_climb"] + self.mission_data["t_cruise"] + self.mission_data["t_descent"], 
+            self.mission_data["FB_mission"]),
+
             ("Diversion", 
-            0.0,  # pas de distance enregistrée
+            self.mission_data["l_diversion"],
             self.mission_data["t_diversion"], 
             self.mission_data["FB_diversion"]),
 
             ("Holding", 
-            0.0,  # pas de distance enregistrée
+            self.mission_data["l_holding"],
             self.mission_data["t_holding"], 
             self.mission_data["FB_holding"]),
+
+            ("Contingence", 
+            "-",
+            "-", 
+            self.mission_data["mF_contingency"]),
         ]
 
         total_distance = 0.0
@@ -220,24 +237,33 @@ class Enregistrement:
         lines.append(separator)
 
         for name, dist_m, time_s, fuel in phases:
-            dist_nm = dist_m * NM_PER_METER
-            time_min = time_s * MIN_PER_SECOND
+            if name == "Mission":
+                lines.append(separator)
 
-            total_distance += dist_nm
-            total_time += time_min
-            total_fuel += fuel
+            if name == "Contingence":
+                total_fuel += fuel
+                lines.append(
+                    f"{'Contingence':<12}{'-':>15}{'-':>15}{fuel:>18.1f}"
+                )
+                continue
+            else:
+                dist_nm = dist_m * NM_PER_METER
+                time_min = time_s * MIN_PER_SECOND
+                lines.append(
+                    f"{name:<12}{dist_nm:>15.1f}{time_min:>15.1f}{fuel:>18.1f}"
+                )
 
-            lines.append(
-                f"{name:<12}{dist_nm:>15.1f}{time_min:>15.1f}{fuel:>18.1f}"
-            )
+            if name == "Mission":
+                lines.append(separator)
+            else:
+                total_distance += dist_nm
+                total_time += time_min
+                total_fuel += fuel
 
         lines.append(separator)
         lines.append(
             f"{'TOTAL':<12}{total_distance:>15.1f}{total_time:>15.1f}{total_fuel:>18.1f}"
         )
-
-        lines.append("")
-        lines.append(f"Fuel contingence : {self.mission_data['mF_contingency']:.1f} kg")
 
         return "\n".join(lines)
 
@@ -254,7 +280,7 @@ class Enregistrement:
 
         for key in self.data_cruise:
             self.data_cruise[key] = np.concatenate([
-                self.data[key],
+                self.data_cruise[key],
                 np.zeros(self.default_size, dtype=np.float32)
             ])
 

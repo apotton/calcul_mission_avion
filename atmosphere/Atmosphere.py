@@ -13,7 +13,7 @@ class Atmosphere:
     # Constantes de Conversion
     conv_fttom = 0.3048     # Facteur de conversion : 1 pied = 0.3048 mètre
 
-    def __init__(self):
+    def __init__(self, Inputs: Inputs):
         '''
         Initialise une instance de l'atmosphère standard au niveau de la mer
         
@@ -23,6 +23,7 @@ class Atmosphere:
         self.P_t = 101325.0 # Pression standard au niveau de la mer (Pa)
         self.T_t = 288.15   # Température standard au niveau de la mer (K)
         self.Vwind_t = Inputs.Vw*Constantes.conv_kt_mps  # Vitesse du vent à l'altitude t (m/s)
+        self.Inputs = Inputs
 
     def CalculateRhoPT(self, h_m, DISA_dC = 0.) :
         '''
@@ -32,10 +33,10 @@ class Atmosphere:
         :param h_m: Altitude de l'avion (m)
         :param DISA_dC: Différence de température avec l'atmosphère standard, utilisée pour le point performance
         '''
-        if h_m < Inputs.hCruise_ft:
-            DISA = Inputs.DISA_sub_Cruise + DISA_dC
+        if h_m < self.Inputs.hCruise_ft:
+            DISA = self.Inputs.DISA_sub_Cruise + DISA_dC
         else:
-            DISA = Inputs.DISA_Cruise + DISA_dC
+            DISA = self.Inputs.DISA_Cruise + DISA_dC
 
             
         if h_m <= 11000:

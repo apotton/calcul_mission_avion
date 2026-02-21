@@ -11,7 +11,7 @@ import timeit
 
 class Mission:
     @staticmethod
-    def Principal(Avion : Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement):
+    def Principal(Avion : Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs):
         '''
         Réalisation de la boucle principale: l'avion effectue plusieurs missions complètes
         jusqu'à convergence du fuel mission utilisé.
@@ -20,6 +20,7 @@ class Mission:
         :param Atmosphere: Instance de la classe Atmosphère
         :param Enregistrement: Instance de la classe Enregistrement
         '''
+        Inputs.validate()
         ecart_mission = 100 # %
         Enregistrement.reset()
         Enregistrement.save_simu(Avion, ecart_mission)
@@ -32,29 +33,38 @@ class Mission:
             FB_mission = Avion.Masse.getFuelMission()
 
             # Mission principale (montée, croisière, descente)
-            Montee.Monter(Avion, Atmosphere, Enregistrement)
-            Croisiere.Croisiere(Avion, Atmosphere, Enregistrement)
-            Descente.Descendre(Avion, Atmosphere, Enregistrement)
+            Montee.Monter(Avion, Atmosphere, Enregistrement, Inputs, Inputs.dtClimb)
+            Croisiere.Croisiere(Avion, Atmosphere, Enregistrement, Inputs, Inputs.dtCruise)
+            Descente.Descendre(Avion, Atmosphere, Enregistrement, Inputs, Inputs.dtDescent)
 
             # Diversion
-            Diversion.Diversion(Avion, Atmosphere, Enregistrement)
+            Diversion.Diversion(Avion, Atmosphere, Enregistrement, Inputs)
 
             # Holding
-            Holding.Hold(Avion, Atmosphere, Enregistrement)
+            Holding.Hold(Avion, Atmosphere, Enregistrement, Inputs)
 
             # Calcul de précision (écart relatif)
             ecart_mission = abs(FB_mission - Avion.Masse.getFuelMission()) / FB_mission * 100
-            print(f"Ecart mission {ecart_mission:.3f}%")
+            print(f"Boucle n°{n_iter+1} - Précision {ecart_mission:.3f}%")
 
             # Remise à zéro pour la boucle suivante
             Avion.reset()
             Enregistrement.save_simu(Avion, ecart_mission)
             n_iter += 1
+
         tend = timeit.default_timer()
         temps_total = (tend - tstart)
-        Enregistrement.save_final(Avion)
 
-        print(f"Temps pour une boucle complète: {temps_total:.4f} secondes")
+        # Vérification de la validité de la solution
+        m_fuel_total = Avion.Masse.getFuelMission() + Avion.Masse.getFuelReserve()
+        assert m_fuel_total <= Avion.getMaxFuelWeight(), \
+              f"La mission demande trop de carburant (m_fuel obtenue: {m_fuel_total:.2f}, m_fuel max: {Avion.getMaxFuelWeight():.2f})" 
+
+        print("")
+        print(f"Temps de calcul complet: {temps_total:.4f} secondes")
+        print("")
+
+        Enregistrement.save_final(Avion)
 
         # Fin de l'enregistrement
         Enregistrement.cut()

@@ -7,7 +7,7 @@ import numpy as np
 
 class Montee:
     @staticmethod
-    def Monter(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtClimb):
+    def Monter(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
         '''
         Réalise toute la montée principale jusqu'à la croisière.
 
@@ -26,14 +26,14 @@ class Montee:
         Avion.Aero.setCAS(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps)
 
         h_target = Inputs.hAccel_ft * Constantes.conv_ft_m
-        Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, h_target, Inputs.dtClimb)
+        Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
-        Montee.climbPalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
+        Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
 
         h_target = Inputs.hCruise_ft * Constantes.conv_ft_m
-        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, h_target, Inputs.Mach_climb, Inputs.dtClimb)
-        Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, h_target, Inputs.dtClimb)
+        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.Mach_climb, Inputs.dtClimb)
+        Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
         l_end = Avion.getl()
         m_end = Avion.Masse.getCurrentMass()
@@ -45,7 +45,7 @@ class Montee:
         Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_climb
 
     @staticmethod
-    def monterDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, dt = Inputs.dtClimb):
+    def monterDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
         '''
         Réalise la montée de la phase de diversion.
         
@@ -55,18 +55,18 @@ class Montee:
         :param dt: Pas de temps (s)
         '''
         h_target = Inputs.hAccel_ft * Constantes.conv_ft_m
-        Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, h_target, dt)
+        Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
-        Montee.climbPalier(Avion, Atmosphere, Enregistrement, CAS_target, dt)
+        Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
 
         h_target = Inputs.cruiseDiversionAlt_ft * Constantes.conv_ft_m
-        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, h_target, Inputs.MachCruiseDiversion, dt)
-        Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, h_target, dt)
+        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.MachCruiseDiversion, dt)
+        Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
         
 
     @staticmethod
-    def climbLowAltitude(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_lim, dt):
+    def climbLowAltitude(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, h_lim, dt):
         '''
         Montée à CAS constant jusqu'à atteindre l'altitude d'accéleration en palier.
 
@@ -126,7 +126,7 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climbPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, CAS_target, dt = Inputs.dtClimb):
+    def climbPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, CAS_target, dt):
         '''
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
@@ -193,7 +193,7 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climbIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_lim, Mach_lim, dt = Inputs.dtClimb):
+    def climbIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, h_lim, Mach_lim, dt):
         '''
         Montée à CAS constant jusqu'à atteindre un Mach cible
 
@@ -257,7 +257,7 @@ class Montee:
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
-    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, h_lim, dt = Inputs.dtClimb):
+    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, h_lim, dt):
         '''
         Montée à Mach constant jusqu'à une altitude cible.
 
