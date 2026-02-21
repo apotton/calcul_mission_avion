@@ -3,6 +3,7 @@ from interface.utils import PrintRedirector
 # from interface.onglets import OngletMission # importe tes onglets
 from interface.actions import calculer_mission, importer_mission, calculer_pp, \
                               calculer_batch, importer_batch   # importe tes actions
+from interface.onglets import OngletMission
 
 # Code de calcul mission
 from enregistrement.Enregistrement import Enregistrement
@@ -143,7 +144,8 @@ class App(ctk.CTk):
         self.tabview.add("Point Performance")
         self.tabview.add("Batch")
 
-        self.build_tab_mission()
+        # self.build_tab_mission()
+        self.onglet_mission = OngletMission(self.tabview.tab("Mission"), app=self)
         self.build_tab_autres()
         self.build_tab_options()
         self.build_tab_pp()
@@ -177,49 +179,8 @@ class App(ctk.CTk):
                 self.btn_importer.configure(text="Importer Mission", command= lambda: importer_mission(self), fg_color="#27ae60", hover_color="#2ecc71")
 
     # ------------------ ONGLET MISSION ------------------
-    def build_tab_mission(self):
-        tab = ctk.CTkScrollableFrame(self.tabview.tab("Mission"), fg_color="transparent")
-        tab.pack(fill="both", expand=True)
+    # def build_tab_mission(self):
 
-        # Globaux 
-        f_global = ctk.CTkFrame(tab)
-        f_global.pack(fill="x", pady=5)
-        f_global.grid_columnconfigure((0, 7), weight=1)
-        
-        self.add_field(f_global, "Payload", "m_payload", "18000", "kg", row=0, col=1)
-        self.add_field(f_global, "Distance", "l_mission_NM", "1000", "nm", row=0, col=4)
-
-        # Montée
-        f_climb = ctk.CTkFrame(tab)
-        f_climb.pack(fill="x", pady=5)
-        f_climb.grid_columnconfigure((0, 4), weight=1)
-        ctk.CTkLabel(f_climb, text="Montée", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
-        self.add_field(f_climb, "Altitude Initiale", "hInit_ft", "1500.0", "ft", row=1, col=1)
-        self.add_field(f_climb, "Altitude Accel.", "hAccel_ft", "10000.0", "ft", row=2, col=1)
-        self.add_field(f_climb, "CAS < 10000ft", "CAS_below_10000_mont_kt", "250.0", "kt", row=3, col=1)
-        self.add_field(f_climb, "Mach Climb", "Mach_climb", "0.78", "", row=4, col=1)
-
-        # Croisière (Dynamique)
-        self.f_cruise = ctk.CTkFrame(tab)
-        self.f_cruise.pack(fill="x", pady=5)
-        self.f_cruise.grid_columnconfigure((0, 2), weight=1)
-        ctk.CTkLabel(self.f_cruise, text="Croisière", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, pady=5)
-        
-        self.vars["cruiseType"] = ctk.StringVar(value="Alt_Mach")
-        cb_cruise = ctk.CTkComboBox(self.f_cruise, variable=self.vars["cruiseType"], values=["Alt_Mach", "Alt_SAR", "Mach_SAR", "CI"], command=self.update_cruise_fields, width=150)
-        cb_cruise.grid(row=1, column=1, padx=10, pady=5)
-        
-        self.f_cruise_dyn = ctk.CTkFrame(self.f_cruise, fg_color="transparent")
-        self.f_cruise_dyn.grid(row=2, column=0, columnspan=3, sticky="ew")
-
-        # Descente
-        f_desc = ctk.CTkFrame(tab)
-        f_desc.pack(fill="x", pady=5)
-        f_desc.grid_columnconfigure((0, 4), weight=1)
-        ctk.CTkLabel(f_desc, text="Descente", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
-        self.add_field(f_desc, "CAS < 10000ft", "CAS_below_10000_desc_kt", "250.0", "kt", row=1, col=1)
-        self.add_field(f_desc, "Altitude Decel.", "hDecel_ft", "10000.0", "ft", row=2, col=1)
-        self.add_field(f_desc, "Altitude Finale", "hFinal_ft", "1500.0", "ft", row=3, col=1)
 
     # ------------------ ONGLET AUTRES ------------------
     def build_tab_autres(self):
@@ -383,20 +344,20 @@ class App(ctk.CTk):
         else: self.lbl_unit_speed_pp.configure(text="kt")
 
     def update_cruise_fields(self, choice=None):
-        for widget in self.f_cruise_dyn.winfo_children(): widget.destroy()
+        for widget in self.onglet_mission.f_cruise_dyn.winfo_children(): widget.destroy()
         c_type = self.vars["cruiseType"].get()
         
         # CHANGEMENT ICI: col=1 au lieu de col=0
-        self.add_field(self.f_cruise_dyn, "Altitude Croisière", "hCruise_ft", "38000", "ft", row=0, col=1)
-        self.add_field(self.f_cruise_dyn, "Mach Croisière", "MachCruise", "0.78", "", row=1, col=1)
+        self.add_field(self.onglet_mission.f_cruise_dyn, "Altitude Croisière", "hCruise_ft", "38000", "ft", row=0, col=1)
+        self.add_field(self.onglet_mission.f_cruise_dyn, "Mach Croisière", "MachCruise", "0.78", "", row=1, col=1)
 
         if c_type == "Mach_SAR":
-            self.add_field(self.f_cruise_dyn, "Step Climb", "stepClimb_ft", "2000.0", "ft", row=2, col=1)
-            self.add_field(self.f_cruise_dyn, "RRoC min", "RRoC_min_ft", "300.0", "ft/min", row=3, col=1)
-            self.add_field(self.f_cruise_dyn, "Init Montée", "cruiseClimbInit", "20", "% dist", row=4, col=1)
-            self.add_field(self.f_cruise_dyn, "Stop Montée", "cruiseClimbStop", "80", "% dist", row=5, col=1)
+            self.add_field(self.onglet_mission.f_cruise_dyn, "Step Climb", "stepClimb_ft", "2000.0", "ft", row=2, col=1)
+            self.add_field(self.onglet_mission.f_cruise_dyn, "RRoC min", "RRoC_min_ft", "300.0", "ft/min", row=3, col=1)
+            self.add_field(self.onglet_mission.f_cruise_dyn, "Init Montée", "cruiseClimbInit", "20", "% dist", row=4, col=1)
+            self.add_field(self.onglet_mission.f_cruise_dyn, "Stop Montée", "cruiseClimbStop", "80", "% dist", row=5, col=1)
         elif c_type == "Alt_SAR":
-            self.add_field(self.f_cruise_dyn, "Dégradation SAR", "kSARcruise", "1", "%", row=2, col=1)
+            self.add_field(self.onglet_mission.f_cruise_dyn, "Dégradation SAR", "kSARcruise", "1", "%", row=2, col=1)
 
     def add_field(self, parent, label, var_name, default_value, unit="", row=0, col=0, width=120):
         # Pousse les éléments au centre
