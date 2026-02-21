@@ -127,7 +127,7 @@ class Inputs:
         if self.CAS_below_10000_desc_kt > 250:
             print("Vitesse de descente sous 10 000ft trop élevée (>250kt)")
 
-        if (abs(self.Mach_climb - self.MachCruise) > 0.1):
+        if (abs(self.Mach_climb - self.MachCruise) > 0.01):
             print("Mach de fin de montée et Mach de début de croisière sont éloignées")
 
     def getAirplaneFile(self):
@@ -170,6 +170,12 @@ class Inputs:
                     try:
                         valeur = float(valeur)
                     except ValueError:
+                        valeur = str(valeur)
+                        # Gestion de AeroSimplified
+                        if valeur == "True":
+                            valeur = True
+                        elif valeur == "False":
+                            valeur = False
                         pass
 
                     # Attribution dynamique des attributs
