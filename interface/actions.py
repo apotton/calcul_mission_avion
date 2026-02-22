@@ -1,7 +1,7 @@
 import customtkinter as ctk # pip install customtkinter
 from missions.PointPerformance import PointPerformance
+from constantes.Constantes import Constantes
 from missions.Mission import Mission
-from inputs.Inputs import Inputs
 from avions.Avion import Avion
 
 from tkinter import filedialog, messagebox
@@ -24,6 +24,7 @@ def check_avion(app):
     nom_avion = app.cb_avion.get()
     nom_moteur = app.cb_moteur.get()
     
+    # Vérification du choix utilisateur et de la présence des fichiers
     if nom_avion and nom_moteur:
         if nom_avion not in app.chemins_avions or nom_moteur not in app.chemins_moteurs:
             messagebox.showwarning("Attention", "Erreur dans les noms des avions ou moteur.")
@@ -35,7 +36,7 @@ def check_avion(app):
 
 def load_avion(app):
     '''
-    Charge l'avion en attribut de la classe.
+    Charge l'avion en attribut de la classe (une fois avoir vérifié son existence).
     '''
     app.Avion = Avion(app.Inputs, app.chemins_avions[app.cb_avion.get()], app.chemins_moteurs[app.cb_moteur.get()])
     print(f">> Avion initialisé en mémoire.\n   - Modèle: {app.cb_avion.get()}\n   - Moteur: {app.cb_moteur.get()}\n")
@@ -47,6 +48,14 @@ def sauver_parametres(app, chemin_csv):
     with open(chemin_csv, "w", encoding="utf-8", newline='') as f:
         writer = csv.writer(f, delimiter=';')
         writer.writerow(["Attribut", "Valeur"])
+
+        # Nom de fichier avion et moteur
+        nom_fichier_avion = Path(app.chemins_avions[app.cb_avion.get()]).name
+        nom_fichier_moteur = Path(app.chemins_moteurs[app.cb_moteur.get()]).name
+        writer.writerow(["nom_fichier_csv", nom_fichier_avion])
+        writer.writerow(["nom_fichier_py", nom_fichier_moteur])
+
+        # Itération sur toutes les cases (uniquement mission, pas Point Performance ou Batch)
         for var_name, tk_var in app.vars.items():
             if var_name not in app.pp_keys and var_name not in app.batch_keys:
                 writer.writerow([var_name, str(tk_var.get())])
@@ -55,6 +64,8 @@ def exporter_csv(app):
     '''
     Exporte un CSV de la configuration actuelle.
     '''
+
+    # Ouverture de l'interface système d'enregistrement
     chemin = filedialog.asksaveasfilename(
         defaultextension=".csv", 
         filetypes=[("Fichiers CSV", "*.csv")]
@@ -63,6 +74,7 @@ def exporter_csv(app):
         return
 
     try:
+        # Enregistrement des paramètres dans le fichier créé
         sauver_parametres(app, chemin)
                     
         # On utilise le redirector pour écrire dans la console
@@ -71,17 +83,21 @@ def exporter_csv(app):
     except Exception as e:
         messagebox.showerror("Erreur", str(e))
 
-def importer_csv(app):
+def importer_csv(app, chemin = None):
     '''
     Charge une configuration CSV dans l'interface.
     '''
-    chemin = filedialog.askopenfilename(
-        filetypes=[("Fichiers CSV", "*.csv")]
-    )
+
+    # Ouverture de l'interface système du choix de fichier
+    if not (chemin):
+        chemin = filedialog.askopenfilename(
+            filetypes=[("Fichiers CSV", "*.csv")]
+        )
     if not chemin: 
         return
 
     try:
+        # Lecture ligne par ligne des paramètres du fichier
         with open(chemin, "r", encoding="utf-8") as f:
             reader = csv.reader(f, delimiter=';')
             for row in reader:
@@ -111,6 +127,7 @@ def calculer_mission(app):
     '''
     if not check_avion(app): return
 
+    # Remise à zéro de l'interface de sortie
     app.textbox_out.delete("1.0", "end")
     
     # Préparation des dossiers
@@ -137,6 +154,7 @@ def calculer_mission(app):
         return
 
     try:
+        # Lancement du calcul de boucle mission
         app.Enregistrement.reset()
         Mission.Principal(app.Avion, app.Atmosphere, app.Enregistrement, app.Inputs)
         
@@ -145,11 +163,12 @@ def calculer_mission(app):
         print(f"\n>> Résultats sauvegardés dans {chemin_resultats}")
         
         # Affichage graphes
-        app.right_tabview.set("Graphiques")
+        # app.right_tabview.set("Graphiques")
         app.tracer_graphique() 
     except Exception as e:
         print(f"Erreur lors du calcul de la mission : {e}")
     
+    # Fin de l'enregistrement de l'output
     app.redirector.stop_logging()
 
 def calculer_pp(app):
@@ -157,7 +176,8 @@ def calculer_pp(app):
     Effectue un calcul de Point Performance.
     '''
     if not check_avion(app): return
-        
+
+    # Set des valeurs renseignées dans la classe Inputs 
     try:
         app.Inputs.SpeedType = app.vars["SpeedType"].get()
         app.Inputs.Speed = float(app.vars["Speed"].get())
@@ -168,11 +188,13 @@ def calculer_pp(app):
         messagebox.showerror("Erreur", "Valeurs numériques invalides pour le Point Performance.")
         return
     
+    # Remise à zéro de la console
     app.textbox_out.delete("1.0", "end")
     load_avion(app)
     if not(app.Avion):
         return
     
+    # Lancement des calculs
     print("\nLancement calcul Point Performance...")
     try:
         resultat = PointPerformance.Performance(app.Avion, app.Atmosphere, app.Inputs)
@@ -194,9 +216,10 @@ def calculer_batch(app):
         messagebox.showerror("Erreur", "Format invalide pour Payloads/Ranges. Utilisez des espaces.")
         return
 
+    # Remise à zéro de la console
     app.textbox_out.delete("1.0", "end")
     
-    # Préparation dossier racine
+    # Préparation dossier racine (date et heure)
     timestamp = datetime.now().strftime("BATCH_%Y-%m-%d_%H-%M-%S")
     root_dir = Path("./results") / timestamp
     root_dir.mkdir(parents=True, exist_ok=True)
@@ -204,17 +227,23 @@ def calculer_batch(app):
     print(f"Lancement du Batch : {len(payloads)} Payloads x {len(ranges)} Ranges.")
     print(f"Dossier racine : {root_dir}\n")
 
-    # En-tête sur plusieurs lignes (inspiré de Piano-X)
+    # En-tête sur plusieurs lignes (inspiré de Piano-X). Ex:
+    # Fuel
+    # Load
+    # (kg)
     colonnes = [
-        ("Fuel", "Load", "(kg)"), ("Payload", "Mass", "(kg)"), ("Mission", "Range", "(NM)"),
-        ("Mission", "Time", "(min)"), ("Mission", "Fuel", "(kg)"), ("Climb", "Dist", "(NM)"),
-        ("Climb", "Time", "(min)"), ("Climb", "Fuel", "(kg)"), ("Cruise", "Dist", "(NM)"),
-        ("Cruise", "Time", "(min)"), ("Descent", "Dist", "(NM)"), ("Descent", "Time", "(min)"),
-        ("Descent", "Fuel", "(kg)"), ("Reserve", "Time", "(min)"), ("Reserve", "Fuel", "(kg)"),
-        ("Div", "Time", "(min)"), ("Div", "Fuel", "(kg)"), ("Hold", "Time", "(min)"),
-        ("Hold", "Fuel", "(kg)"), ("Conting.", "Fuel", "(kg)")
+        ("Fuel",     "Load",  "(kg)"),  ("Payload", "Mass", "(kg)"), # Paramètres globaux
+        ("Mission",  "Range", "(NM)"),  ("Mission", "Time", "(min)"), ("Mission",  "Fuel", "(kg)"), 
+        ("Climb",    "Dist",  "(NM)"),  ("Climb",   "Time", "(min)"), ("Climb",    "Fuel", "(kg)"), 
+        ("Cruise",   "Dist",  "(NM)"),  ("Cruise",  "Time", "(min)"), ("Cruise",   "Fuel", "(kg)"), 
+        ("Descent",  "Dist",  "(NM)"),  ("Descent", "Time", "(min)"), ("Descent",  "Fuel", "(kg)"),
+                                        ("Reserve", "Time", "(min)"), ("Reserve",  "Fuel", "(kg)"), 
+                                        ("Div",     "Time", "(min)"), ("Div",      "Fuel", "(kg)"),
+                                        ("Hold",    "Time", "(min)"), ("Hold",     "Fuel", "(kg)"),
+                                                                      ("Conting.", "Fuel", "(kg)")
     ]
     
+    # Espace de dix caractères pour chaque colonne
     ligne1 = "".join(f"{c[0]:>10}" for c in colonnes)
     ligne2 = "".join(f"{c[1]:>10}" for c in colonnes)
     ligne3 = "".join(f"{c[2]:>10}" for c in colonnes)
@@ -226,19 +255,23 @@ def calculer_batch(app):
     orig_payload = app.vars["m_payload"].get()
     orig_range = app.vars["l_mission_NM"].get()
 
-    # Boucles Batch
+    # Boucles Batch (groupement par payloads)
     for p in payloads:
         app.vars["m_payload"].set(str(p))
         for r in ranges:
             app.vars["l_mission_NM"].set(str(r))
             
+            # Choix du nom sous-dossier (payload et range)
             nom_dossier = f"m_payload_{int(p)}-range_{int(r)}"
             sub_dir = root_dir / nom_dossier
             sub_dir.mkdir(parents=True, exist_ok=True)
             
+            # Passage en mode silencieux (rien dans la console mais uniquement
+            # dans un fichier d'output)
             app.redirector.start_logging(sub_dir / "output.txt", silent=True)
             
             try:
+                # Sauvegarde et chargement des paramètres
                 chemin_csv = sub_dir / "param.csv"
                 sauver_parametres(app, chemin_csv)
                 app.Inputs.loadCSVFile(str(chemin_csv))
@@ -246,27 +279,32 @@ def calculer_batch(app):
                 load_avion(app)
                 if not(app.Avion):
                     continue
-
+                
+                # Run d'une mission individuelle
                 app.Enregistrement.reset()
                 Mission.Principal(app.Avion, app.Atmosphere, app.Enregistrement, app.Inputs)
-                
                 app.Enregistrement.export_csv(str(sub_dir / "resultats_vol.csv"))
                 
                 md = app.Enregistrement.mission_data
                 
                 # Formatage des sorties
-                fuel_load = md["FB_mission"] + md["FB_reserve"] + md["FB_diversion"] + md["FB_holding"] + md["mF_contingency"]
+                fuel_load = md["FB_mission"] + md["FB_reserve"]
                 mission_time = (md["t_climb"] + md["t_cruise"] + md["t_descent"]) / 60.0
+                t_reserve = (md['t_diversion'] + md['t_holding']) / 60.0
                 
+                conv = Constantes.conv_NM_m
+
+                # Valeur de chaque colonne
                 valeurs = [
-                    fuel_load, p, r, mission_time, md['FB_mission'],
-                    md['l_climb'] / 1852.0, md['t_climb'] / 60.0, md['FB_climb'],
-                    md['l_cruise'] / 1852.0, md['t_cruise'] / 60.0,
-                    md['l_descent'] / 1852.0, md['t_descent'] / 60.0, md['FB_descent'],
-                    (md['t_diversion'] + md['t_holding']) / 60.0, md['FB_reserve'],
-                    md['t_diversion'] / 60.0, md['FB_diversion'],
-                    md['t_holding'] / 60.0, md['FB_holding'],
-                    md['mF_contingency']
+                    fuel_load, p,
+                    r,                      mission_time,             md['FB_mission'],
+                    md['l_climb']   / conv, md['t_climb']   / 60.0,   md['FB_climb'],
+                    md['l_cruise']  / conv, md['t_cruise']  / 60.0,   md["FB_cruise"],
+                    md['l_descent'] / conv, md['t_descent'] / 60.0,   md['FB_descent'],
+                                            t_reserve,                md['FB_reserve'],
+                                            md['t_diversion'] / 60.0, md['FB_diversion'],
+                                            md['t_holding']   / 60.0, md['FB_holding'],
+                                                                      md['mF_contingency']
                 ]
                 
                 ligne_valeurs = "".join(f"{v:10.1f}" for v in valeurs)
@@ -297,7 +335,8 @@ def calculer_batch(app):
         f.write(";".join([f"{c[0]} {c[1]} {c[2]}" for c in colonnes]) + "\n")
         for ligne in summary_lines[3:]:
             if ligne.strip() == "":
-                f.write("\n")
+                # f.write("\n") # Ecrire une ligne vide dans le CSV ?
+                pass
             elif "Erreur" in ligne:
                 f.write(ligne + "\n")
             else:
@@ -315,32 +354,24 @@ def importer_mission(app):
     '''
     Importe les résultats d'une boucle mission faire précédemment.
     '''
-    dossier = app.filedialog.askdirectory(title="Sélectionner le dossier de résultat de la mission")
+    # Interface système de sélection d'un dossier
+    init = Path.cwd() / "results"
+    dossier = filedialog.askdirectory(title="Sélectionner le dossier de résultat de la mission",
+                                      initialdir = init)
     if not dossier: return
     dossier = Path(dossier)
     
-    # Lire Output
+    # Lire Output et afficher dans la console
     if (dossier / "output.txt").exists():
         app.textbox_out.delete("1.0", "end")
         with open(dossier / "output.txt", "r", encoding="utf-8") as f:
             app.textbox_out.insert("end", f.read())
             
-    # Lire Paramètres
+    # Lire Paramètres (à l'aide d'import CSV)
     if (dossier / "param.csv").exists():
-        with open(dossier / "param.csv", "r", encoding="utf-8") as f:
-            reader = csv.reader(f, delimiter=';')
-            for row in reader:
-                if len(row) == 2:
-                    var_name, value = row
-                    if var_name in app.vars:
-                        # Gestion spécifique des booléens
-                        if isinstance(app.vars[var_name], ctk.BooleanVar):
-                            app.vars[var_name].set(value == "True")
-                        else:
-                            app.vars[var_name].set(value)
-        app.update_cruise_fields()
+        importer_csv(app, dossier / "param.csv")
         
-    # Lire Résultats de vol pour les graphiques
+    # Lire Résultats de vol pour les graphiques : reconstruction de la classe Enregistrement
     if (dossier / "resultats_vol.csv").exists():
         app.Enregistrement.reset()
         with open(dossier / "resultats_vol.csv", "r", encoding="utf-8") as f:
@@ -367,7 +398,7 @@ def importer_mission(app):
                     app.Enregistrement.data[key][:l] = vals
                     app.Enregistrement.counter = max(app.Enregistrement.counter, l)
                     
-        app.right_tabview.set("Graphiques")
+        # app.right_tabview.set("Graphiques")
         app.tracer_graphique()
         messagebox.showinfo("Succès", "Mission importée et graphiques disponibles.")
 
@@ -375,10 +406,14 @@ def importer_batch(app):
     '''
     Importe les résultats d'un calcul en batch effectué précédemment.
     '''
-    dossier = app.filedialog.askdirectory(title="Sélectionner le dossier de résultat du batch")
+    # Interface système pour le choix d'un dossier
+    init = Path.cwd() / "results"
+    dossier = filedialog.askdirectory(title="Sélectionner le dossier de résultat du batch",
+                                      initialdir=init)
     if not dossier: return
     dossier = Path(dossier)
     
+    # Affichage uniquement de la sortie texte
     if (dossier / "summary.txt").exists():
         app.textbox_out.delete("1.0", "end")
         with open(dossier / "summary.txt", "r", encoding="utf-8") as f:

@@ -1,11 +1,9 @@
 # Import autres éléments de l'interface
 from interface.utils import PrintRedirector
-# from interface.onglets import OngletMission # importe tes onglets
 from interface.actions import calculer_mission, importer_mission, calculer_pp, \
-                              calculer_batch, importer_batch   # importe tes actions
+                              calculer_batch, importer_batch   # importe les fonctions actions
 from interface.onglets import OngletMission, OngletAutres, OngletOptions, OngletPP, OngletBatch
 from interface.actions import importer_csv, exporter_csv
-
 
 # Code de calcul mission
 from enregistrement.Enregistrement import Enregistrement
@@ -14,14 +12,10 @@ from atmosphere.Atmosphere import Atmosphere
 from inputs.Inputs import Inputs
 
 # Import modules Python
-from tkinter import filedialog, messagebox
-from datetime import datetime
+from tkinter import messagebox
 import customtkinter as ctk # pip install customtkinter
 from pathlib import Path
-import numpy as np
 import sys
-import csv
-import os
 
 # Affichage Matplotlib
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
@@ -51,11 +45,13 @@ class App(ctk.CTk):
         self.pp_keys = ["SpeedType", "Speed", "altPP_ft", "massPP", "DISA_PP"]
         self.batch_keys = ["batch_ranges", "batch_payloads"]
         
+        # Objets du code mission
         self.Avion = None
         self.Inputs = Inputs()
         self.Atmosphere = Atmosphere(self.Inputs)
         self.Enregistrement  = Enregistrement()
         
+        # Chemins moteur / avion
         self.chemins_avions = {} 
         self.chemins_moteurs = {} 
 
@@ -65,7 +61,7 @@ class App(ctk.CTk):
         self.grid_columnconfigure(0, weight=self.tailleEntrees) 
         self.grid_columnconfigure(1, weight=100 - self.tailleEntrees) 
 
-        # --- GAUCHE: INPUTS ---
+        # Partie gauche: inputs
         self.left_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.left_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self.left_frame.grid_rowconfigure(2, weight=1) # La zone des onglets (row 2) s'étend
@@ -76,18 +72,18 @@ class App(ctk.CTk):
         self.build_tabs()
         self.build_bottom_buttons()
 
-        # --- DROITE: OUTPUTS ---
+        # Partie droite: outputs
         self.right_tabview = ctk.CTkTabview(self)
         self.right_tabview.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
         
         self.right_tabview.add("Console")
         self.right_tabview.add("Graphiques")
 
-        # Tab Console (Avec wrap="none" pour forcer le scroll horizontal)
+        # Tab Console (wrap="none" force le scroll horizontal)
         self.textbox_out = ctk.CTkTextbox(self.right_tabview.tab("Console"), font=ctk.CTkFont(family="Consolas", size=13), wrap="none")
         self.textbox_out.pack(fill="both", expand=True, padx=5, pady=5)
         
-        # Redirection des print() vers la textbox et/ou les fichiers logs
+        # Redirection des print() vers la textbox ou fichiers logs
         self.redirector = PrintRedirector(self.textbox_out)
         sys.stdout = self.redirector
 
@@ -115,7 +111,7 @@ class App(ctk.CTk):
 
         ctk.CTkLabel(top_frame, text="Avion :").grid(row=0, column=1, padx=5, pady=5, sticky="e")
         self.cb_avion = ctk.CTkComboBox(top_frame, values=list(self.chemins_avions.keys()))
-        self.cb_avion.set("") 
+        self.cb_avion.set("")
         self.cb_avion.grid(row=0, column=2, padx=(5, 15), pady=5, sticky="w")
 
         ctk.CTkLabel(top_frame, text="Moteur :").grid(row=0, column=3, padx=15, pady=5, sticky="e")
@@ -275,7 +271,6 @@ class App(ctk.CTk):
         for widget in self.onglet_mission.f_cruise_dyn.winfo_children(): widget.destroy()
         c_type = self.vars["cruiseType"].get()
         
-        # CHANGEMENT ICI: col=1 au lieu de col=0
         self.add_field(self.onglet_mission.f_cruise_dyn, "Altitude Croisière", "hCruise_ft", "38000", "ft", row=0, col=1)
         self.add_field(self.onglet_mission.f_cruise_dyn, "Mach Croisière", "MachCruise", "0.78", "", row=1, col=1)
 
