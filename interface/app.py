@@ -22,8 +22,6 @@ from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
-
-
 # ==========================================
 # Interface Graphique
 # ==========================================
@@ -31,24 +29,26 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        # Apparence et propriétés de la fenêtre
         self.title("Calculateur de Mission")
         self.geometry("1300x600")
         ctk.set_appearance_mode("System")  
         ctk.set_default_color_theme("blue")  
 
         # Intercepter la fermeture de la fenêtre
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.protocol("WM_DELETE_WINDOW", exit)
         
         # Dictionnaires de variables
         self.vars = {}
+
         # Clés à ne pas exporter globalement
-        self.pp_keys = ["SpeedType", "Speed", "altPP_ft", "massPP", "DISA_PP"]
+        self.pp_keys    = ["SpeedType", "Speed", "altPP_ft", "massPP", "DISA_PP"]
         self.batch_keys = ["batch_ranges", "batch_payloads"]
         
         # Objets du code mission
-        self.Avion = None
-        self.Inputs = Inputs()
-        self.Atmosphere = Atmosphere(self.Inputs)
+        self.Avion           = None
+        self.Atmosphere      = None # On a besoin des inputs de l'utilisateur (vent, DISA)
+        self.Inputs          = Inputs()
         self.Enregistrement  = Enregistrement()
         
         # Chemins moteur / avion
@@ -67,6 +67,7 @@ class App(ctk.CTk):
         self.left_frame.grid_rowconfigure(2, weight=1) # La zone des onglets (row 2) s'étend
         self.left_frame.grid_columnconfigure(0, weight=1)
 
+        # Construction des sélections, boutons et onglets
         self.build_top_selection()
         self.build_action_buttons()
         self.build_tabs()
@@ -94,46 +95,58 @@ class App(ctk.CTk):
         self.update_cruise_fields()
         self.on_tab_change() # Définit le bouton principal au lancement
 
-    def on_closing(self):
-        """ Restaurer la console classique avant de quitter pour éviter des erreurs Tkinter. """
-        sys.stdout = sys.__stdout__
-        exit()
-
     # ==========================
     # MÉTHODES DE CONSTRUCTION
     # ==========================
     def build_top_selection(self):
+        '''
+        Construit les deux menus déroulants du haut (avion, moteur) à partir des répertoires.
+        '''
         top_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
         top_frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
         top_frame.grid_columnconfigure((0, 5), weight=1)
 
+        # Place les noms des avions/moteurs dans la classe (cb_avion, cv_moteur)
         self.charger_listes_fichiers()
 
+        # Sélection avion
         ctk.CTkLabel(top_frame, text="Avion :").grid(row=0, column=1, padx=5, pady=5, sticky="e")
         self.cb_avion = ctk.CTkComboBox(top_frame, values=list(self.chemins_avions.keys()))
         self.cb_avion.set("")
         self.cb_avion.grid(row=0, column=2, padx=(5, 15), pady=5, sticky="w")
 
+        # Sélection moteur
         ctk.CTkLabel(top_frame, text="Moteur :").grid(row=0, column=3, padx=15, pady=5, sticky="e")
         self.cb_moteur = ctk.CTkComboBox(top_frame, values=list(self.chemins_moteurs.keys()))
         self.cb_moteur.set("") 
         self.cb_moteur.grid(row=0, column=4, padx=5, pady=5, sticky="w")
 
     def build_action_buttons(self):
+        '''
+        Construit les boutons sous ceux de sélection avion/moteur, qui servent à importer
+        ou exporter les missions/batch, ou faire le calcul Point Performance.
+        '''
         # Cadre centralisé sous l'avion et le moteur, mais au-dessus des onglets
         self.btn_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
         self.btn_frame.grid(row=1, column=0, sticky="ew", pady=(0, 0))
         self.btn_frame.grid_columnconfigure((0, 1), weight=1) # 2 colonnes
 
         # Bouton Calculer Dynamique
-        self.btn_calculer = ctk.CTkButton(self.btn_frame, text="Calculer Mission", command=lambda: calculer_mission(self), fg_color="#2980b9", hover_color="#3498db")
+        self.btn_calculer = ctk.CTkButton(self.btn_frame, text="Calculer Mission",
+                                          command=lambda: calculer_mission(self), 
+                                          fg_color="#2980b9", hover_color="#3498db")
         self.btn_calculer.grid(row=0, column=0, padx=5, pady=0, sticky="ew")
 
         # Bouton Importer Dynamique
-        self.btn_importer = ctk.CTkButton(self.btn_frame, text="Importer Mission", command=lambda: importer_mission(self), fg_color="#27ae60", hover_color="#2ecc71")
+        self.btn_importer = ctk.CTkButton(self.btn_frame, text="Importer Mission",
+                                          command=lambda: importer_mission(self), 
+                                          fg_color="#27ae60", hover_color="#2ecc71")
         self.btn_importer.grid(row=0, column=1, padx=5, pady=0, sticky="ew")
 
     def build_bottom_buttons(self):
+        '''
+        Boutons en bas de l'interface, qui permettent d'importer ou d'exporter un jeu de paramètres.
+        '''
         # On place ce frame à la row=3, sous les onglets (row=2)
         btn_frame_bas = ctk.CTkFrame(self.left_frame, fg_color="transparent")
         btn_frame_bas.grid(row=3, column=0, sticky="ew", pady=(10, 0))
@@ -153,24 +166,31 @@ class App(ctk.CTk):
         ).grid(row=0, column=1, padx=5, sticky="ew")
 
     def build_tabs(self):
+        '''
+        Construction des onglets de l'interface.
+        '''
+        # Appel à une fonction à chaque changement d'onglet
         self.tabview = ctk.CTkTabview(self.left_frame, command=self.on_tab_change)
         self.tabview.grid(row=2, column=0, sticky="nsew")
 
+        # Ajout de chaque onglet, dans l'ordre
         self.tabview.add("Mission")
         self.tabview.add("Autres")
         self.tabview.add("Options")
         self.tabview.add("Point Performance")
         self.tabview.add("Batch")
 
-        # self.build_tab_mission()
+        # Remplissage des onglets (classes définies dans le fichier onglets.py)
         self.onglet_mission = OngletMission(self.tabview.tab("Mission"), app=self)
-        self.onglet_autres = OngletAutres(self.tabview.tab("Autres"), app=self)
+        self.onglet_autres  = OngletAutres(self.tabview.tab("Autres"), app=self)
         self.onglet_options = OngletOptions(self.tabview.tab("Options"), app=self)
         self.onglet_PP      = OngletPP(self.tabview.tab("Point Performance"), app=self)
         self.onglet_batch   = OngletBatch(self.tabview.tab("Batch"), app=self)
 
     def on_tab_change(self):
-        """ Change dynamiquement le comportement des boutons selon l'onglet actif. """
+        '''
+        Change dynamiquement le comportement des boutons selon l'onglet actif.
+        '''
         current_tab = self.tabview.get()
         
         # Gérer le texte et la commande du bouton de calcul
@@ -181,46 +201,57 @@ class App(ctk.CTk):
         else:
             self.btn_calculer.configure(text="Calculer Mission", command=lambda: calculer_mission(self))
             
-        # Gérer l'affichage du bouton d'importation ET le centrage
-        if current_tab == "Point Performance":
-            self.btn_importer.grid_remove() # Masque le bouton
+        # Gérer l'affichage du bouton d'importation et le centrage
+        if current_tab == "Point Performance": # Cas particulier: un seul bouton
+            self.btn_importer.grid_remove() # Masque le bouton d'importation
             self.btn_calculer.grid_configure(columnspan=2) # Étend le bouton restant sur toute la largeur
-            self.btn_calculer.grid_configure(padx=(160,160))
+            self.btn_calculer.grid_configure(padx=(160,160)) # Ajoute du padding pour qu'il reste proportionné
         else:
             self.btn_calculer.grid_configure(columnspan=1) # Restreint le bouton à sa moitié
             self.btn_calculer.grid_configure(padx=(5,5))
             self.btn_importer.grid() # Réaffiche le bouton d'import
             
+            # Changement des noms et fonctions appelées
             if current_tab == "Batch":
-                self.btn_importer.configure(text="Importer Batch", command= lambda: importer_batch(self), fg_color="#8e44ad", hover_color="#9b59b6")
+                self.btn_importer.configure(text="Importer Batch", command=lambda: importer_batch(self), fg_color="#8e44ad", hover_color="#9b59b6")
             else:
-                self.btn_importer.configure(text="Importer Mission", command= lambda: importer_mission(self), fg_color="#27ae60", hover_color="#2ecc71")
+                self.btn_importer.configure(text="Importer Mission", command=lambda: importer_mission(self), fg_color="#27ae60", hover_color="#2ecc71")
 
-    # ==========================
-    # LOGIQUE GRAPHIQUE (GRAPHIQUES & CHAMPS)
-    # ==========================
+# ==========================
+# LOGIQUE GRAPHIQUE (GRAPHIQUES & CHAMPS)
+# ==========================
     def build_tab_graphiques(self):
+        '''
+        Construction de l'onglet "Graphiques" dans la partie outputs.
+        '''
+        # Position et apparence
         tab = self.right_tabview.tab("Graphiques")
         f_controls = ctk.CTkFrame(tab, fg_color="transparent")
         f_controls.pack(fill="x", pady=5)
         
-        keys = list(self.Enregistrement.data.keys())
+        # Liste des données traçables (arrays dans Enregistrement.data)
+        keys = list(self.Enregistrement.data.keys()) # + list(self.Enregistrement.data_cruise.keys())
         
+        # Choix de l'axe X
         ctk.CTkLabel(f_controls, text="Axe X :").pack(side="left", padx=10)
         self.cb_x = ctk.CTkComboBox(f_controls, values=keys, width=120)
         self.cb_x.set("l") 
         self.cb_x.pack(side="left", padx=5)
 
+        # Choix de l'axe Y
         ctk.CTkLabel(f_controls, text="Axe Y :").pack(side="left", padx=10)
         self.cb_y = ctk.CTkComboBox(f_controls, values=keys, width=120)
         self.cb_y.set("h") 
         self.cb_y.pack(side="left", padx=5)
 
+        # Bouton tracer
         ctk.CTkButton(f_controls, text="Tracer", command=self.tracer_graphique, width=100).pack(side="left", padx=20)
 
+        # Paramètres de la figure matplotlib
         self.fig, self.ax = plt.subplots(figsize=(6, 4), dpi=100)
         self.fig.patch.set_facecolor('#f0f0f0') 
         
+        # Gestion des outils matplotlib (loupe, déplacement...)
         self.canvas = FigureCanvasTkAgg(self.fig, master=tab)
         self.canvas.get_tk_widget().pack(fill="both", expand=True, pady=(10, 0))
         
@@ -229,6 +260,10 @@ class App(ctk.CTk):
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
     def tracer_graphique(self):
+        '''
+        Effectue les tracés des valeurs sélectionnées, avec des unités aéronautiques.
+        '''
+        # Check si l'Enregistrement contient des données
         if self.Enregistrement.counter == 0:
             messagebox.showinfo("Info", "Aucune donnée à tracer. Lancez d'abord un calcul de mission ou importez une mission existante.")
             return
@@ -236,9 +271,11 @@ class App(ctk.CTk):
         key_x = self.cb_x.get()
         key_y = self.cb_y.get()
 
+        # Données en unités SI
         data_x_brut = self.Enregistrement.data[key_x][:self.Enregistrement.counter]
         data_y_brut = self.Enregistrement.data[key_y][:self.Enregistrement.counter]
 
+        # Helper function pour la conversion des unités
         def conv_aero(key, arr):
             if key == "h": return arr / Constantes.conv_ft_m, "ft"
             if key == "l": return arr / Constantes.conv_NM_m, "nm"
@@ -248,17 +285,20 @@ class App(ctk.CTk):
             if key == "P": return arr / 100, "hPa"
             if key == "T": return arr - 273.15, "°C"
             if key == "F_N": return arr / 1000, "kN"
+            # Grandeurs qui restent en unités SI
             unites = {"m": "kg", "FB": "kg", "rho": "kg/m³", "FF": "kg/s", "Mach": "Mach"}
-            return arr, unites.get(key, "")
+            return arr, unites.get(key, "-")
 
+        # Extraction des unités et valeurs
         data_x, unit_x = conv_aero(key_x, data_x_brut)
         data_y, unit_y = conv_aero(key_y, data_y_brut)
 
+        # Affichage du graphique, des labels et des unités
         self.ax.clear()
         self.ax.plot(data_x, data_y, color='#2980b9', linewidth=2)
-        self.ax.set_xlabel(f"{key_x} [{unit_x}]" if unit_x else key_x, fontweight='bold')
-        self.ax.set_ylabel(f"{key_y} [{unit_y}]" if unit_y else key_y, fontweight='bold')
-        self.ax.set_title(f"Évolution de {key_y} en fonction de {key_x}")
+        self.ax.set_xlabel(f"{key_x} [{unit_x}]", fontweight='bold')
+        self.ax.set_ylabel(f"{key_y} [{unit_y}]", fontweight='bold')
+        self.ax.set_title(f"{key_y} = f({key_x})")
         self.ax.grid(True, linestyle='--', alpha=0.7)
         self.fig.tight_layout()
         self.canvas.draw()

@@ -1,5 +1,6 @@
 import customtkinter as ctk # pip install customtkinter
 from missions.PointPerformance import PointPerformance
+from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
 from missions.Mission import Mission
 from avions.Avion import Avion
@@ -148,6 +149,9 @@ def calculer_mission(app):
         app.redirector.stop_logging()
         return
 
+    # Une fois qu'on a importé les inputs, on crée l'interface
+    app.Atmosphere = Atmosphere(app.Inputs)
+
     print("\nLancement calcul de mission...\n")
     load_avion(app)
     if not(app.Avion):
@@ -180,14 +184,17 @@ def calculer_pp(app):
     # Set des valeurs renseignées dans la classe Inputs 
     try:
         app.Inputs.SpeedType = app.vars["SpeedType"].get()
-        app.Inputs.Speed = float(app.vars["Speed"].get())
-        app.Inputs.altPP_ft = float(app.vars["altPP_ft"].get())
-        app.Inputs.massPP = float(app.vars["massPP"].get())
-        app.Inputs.DISA_PP = float(app.vars["DISA_PP"].get())
+        app.Inputs.Speed     = float(app.vars["Speed"].get())
+        app.Inputs.altPP_ft  = float(app.vars["altPP_ft"].get())
+        app.Inputs.massPP    = float(app.vars["massPP"].get())
+        app.Inputs.DISA_PP   = float(app.vars["DISA_PP"].get())
     except ValueError:
         messagebox.showerror("Erreur", "Valeurs numériques invalides pour le Point Performance.")
         return
     
+    # Une fois qu'on a importé les inputs, on crée l'interface
+    app.Atmosphere = Atmosphere(app.Inputs)
+
     # Remise à zéro de la console
     app.textbox_out.delete("1.0", "end")
     load_avion(app)
@@ -211,7 +218,7 @@ def calculer_batch(app):
     # Parsing des inputs
     try:
         payloads = [float(p) for p in app.vars["batch_payloads"].get().split()]
-        ranges = [float(r) for r in app.vars["batch_ranges"].get().split()]
+        ranges   = [float(r) for r in app.vars["batch_ranges"].get().split()]
     except ValueError:
         messagebox.showerror("Erreur", "Format invalide pour Payloads/Ranges. Utilisez des espaces.")
         return
@@ -228,9 +235,9 @@ def calculer_batch(app):
     print(f"Dossier racine : {root_dir}\n")
 
     # En-tête sur plusieurs lignes (inspiré de Piano-X). Ex:
-    # Fuel
-    # Load
-    # (kg)
+    # Payload
+    #    Load
+    #    (kg)
     colonnes = [
         ("Fuel",     "Load",  "(kg)"),  ("Payload", "Mass", "(kg)"), # Paramètres globaux
         ("Mission",  "Range", "(NM)"),  ("Mission", "Time", "(min)"), ("Mission",  "Fuel", "(kg)"), 
@@ -275,6 +282,9 @@ def calculer_batch(app):
                 chemin_csv = sub_dir / "param.csv"
                 sauver_parametres(app, chemin_csv)
                 app.Inputs.loadCSVFile(str(chemin_csv))
+
+                # Une fois qu'on a importé les inputs, on crée l'interface
+                app.Atmosphere = Atmosphere(app.Inputs)
                 
                 load_avion(app)
                 if not(app.Avion):
@@ -313,7 +323,8 @@ def calculer_batch(app):
             except Exception as e:
                 print(f"Erreur fatale sur cette itération: {e}")
                 summary_lines.append(f"Erreur pour Payload={p}, Range={r}: {e}")
-                
+            
+            # Fin de l'interception des outputs
             app.redirector.stop_logging()
             
         summary_lines.append("") # Saut de ligne par payload
@@ -322,8 +333,6 @@ def calculer_batch(app):
     # Restauration GUI et sauvegarde Batch
     app.vars["m_payload"].set(orig_payload)
     app.vars["l_mission_NM"].set(orig_range)
-
-    summary_text = "\n".join(summary_lines)
     
     # Écriture Summary.txt
     summary_text = "\n".join(summary_lines)
@@ -358,8 +367,9 @@ def importer_mission(app):
     init = Path.cwd() / "results"
     dossier = filedialog.askdirectory(title="Sélectionner le dossier de résultat de la mission",
                                       initialdir = init)
+    
     if not dossier: return
-    dossier = Path(dossier)
+    dossier = Path(dossier) # Permet d'utiliser la syntaxe /
     
     # Lire Output et afficher dans la console
     if (dossier / "output.txt").exists():

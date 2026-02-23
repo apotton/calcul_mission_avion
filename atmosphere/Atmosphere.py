@@ -22,7 +22,7 @@ class Atmosphere:
         self.rho_t = 1.225  # Densité standard au niveau de la mer (kg/m^3)
         self.P_t = 101325.0 # Pression standard au niveau de la mer (Pa)
         self.T_t = 288.15   # Température standard au niveau de la mer (K)
-        self.Vwind_t = Inputs.Vw*Constantes.conv_kt_mps  # Vitesse du vent à l'altitude t (m/s)
+        self.Vwind_t = Inputs.Vw*Constantes.conv_kt_mps  # Vitesse du vent à l'altitude t (m/s) (utile ???)
         self.Inputs = Inputs
 
     def CalculateRhoPT(self, h_m, DISA_dC = 0.) :
@@ -74,7 +74,6 @@ class Atmosphere:
         '''
         Définit la masse volumique de l'air.
         
-        :param self: Instance de la classe Atmosphère
         :param Rho: masse volumique (kg/m^3)
         '''
         self.rho_t = Rho  
@@ -83,7 +82,6 @@ class Atmosphere:
         '''
         Définit la pression de l'air.
         
-        :param self: Instance de la classe Atmosphère
         :param P: Pression statique (Pa)
         '''
         self.P_t = P   
@@ -92,7 +90,6 @@ class Atmosphere:
         '''
         Définit la température de l'air.
         
-        :param self: Instance de la classe Atmosphère
         :param T: Température de l'air (K)
         '''
         self.T_t = T 
@@ -100,31 +97,23 @@ class Atmosphere:
     def getRho_t(self):
         '''
         Renvoie la masse volumique de l'air précédemment calculée (kg/m^3)
-        
-        :param self: Instance de la classe Atmosphère
         '''
         return self.rho_t
     
     def getP_t(self):
         '''
         Renvoie la pression statique de l'air précédemment calculée (Pa)
-        
-        :param self: Instance de la classe Atmosphère
         '''
         return self.P_t
     
     def getT_t(self):
         '''
         Renvoie la température de l'air précédemment calculée (K)
-        
-        :param self: Instance de la classe Atmosphère
         '''
         return self.T_t
 
     def getVwind(self):
         '''
         Renvoie la vitesse du vent (m/s)
-        
-        :param self: Instance de la classe Atmosphère
         '''
         return self.Vwind_t
