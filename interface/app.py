@@ -92,7 +92,6 @@ class App(ctk.CTk):
         self.build_tab_graphiques()
 
         # Initialisation dynamique
-        self.update_cruise_fields()
         self.on_tab_change() # Définit le bouton principal au lancement
 
     # ==========================
@@ -303,56 +302,37 @@ class App(ctk.CTk):
         self.fig.tight_layout()
         self.canvas.draw()
 
-    def update_pp_speed_label(self, choice):
-        if choice == "Mach": self.onglet_PP.lbl_unit_speed_pp.configure(text="Mach")
-        else: self.onglet_PP.lbl_unit_speed_pp.configure(text="kt")
-
-    def update_cruise_fields(self, choice=None):
-        for widget in self.onglet_mission.f_cruise_dyn.winfo_children(): widget.destroy()
-        c_type = self.vars["cruiseType"].get()
-        
-        self.add_field(self.onglet_mission.f_cruise_dyn, "Altitude Croisière", "hCruise_ft", "38000", "ft", row=0, col=1)
-        self.add_field(self.onglet_mission.f_cruise_dyn, "Mach Croisière", "MachCruise", "0.78", "", row=1, col=1)
-
-        if c_type == "Mach_SAR":
-            self.add_field(self.onglet_mission.f_cruise_dyn, "Step Climb", "stepClimb_ft", "2000.0", "ft", row=2, col=1)
-            self.add_field(self.onglet_mission.f_cruise_dyn, "RRoC min", "RRoC_min_ft", "300.0", "ft/min", row=3, col=1)
-            self.add_field(self.onglet_mission.f_cruise_dyn, "Init Montée", "cruiseClimbInit", "20", "% dist", row=4, col=1)
-            self.add_field(self.onglet_mission.f_cruise_dyn, "Stop Montée", "cruiseClimbStop", "80", "% dist", row=5, col=1)
-        elif c_type == "Alt_SAR":
-            self.add_field(self.onglet_mission.f_cruise_dyn, "Dégradation SAR", "kSARcruise", "1", "%", row=2, col=1)
-
-    def add_field(self, parent, label, var_name, default_value, unit="", row=0, col=0, width=120):
-        # Pousse les éléments au centre
-        parent.grid_columnconfigure(0, weight=1)
-        parent.grid_columnconfigure(4, weight=1)
-
-        ctk.CTkLabel(parent, text=label).grid(row=row, column=col, padx=(10, 5), pady=5, sticky="e")
-        if var_name not in self.vars or not isinstance(self.vars[var_name], (ctk.StringVar, ctk.BooleanVar)):
-            self.vars[var_name] = ctk.StringVar(value=default_value)
-        ctk.CTkEntry(parent, textvariable=self.vars[var_name], width=width).grid(row=row, column=col+1, padx=5, pady=5, sticky="ew")
-        if unit: ctk.CTkLabel(parent, text=unit, width=30, anchor="w").grid(row=row, column=col+2, padx=(5, 10), pady=5, sticky="w")
-
     def charger_listes_fichiers(self):
+        '''
+        Importe dans la classe le nom des avions et des moteurs.
+        '''
         dossier_data = Path(__file__).parent.parent / "data"
-        self.chemins_avions = {}
-        if (dossier_data / "avions").exists():
-            for f in (dossier_data / "avions").glob("*.csv"):
-                if f.name == "Avion_vide.csv": continue
-                try:
-                    with open(f, 'r', encoding='utf-8') as file:
-                        premiere_ligne = file.readline().strip()
-                        if premiere_ligne.startswith("Name;"):
-                            self.chemins_avions[premiere_ligne.split(";")[1]] = str(f)
-                except Exception: pass
 
+        # Check de l'existence du dossier avion
+        if not (dossier_data / "avions").exists():
+            messagebox.showerror("Problème", "Dossier ./data/avions introuvable. Veuillez créer le répertoire à partir du dossier racine.")
+            exit()
+
+        self.chemins_avions = {}
+        for f in (dossier_data / "avions").glob("*.csv"):
+            # Skip de l'avion vide
+            if f.name == "Avion_vide.csv": continue
+            try:
+                # Ouverture du fichier pour extraire le nom de l'avion
+                with open(f, 'r', encoding='utf-8') as file:
+                    premiere_ligne = file.readline().strip()
+                    if premiere_ligne.startswith("Name;"):
+                        self.chemins_avions[premiere_ligne.split(";")[1]] = str(f)
+            except Exception: pass
+
+        # Check de l'existence du dossier moteurs
+        if not (dossier_data / "moteurs").exists():
+            messagebox.showerror("Problème", "Dossier ./data/moteurs introuvable. Veuillez créer le répertoire à partir du dossier racine.")
+            exit()
+        
+        # Chargement du nom de fichier uniquement (sans extension)
         self.chemins_moteurs = {}
         if (dossier_data / "moteurs").exists():
             for f in (dossier_data / "moteurs").glob("*.py"):
                 if f.name == "Moteur_vide.py": continue
                 self.chemins_moteurs[f.stem] = str(f)
-
-
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()

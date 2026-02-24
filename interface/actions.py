@@ -37,9 +37,9 @@ def check_avion(app):
 
 def load_avion(app):
     '''
-    Charge l'avion en attribut de la classe (une fois avoir vérifié son existence).
+    Charge l'avion en attribut de la classe (une fois avoir vérifié son existence et instancié la classe Inputs).
     '''
-    app.Avion = Avion(app.Inputs, app.chemins_avions[app.cb_avion.get()], app.chemins_moteurs[app.cb_moteur.get()])
+    app.Avion = Avion(app.Inputs)
     print(f">> Avion initialisé en mémoire.\n   - Modèle: {app.cb_avion.get()}\n   - Moteur: {app.cb_moteur.get()}\n")
 
 def sauver_parametres(app, chemin_csv):

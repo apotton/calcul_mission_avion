@@ -9,7 +9,6 @@ import os
 
 class Avion:
     Name                    = ""     # Nom du modèle d'avion
-    Manufacturer            = ""     # Nom du constructeur
     MaxTakeoffWeight        = 0.     # MTOW (kg)
     EmptyWeight             = 0.     # Masse à vide (kg)
     MaxFuelWeight           = 0.     # Masse carburant maximale (kg)
@@ -53,13 +52,15 @@ class Avion:
 
     cruise                  = False  # Etat de l'avion (en croisière ou non)
 
-    def __init__(self, Inputs: Inputs, plane_path, engine_path):
+    def __init__(self, Inputs: Inputs):
         '''
         Initialise un objet Avion en lisant les paramètres depuis un fichier CSV.
 
         :param m_payload: Masse de la payload (kg)
         '''
-
+        plane_path = Inputs.getAirplaneFile()
+        engine_path = Inputs.getEngineFile()
+        
         # Si fichier non trouvé
         if not os.path.isfile(plane_path):
             raise FileNotFoundError(f"Le fichier {plane_path} n'a pas été trouvé. Veuillez vérifier le chemin et le nom du fichier CSV de l'avion.")
@@ -201,9 +202,6 @@ class Avion:
     
     def getName(self):
         return self.Name
-    
-    def getManufacturer(self):
-        return self.Manufacturer
     
     def getMaxTakeoffWeight(self):
         return self.MaxTakeoffWeight

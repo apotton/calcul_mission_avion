@@ -10,7 +10,7 @@ import numpy as np
 import timeit
 
 inputs = Inputs()
-A320 = Avion(inputs, inputs.getAirplaneFile(), inputs.getEngineFile())
+A320 = Avion(inputs)
 test_atmos  = Atmosphere(inputs)
 Saving = Enregistrement()
 
