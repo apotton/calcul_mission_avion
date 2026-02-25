@@ -215,23 +215,48 @@ class OngletPP(ctk.CTkFrame):
         
         # Choix du type de vitesse
         app.vars["SpeedType"] = ctk.StringVar(value="Mach") # Valeur par défaut
-        self.lbl_unit_speed_pp = ctk.CTkLabel(f_pp, text="Mach", width=30, anchor="w")
-        addField(app, f_pp, "Vitesse", "Speed", "0.78", "", row=1, col=1) # Unité gérée manuellement
+        self.lbl_unit_speed_pp = ctk.CTkLabel(f_pp, text="-", width=30, anchor="w")
+        # addField(app, f_pp, "Vitesse", "Speed", "0.78", "", row=1, col=1) # Unité gérée manuellement
+
+        # addField(app, parent, label, var_name, default_value, unit="", row=0, col=0, width=120)
+        # Pousse les éléments au centre
+        # parent.grid_columnconfigure(0, weight=1)
+        # parent.grid_columnconfigure(4, weight=1)
+
+        # Affichage du nom de la variable
+        # ctk.CTkLabel(f_pp, text="Vitesse").grid(row=1, column=1, padx=(10, 5), pady=5, sticky="e")
+
+        # Ajout dans le dictionnaire des variables
+        if "Speed" not in app.vars or not isinstance(app.vars["Speed"], (ctk.StringVar, ctk.BooleanVar)):
+            app.vars["Speed"] = ctk.StringVar(value="0.78")
+
+        # Ajout du champ de remplissage
+        self.champ_vitesse_pp = ctk.CTkEntry(f_pp, textvariable=app.vars["Speed"], width=120)
+        self.champ_vitesse_pp.grid(row=1, column=1+1, padx=5, pady=5, sticky="ew")
+
+        # Ajout de l'unité
+        # if "": ctk.CTkLabel(f_pp, text="", width=30, anchor="w").grid(row=1, column=1+2, padx=(5, 10), pady=5, sticky="w")
+
+
         # Remplacement de "Vitesse" par le choix du type de vitesse
         ctk.CTkComboBox(f_pp, variable=app.vars["SpeedType"], values=["Mach", "TAS", "CAS"],
                         command=self.update_pp_speed_label, width=120).grid(row=1, column=1, padx=5, pady=5)
         self.lbl_unit_speed_pp.grid(row=1, column=3, padx=(5, 10), pady=5, sticky="w")
-        # ctk.CTkEntry(f_pp, textvariable=ctk.StringVar(value="Speed"), width=120).grid(row=1, column=2, padx=5, pady=5, sticky="ew")
-
+        
         # Autres champs
         addField(app, f_pp, "Altitude", "altPP_ft", "38000", "ft", row=2, col=1)
         addField(app, f_pp, "Masse", "massPP", "60000", "kg", row=3, col=1)
         addField(app, f_pp, "ΔISA", "DISA_PP", "0", "°C", row=4, col=1)
 
     def update_pp_speed_label(self, choice):
-        ''' Change l'unité de la vitesse sélectionnée. '''
-        if choice == "Mach": self.lbl_unit_speed_pp.configure(text="-")
-        else: self.lbl_unit_speed_pp.configure(text="kt")
+        ''' Change l'unité de la vitesse sélectionnée, ainsi que la valeur par défaut. '''
+        if choice == "Mach":
+            self.lbl_unit_speed_pp.configure(text="-")
+            self.app.vars["Speed"] = ctk.StringVar(value="0.78")
+        else:
+            self.lbl_unit_speed_pp.configure(text="kt")
+            self.app.vars["Speed"] = ctk.StringVar(value="250")
+        self.champ_vitesse_pp.configure(textvariable=self.app.vars["Speed"])
 
 class OngletBatch(ctk.CTkFrame):
     def __init__(self, master, app):
