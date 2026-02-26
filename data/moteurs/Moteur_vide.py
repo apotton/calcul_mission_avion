@@ -16,7 +16,7 @@ def load():
     # Vecteurs d'entrée pour les interpolations principales
     mach_table = 0
     
-
+    # Altitudes en pieds
     alt_table_ft = 0
 
 
@@ -24,19 +24,22 @@ def load():
     # TABLES GÉNÉRALES (MCL & FI)
     # ==============================================================================
     # Définition du tableau Fn_MCL_table sous forme de numpy array
+    # Poussée maximale en livre-force
     Fn_MCL_table = 0
 
 
-
+    # Poussée idle en livre-force
     Fn_FI_table = 0
 
 
 
     # Définition du tableau SFC_MCL_table sous forme de numpy array
+    # SFC en lb/(lbf*h)
     SFC_MCL_table = 0
 
 
     # Définition du tableau FF_FI_table sous forme de numpy array
+    # Fuel flow en livres par heure (lb/h)
     FF_FI_table = 0
 
 
@@ -48,7 +51,7 @@ def load():
     mach_table_crl = 0
 
     # Dictionnaire structuré par altitude.
-    # Format: { Altitude_ft : { 'fn': array_1D, 'sfc': array_2D } }
+    # Format: { Altitude_ft : { 'fn': lbf,array_1D, 'sfc': lb/(lbf*h),array_2D } }
     cruise_data = {
         25000: {
             "fn": 0,
@@ -114,8 +117,10 @@ def load():
 
     mach_table_crl_holding = 0
 
+    # Poussée en livre force
     fn_lbf_crl_holding = 0
 
+    # SFC en lb/(lbf*h)
     sfc_crl_holding = 0
 
     return DonneesMoteur(mach_table,

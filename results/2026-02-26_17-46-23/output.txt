@@ -1,0 +1,28 @@
+
+Lancement calcul de mission...
+
+>> Avion initialisé en mémoire.
+   - Modèle: Airbus A320
+   - Moteur: cfm56
+
+Boucle n°1 - Précision 66.436%
+Boucle n°2 - Précision 12.273%
+Boucle n°3 - Précision 0.936%
+
+Temps de calcul complet: 0.1039 secondes
+
+Phase         Distance (NM)    Temps (min)    Fuel Burn (kg)
+------------------------------------------------------------
+Montée                185.4           25.8            1816.8
+Croisière             715.8           96.0            3607.2
+Descente              100.5           16.0             143.6
+------------------------------------------------------------
+Mission              1001.7          137.8            5567.6
+------------------------------------------------------------
+Diversion             200.7           21.3            1415.4
+Holding               102.1           30.8             959.6
+Contingence               -              -             278.4
+------------------------------------------------------------
+TOTAL                1304.5          190.0            8221.0
+
+>> Résultats sauvegardés dans results\2026-02-26_17-46-23\resultats_vol.csv

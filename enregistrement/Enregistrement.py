@@ -44,14 +44,16 @@ class Enregistrement:
             # Atmosphere
             "P" : np.zeros(self.default_size, dtype=np.float32),
             "T" : np.zeros(self.default_size, dtype=np.float32),
-            "rho" : np.zeros(self.default_size, dtype=np.float32)
-        }
+            "rho" : np.zeros(self.default_size, dtype=np.float32),
 
-        self.data_cruise = {
-            "t" : np.zeros(self.default_size, dtype = np.float32),
+            "t_cruise" : np.zeros(self.default_size, dtype = np.float32),
+            "l_cruise" : np.zeros(self.default_size, dtype = np.float32),
             "SGR" : np.zeros(self.default_size, dtype = np.float32),
             "ECCF": np.zeros(self.default_size, dtype = np.float32)
         }
+
+        # self.data_cruise = {
+        # }
 
         # Données de convergence simu
         self.data_simu = {
@@ -126,11 +128,12 @@ class Enregistrement:
         self.counter += 1
 
         if Avion.cruise:
-            self.data_cruise["t"][self.cruise_counter] = self.data_cruise["t"][self.cruise_counter - 1] + dt if self.cruise_counter > 1 else 0
-            self.data_cruise["SGR"][self.cruise_counter] = Avion.Aero.getSGR()
-            self.data_cruise["ECCF"][self.cruise_counter] = Avion.Aero.getECCF()
+            self.data["t_cruise"][self.cruise_counter] = self.data["t_cruise"][self.cruise_counter - 1] + dt if self.cruise_counter > 1 else 0
+            self.data["l_cruise"][self.cruise_counter] = Avion.getl()
+            self.data["SGR"][self.cruise_counter] = Avion.Aero.getSGR()
+            self.data["ECCF"][self.cruise_counter] = Avion.Aero.getECCF()
+            self.cruise_counter += 1
 
-        self.cruise_counter += 1
         
         if self.counter >= len(self.data["t"]):
             self.extend()
@@ -278,21 +281,25 @@ class Enregistrement:
                 np.zeros(self.default_size, dtype=np.float32)
             ])
 
-        for key in self.data_cruise:
-            self.data_cruise[key] = np.concatenate([
-                self.data_cruise[key],
-                np.zeros(self.default_size, dtype=np.float32)
-            ])
+        # for key in self.data_cruise:
+        #     self.data_cruise[key] = np.concatenate([
+        #         self.data_cruise[key],
+        #         np.zeros(self.default_size, dtype=np.float32)
+        #     ])
 
     def cut(self):
         '''
         Enlève toutes les valeurs non atteintes après le counter.
         '''
+        cles_cruise = ["t_cruise", "l_cruise", "SGR", "ECCF"]
+
         for key in self.data:
             self.data[key] = self.data[key][:self.counter]
+            if key in cles_cruise:
+                self.data[key] = self.data[key][:self.cruise_counter]
 
-        for key in self.data_cruise:
-            self.data_cruise[key] = self.data_cruise[key][:self.cruise_counter]
+        # for key in self.data_cruise:
+        #     self.data_cruise[key] = self.data_cruise[key][:self.cruise_counter]
 
 
 
@@ -305,8 +312,8 @@ class Enregistrement:
             self.data[key] = np.zeros(self.default_size, dtype=np.float32)
 
         self.cruise_counter = 0
-        for key in self.data_cruise:
-            self.data_cruise[key] = np.zeros(self.default_size, dtype=np.float32)
+        # for key in self.data_cruise:
+        #     self.data_cruise[key] = np.zeros(self.default_size, dtype=np.float32)
 
     def export_csv(self, filepath):
         '''
@@ -334,9 +341,9 @@ class Enregistrement:
                 writer.writerow(ligne)
                 
             # Export des données de croisière (optionnel, on peut préfixer pour les différencier)
-            for key, array in self.data_cruise.items():
-                donnees_utiles = array[:self.cruise_counter]
-                ligne = [f"cruise_{key}"] + donnees_utiles.tolist()
-                writer.writerow(ligne)
+            # for key, array in self.data_cruise.items():
+            #     donnees_utiles = array[:self.cruise_counter]
+            #     ligne = [f"cruise_{key}"] + donnees_utiles.tolist()
+            #     writer.writerow(ligne)
 
             

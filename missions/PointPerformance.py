@@ -32,6 +32,15 @@ class PointPerformance():
 
     @staticmethod
     def Performance(Avion: Avion, Atmosphere:Atmosphere, Inputs: Inputs):
+        '''
+        Réalise une simulation dite de "Point Performance", c'est-à-dire qu'on obtient
+        les grandeurs importantes de l'avion à un point de vol donné en entrée.
+
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Inputs: Instance de la classe Inputs
+        :return string: Chaîne de caractère formatée contenant tous les résultats
+        '''
         # Setup avec les inputs
         PointPerformance.setupAvion(Avion, Atmosphere, Inputs)
         

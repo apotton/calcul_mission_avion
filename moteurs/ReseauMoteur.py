@@ -298,7 +298,8 @@ class ReseauMoteur(Moteur):
             interp_func = self.interpolateurs[h_ref]
             
             # On interpole pour tous les couples (Mach, Fn) d'un coup
-            query_points = np.vstack((self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * self.Inputs.cFN_cruise, self.Avion.Aero.getMach())).T
+            query_points = np.vstack((self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * self.Inputs.cFN_cruise,
+                                      self.Avion.Aero.getMach())).T
 
             sfc_lbf = interp_func(query_points)
             sfc_results.append(sfc_lbf)
