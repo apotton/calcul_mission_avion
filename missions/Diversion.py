@@ -20,7 +20,7 @@ class Diversion:
         '''
         # Entrée en diversion
         m_init = Avion.Masse.getCurrentMass()
-        t_init = Avion.t
+        t_init = Avion.get_t()
         l_init = Avion.getl()
 
         # Enregistrement de la distance actuelle pour mesurer la longueur de la diversion
@@ -36,9 +36,9 @@ class Diversion:
         Descente.descendreDiversion(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtDescent)
 
         # Fin de la diversion
-        Avion.t_diversion = Avion.t - t_init
-        Avion.l_diversion = Avion.getl() - l_init
-        Avion.Masse.m_fuel_diversion = m_init - Avion.Masse.getCurrentMass()
+        Avion.set_l_diversion(Avion.getl() - l_init)
+        Avion.set_t_diversion(Avion.get_t() - t_init)
+        Avion.Masse.setFuelDiversion(m_init - Avion.Masse.getCurrentMass())
 
 
     @staticmethod

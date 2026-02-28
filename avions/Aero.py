@@ -22,7 +22,8 @@ class Aero:
         self.TAS_t = 0.
 
         # Paramètres de croisière
-        self.SGR_t = 0.
+        self.SGR_t  = 0.
+        self.SAR_t  = 0.
         self.ECCF_t = 0.
 
     #Calcul du Cz
@@ -228,7 +229,7 @@ class Aero:
         # CAS
         self.CAS_t = np.sqrt(
             2 * gamma * r_gp * T0 / (gamma - 1)
-            * ((1 + Delta_p / p0) ** (0.4 / gamma) - 1)
+            * ((1 + Delta_p / p0) ** ((gamma - 1) / gamma) - 1)
         )
     
 
@@ -244,8 +245,9 @@ class Aero:
         T0 = Constantes.T0_K
         p0 = Constantes.p0_Pa
 
+        Mach_carre = self.CAS_t**2 / (gamma * r_gp * T0)
         delta_p = p0 * (
-            (1 + (gamma - 1) / 2 * self.CAS_t**2 / (gamma * r_gp * T0))**(gamma / (gamma - 1)) - 1
+            (1 + (gamma - 1) / 2 * Mach_carre) ** (gamma / (gamma - 1)) - 1
         )
 
         self.Mach_t = np.sqrt(
@@ -309,37 +311,26 @@ class Aero:
         '''
         self.Cz_t = Cz
 
-    def calculateECCF(self, atmosphere: Atmosphere):
+    def calculateECCF(self):
         '''
         Calcule l'Economic Cruise Climb Fuel (ECCF) à l'instant t en fonction des
         conditions atmosphériques et des caractéristiques de l'avion.
-        
-        :param atmosphere: Instance de la classe Atmosphere
         '''
+        self.ECCF_t = (self.Avion.Moteur.getFF() + self.Avion.CI) / (self.TAS_t + self.Avion.Vw)
         
-        TAS_t = self.getTAS()
-        Vw = self.Avion.Vw
-        finesse = self.getCz()/self.getCx()
-        CI_t = 1.0  # Constante d'Injection (à définir précisément selon le contexte)
-        m = self.Avion.Masse.getCurrentMass()
-        SFC_t = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
-        self.ECCF_t = (CI_t / 60.0 / (TAS_t + Vw) 
-                     + (SFC_t * m * Constantes.g) 
-                     / ((TAS_t + Vw) * finesse) )
-        
-    def calculateSGR(self, atmosphere: Atmosphere):
+    def calculateSAR(self):
         '''
-        Calcule le Specific Ground Range (SGR) à l'instant t en fonction des conditions
-        atmosphériques et des caractéristiques de l'avion.
+        Calcul du SAR (Specific Air Range): distance parcourue dans une masse d'air par unité de
+        carburant consommée (m/kg, exprimée usuellement en NM/kg).
+        '''
+        self.SAR_t = self.TAS_t / self.Avion.Moteur.getFF()
 
-        :param atmosphere: Instance de la classe Atmosphere
+    def calculateSGR(self):
         '''
-
-        Vw = self.Avion.Vw
-        finesse = self.getCz()/self.getCx()
-        m = self.Avion.Masse.getCurrentMass()
-        SFC_actuelle = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
-        self.SGR_t = (self.TAS_t + Vw) * finesse / (SFC_actuelle * m * Constantes.g)
+        Calcule du SGR (Specific Ground Range): distance parcourue par rapport au sol par unité
+        de carburant consommée (m/kg, exprimée usuellement en NM/kg).
+        '''
+        self.SGR_t = (self.TAS_t + self.Avion.Vw) / self.Avion.Moteur.getFF()
 
     #Getters 
     def getCx(self):
@@ -372,14 +363,36 @@ class Aero:
         '''
         return self.SGR_t
     
+    def getSAR(self):
+        '''
+        Renvoie le Specific Air Range de l'avion.
+        '''
+        return self.SAR_t
+    
     def setSGR(self, SGR):
         '''
         Définit le Specific Ground Range de l'avion.
         
-        :param SGR: SGR à définir
+        :param SGR: SGR à définir (m/kg)
         '''
-        self.SGR = SGR
+        self.SGR_t = SGR
     
+    def setSAR(self, SAR):
+        '''
+        Définit le Specific Air Range de l'avion.
+        
+        :param SAR: SAR à définir (m/kg)
+        '''
+        self.SAR_t = SAR
+
+    def setECCF(self, ECCF):
+        '''
+        Définit le Economic Cost Criteria Function de l'avion.
+
+        :param ECCF: ECCF à définir (kg/m)
+        '''
+        self.ECCF_t = ECCF
+
     def getMach(self):
         '''
         Renvoie le Mach actuel de l'avion.
@@ -397,3 +410,4 @@ class Aero:
         Renvoie la vitesse TAS actuelle de l'avion (m/s).
         '''
         return self.TAS_t
+    

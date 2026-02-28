@@ -16,10 +16,10 @@ class Montee:
         :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
-        Avion.Masse.m_fuel_mission = 0
-        l_init = Avion.getl()
+        Avion.Masse.setFuelMission(0.)
         m_init = Avion.Masse.getCurrentMass()
-        t_init = Avion.t
+        t_init = Avion.get_t()
+        l_init = Avion.getl()
 
         # Initialisations
         Avion.set_h(Inputs.hInit_ft*Constantes.conv_ft_m)
@@ -35,14 +35,10 @@ class Montee:
         Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.Mach_climb, Inputs.dtClimb)
         Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
-        l_end = Avion.getl()
-        m_end = Avion.Masse.getCurrentMass()
-        t_end = Avion.t
-
-        Avion.l_climb = l_end - l_init
-        Avion.t_climb = t_end - t_init
-        Avion.Masse.m_fuel_climb = m_init - m_end
-        Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_climb
+        Avion.set_l_climb(Avion.getl() - l_init)
+        Avion.set_t_climb(Avion.get_t() - t_init)
+        Avion.Masse.setFuelClimb(m_init - Avion.Masse.getCurrentMass())
+        Avion.Masse.addFuelMission(m_init - Avion.Masse.getCurrentMass())
 
     @staticmethod
     def monterDiversion(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):

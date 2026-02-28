@@ -16,9 +16,9 @@ class Descente:
         :param Enregistrement: Instance de la classe Enregistrement
         :param dt: pas de temps (s)
         '''
-        l_init = Avion.getl()
         m_init = Avion.Masse.getCurrentMass()
-        t_init = Avion.t
+        t_init = Avion.get_t()
+        l_init = Avion.getl()
 
         # Première phase
         Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt)
@@ -32,13 +32,10 @@ class Descente:
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
         Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, dt)
 
-        l_end = Avion.getl()
-        m_end = Avion.Masse.getCurrentMass()
-
-        Avion.setl_descent(l_end - l_init)
-        Avion.t_descent = Avion.t - t_init
-        Avion.Masse.m_fuel_descent = m_init - m_end
-        Avion.Masse.m_fuel_mission += Avion.Masse.m_fuel_descent
+        Avion.setl_descent(Avion.getl() - l_init)
+        Avion.set_t_descent(Avion.t - t_init)
+        Avion.Masse.setFuelDescent(m_init - Avion.Masse.getCurrentMass())
+        Avion.Masse.addFuelMission(m_init - Avion.Masse.getCurrentMass())
 
 
     @staticmethod
@@ -67,8 +64,7 @@ class Descente:
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
         Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, dt)
 
-        l_end = Avion.getl()
-        Avion.setl_descent_diversion(l_end - l_init)
+        Avion.setl_descent_diversion(Avion.getl() - l_init)
 
     # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod

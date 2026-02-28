@@ -7,7 +7,7 @@ class Inputs:
         # Fichiers des paramètres avions
         # =====================
         self.csv_folder = "avions" # Dossier de stockage des fichiers csv
-        self.nom_fichier_csv = "Airbus_A320.csv" # Fichier csv des paramètres avions
+        self.nom_fichier_csv = "Airbus_A320neo.csv" # Fichier csv des paramètres avions
 
         # =====================
         # Fichier des moteurs
@@ -19,17 +19,17 @@ class Inputs:
         # Paramètres généraux
         # =====================
         self.AeroSimplified = False
-        self.dtClimb = 1.      # s
-        self.dtCruise = 6.    # s
-        self.dtDescent = 1.    # s
+        self.dtClimb = 10.      # s
+        self.dtCruise = 60.    # s
+        self.dtDescent = 10.    # s
         self.maxIter = 10  # Nombre d'itérations max
         self.precision = 1 # %
 
         # =====================
         # MISSION
         # =====================
-        self.m_payload = 10000   # kg
-        self.l_mission_NM = 2000  # NM
+        self.m_payload = 20000   # kg
+        self.l_mission_NM = 500  # NM
 
         # =====================
         # MONTEE
@@ -43,10 +43,11 @@ class Inputs:
         # CROISIERE
         # =====================
         # Type de croisière
-        self.cruiseType = "Alt_Mach" # Ou "Alt_SAR", "Mach_SAR", "CI"
+        self.cruiseType = "Alt_Mach" # "Alt_Mach", "Alt_SAR", "Mach_SAR" ou "CI"
+
 
         # Croisière Alt Mach (et toutes les autres)
-        self.hCruise_ft = 31000       # ft
+        self.hCruise_ft = 38000       # ft
         self.MachCruise = 0.78
         
         # Croisière Mach SAR
@@ -57,6 +58,9 @@ class Inputs:
 
         # Croisière alt SAR (dégradation du SAR)
         self.kSARcruise = 1 # %
+
+        # Croisière CI (Cost Index)
+        self.CI_kg_min = 0 # kg/min
 
         # =====================
         # DESCENTE
@@ -92,14 +96,14 @@ class Inputs:
         # =====================
         # Coefficients de déformation du réseau moteur
         # =====================
-        self.cCz = 1             # Coefficient sur le coefficient de portance
-        self.cCx = 1             # Coefficient sur le coefficient de traînée
-        self.cFF_climb = 1       # Coefficient sur le fuel flow (montée)
-        self.cFF_cruise = 1      # Coefficient sur le fuel flow (croisière)
-        self.cFF_descent = 1     # Coefficient sur le fuel flow (descente)
-        self.cFN_climb = 1       # Coefficient sur la poussée totale (montée)
-        self.cFN_cruise = 1      # Coefficient sur la poussée totale (croisière: n'affecte pas la poussée mais la leecture de la SFC)
-        self.cFN_descent = 1     # Coefficient sur la poussée totale (descente)
+        self.cCz            = 1     # Coefficient sur le coefficient de portance
+        self.cCx            = 1     # Coefficient sur le coefficient de traînée
+        self.cFF_climb      = 1     # Coefficient sur le fuel flow (montée)
+        self.cFF_cruise     = 1     # Coefficient sur le fuel flow (croisière)
+        self.cFF_descent    = 1     # Coefficient sur le fuel flow (descente)
+        self.cFN_climb      = 1     # Coefficient sur la poussée totale (montée)
+        self.cFN_cruise     = 1     # Coefficient sur la poussée totale (croisière: n'affecte pas la poussée mais la leecture de la SFC)
+        self.cFN_descent    = 1     # Coefficient sur la poussée totale (descente)
         
         # =====================
         # Input des calculs Point Performance

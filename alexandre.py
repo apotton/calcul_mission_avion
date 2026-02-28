@@ -19,11 +19,11 @@ Mission.Principal(A320, test_atmos, Saving, inputs)
 
 Saving.cut()
 
-# plt.figure()
-# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
-# plt.xlabel("Distance parcourue (NM)")
-# plt.ylabel("Mach")
-# plt.show()
+plt.figure()
+plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("Mach")
+plt.show()
 
 # plt.figure()
 # plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)
@@ -31,11 +31,12 @@ Saving.cut()
 # plt.ylabel("Altitude (ft)")
 # plt.show()
 
-plt.figure()
-plt.plot(Saving.data["l_cruise"]/Constantes.conv_NM_m, Saving.data["ECCF"])
-plt.xlabel("Distance croisière (NM)")
-plt.ylabel("SGR")
-plt.show()
+
+# plt.figure()
+# plt.plot(Saving.data["l_cruise"]/Constantes.conv_NM_m, Saving.data["ECCF"])
+# plt.xlabel("Distance croisière (NM)")
+# plt.ylabel("SGR")
+# plt.show()
 
 # plt.figure()
 # plt.plot(A320.Aero.getMach(), A320.Aero.getCz())
@@ -83,14 +84,14 @@ plt.show()
 # plt.plot(np.log10(Saving.data_simu["ecart_mission"]))
 # plt.show()
 
-# plt.figure()
-# plt.plot(Saving.data_simu["l_descent"])
-# plt.plot(Saving.data_simu["l_descent_diversion"])
-# plt.show()
+plt.figure()
+plt.plot(Saving.data_simu["l_descent"])
+plt.plot(Saving.data_simu["l_descent_diversion"])
+plt.show()
 
-# plt.figure()
-# plt.plot(Saving.data_simu["FB_mission"])
-# plt.show()
+plt.figure()
+plt.plot(Saving.data_simu["FB_mission"])
+plt.show()
 
 
 # Profilage : python -m cProfile -o output.prof alexandre.py

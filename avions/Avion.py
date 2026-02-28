@@ -91,7 +91,8 @@ class Avion:
         self.Masse = Masse(self)
         self.Aero = Aero(self)
         self.Moteur = ReseauMoteur(self, engine_path)
-        self.Vw = Inputs.Vw * Constantes.conv_kt_mps
+        self.Vw = Inputs.Vw * Constantes.conv_kt_mps # Passage de kt à m/s
+        self.CI = Inputs.CI_kg_min / 60 # Passage de kg/min à kg/s
 
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()
@@ -114,37 +115,6 @@ class Avion:
         self.l_descent = 3 * self.Inputs.hCruise_ft / 1000 * Constantes.conv_NM_m
         self.l_descent_diversion = 3 * self.Inputs.cruiseDiversionAlt_ft / 1000 * Constantes.conv_NM_m
 
-    def setl_descent(self, l_descent: float):
-        '''
-        Définit la distance nécessaire pour la descente.
-
-        :param l_descent: Distance nécessaire pour la descente (m)
-        '''
-        self.l_descent = l_descent
-
-    def setl_descent_diversion(self, l_descent_diversion: float):
-        '''
-        Définit la distance nécessaire pour la descente en diversion.
-        
-        :param l_descent_diversion: Distance necessaire pour la descente en diversion (m)
-        '''
-        self.l_descent_diversion = l_descent_diversion
-
-    def Add_l_descent(self, dl_descent: float):
-        '''
-        Ajoute une distance dl_descent à la distance nécessaire pour la descente.
-
-        :param dl_descent: Distance à ajouter à la distance de descente (m)
-        '''
-        self.l_descent += dl_descent
-
-    def Add_l_descent_diversion(self, dl_descent_diversion: float):
-        '''
-        Ajoute une distance dl_descent à la distance nécessaire pour la descente de la diversion.
-
-        :param dl_descent: Distance à ajouter à la distance de descente de la diversion (m)
-        '''
-        self.l_descent_diversion += dl_descent_diversion
 
     def Add_dl(self, dl: float):
         '''
@@ -273,19 +243,93 @@ class Avion:
     def getOswaldDescent(self):
         return self.OswaldDescent
     
+    def get_t(self):
+        ''' Renvoie le temps interne de l'avion. '''
+        return self.t
+
+    # Montée
+    def set_t_climb(self, t_climb):
+        self.t_climb = t_climb
+
+    def get_t_climb(self):
+        return self.t_climb
+    
+    def set_l_climb(self, l_climb):
+        self.l_climb = l_climb
+        
+    def get_l_climb(self):
+        return self.l_climb
+    
+
+    # Croisière
+    def set_t_cruise(self, t_cruise):
+        self.t_cruise = t_cruise
+
+    def get_t_cruise(self):
+        return self.t_cruise
+    
+    def set_l_cruise(self, l_cruise):
+        self.l_cruise = l_cruise
+
+    def get_l_cruise(self):
+        return self.l_cruise
+
+    # Descente
+    def set_t_descent(self, t_descent):
+        self.t_descent = t_descent
+    
+    def get_t_descent(self):
+        return self.t_descent
+
     def getl_descent(self):
-        '''
-        Retourne la valeur actuelle de la distance de la descente.
-        '''
         return self.l_descent
     
+    def setl_descent(self, l_descent: float):
+        '''
+        Définit la distance nécessaire pour la descente.
+
+        :param l_descent: Distance nécessaire pour la descente (m)
+        '''
+        self.l_descent = l_descent
+
+    # Diversion
+    def set_t_diversion(self, t_diversion):
+        self.t_diversion = t_diversion
+
+    def get_t_diversion(self):
+        return self.t_diversion
+    
+    def set_l_diversion(self, l_diversion):
+        self.l_diversion = l_diversion
+
+    def get_l_diversion(self):
+        return self.l_diversion
+
     def getl_descent_diversion(self):
         '''
         Retourne la valeur actuelle de la distance de la descente en diversion.
         '''
         return self.l_descent_diversion
     
+    def setl_descent_diversion(self, l_descent_diversion: float):
+        '''
+        Définit la distance nécessaire pour la descente en diversion.
+        
+        :param l_descent_diversion: Distance necessaire pour la descente en diversion (m)
+        '''
+        self.l_descent_diversion = l_descent_diversion
     
+    # Holding
+    def set_t_holding(self, t_holding):
+        self.t_holding = t_holding
+    
+    def get_t_holding(self):
+        return self.t_holding
+    
+    def set_l_holding(self, l_holding):
+        self.l_holding = l_holding
 
+    def get_l_holding(self):
+        return self.l_holding
     
    

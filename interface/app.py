@@ -289,6 +289,8 @@ class App(ctk.CTk):
             if key == "P": return arr / 100, "hPa"
             if key == "T": return arr - 273.15, "°C"
             if key == "F_N": return arr / 1000, "kN"
+            if key in ["SAR", "SGR"]: return arr / Constantes.conv_NM_m , "NM/kg"
+            if key == "ECCF": return arr * Constantes.conv_NM_m, "kg/NM"
             # Grandeurs qui restent en unités SI
             unites = {"m": "kg", "FB": "kg", "rho": "kg/m³", "FF": "kg/s", "Mach": "Mach"}
             return arr, unites.get(key, "-")

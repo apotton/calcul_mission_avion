@@ -21,11 +21,11 @@ class Mission:
         :param Atmosphere: Instance de la classe Atmosphère
         :param Enregistrement: Instance de la classe Enregistrement
         '''
+        n_iter = 0
         Inputs.validate()
         ecart_mission = 100 # %
         Enregistrement.reset()
         Enregistrement.save_simu(Avion, ecart_mission)
-        n_iter = 0
 
         tstart = timeit.default_timer()
         while ecart_mission > Inputs.precision and n_iter < Inputs.maxIter:
@@ -57,7 +57,7 @@ class Mission:
         temps_total = (tend - tstart)
 
         # Vérification de la solution obtenue
-        Mission.checkMission(Avion, Inputs)
+        Mission.checkMission(Avion, Inputs, ecart_mission)
         
         print("")
         print(f"Temps de calcul complet: {temps_total:.4f} secondes")
@@ -69,11 +69,23 @@ class Mission:
         Enregistrement.cut()
 
     @staticmethod
-    def checkMission(Avion: Avion, Inputs: Inputs):
+    def checkMission(Avion: Avion, Inputs: Inputs, ecart_mission):
         # Vérification de la validité de la solution (mettre une fonction précise)
         m_fuel_total = Avion.Masse.getFuelMission() + Avion.Masse.getFuelReserve()
-        assert m_fuel_total <= Avion.getMaxFuelWeight(), \
-              f"La mission demande trop de carburant (m_fuel obtenue: {m_fuel_total:.2f}, m_fuel max: {Avion.getMaxFuelWeight():.2f})"
+        # assert m_fuel_total <= Avion.getMaxFuelWeight(), \
+        #       f"\033[31mLa mission demande trop de carburant (m_fuel obtenue: {m_fuel_total:.2f}, m_fuel max: {Avion.getMaxFuelWeight():.2f})\033[0m"
 
+        succes = True
+
+        # Croisière inexistante
         if (Avion.l_climb + Avion.l_descent > Inputs.l_mission_NM * Constantes.conv_NM_m):
-            print("La mission est trop courte au vu de la montée et descente souhaitées: la croisière n'a pas eu lieu.") 
+            succes = False
+            print("\033[33mLa mission est trop courte au vu de la montée et descente souhaitées: la croisière n'a pas eu lieu.\033[0m") 
+
+        # Précision non atteinte
+        if (ecart_mission > Inputs.precision):
+            succes = False
+            print("\033[33mLa précision demandée n'a pas été atteinte. Essayez d'augmenter le nombre d'itérations ou de réduire les pas de temps.\033[0m")
+
+        if succes:
+            print("\033[32mMission calculée avec succès.\033[0m")

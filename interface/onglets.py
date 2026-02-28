@@ -103,15 +103,16 @@ class OngletMission(ctk.CTkScrollableFrame):
         addField(self.app, self.f_cruise_dyn, "Mach Croisière", "MachCruise", "0.78", "", row=1, col=1)
 
         # Spécificités de chaque type de croisière
-        if c_type == "Mach_SAR":
+        if c_type in ["Mach_SAR", "CI"]:
             addField(self.app, self.f_cruise_dyn, "Step Climb", "stepClimb_ft", "2000.0", "ft", row=2, col=1)
             addField(self.app, self.f_cruise_dyn, "RRoC min", "RRoC_min_ft", "300.0", "ft/min", row=3, col=1)
             addField(self.app, self.f_cruise_dyn, "Init Montée", "cruiseClimbInit", "20", "% dist", row=4, col=1)
             addField(self.app, self.f_cruise_dyn, "Stop Montée", "cruiseClimbStop", "80", "% dist", row=5, col=1)
         elif c_type == "Alt_SAR":
             addField(self.app, self.f_cruise_dyn, "Dégradation SAR", "kSARcruise", "1", "%", row=2, col=1)
-        elif c_type == "CI":
-            pass
+        if c_type == "CI":
+            addField(self.app, self.f_cruise_dyn, "Cost Index", "CI_kg_min", "0", "kg/min", row=6, col=1)
+
 
 
 class OngletAutres(ctk.CTkScrollableFrame):

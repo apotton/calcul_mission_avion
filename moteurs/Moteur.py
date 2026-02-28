@@ -20,6 +20,14 @@ class Moteur:
         '''
         self.F_t = F
 
+    def setFF(self, FF: float):
+        '''
+        Définit le fuel flow du moteur.
+
+        :param FF: Fuel Flow à définir (kg/s)
+        '''
+        self.FF_t = FF
+
     def setSFC(self, SFC: float):
         '''
         Définit la SFC actuelle de l'avion.

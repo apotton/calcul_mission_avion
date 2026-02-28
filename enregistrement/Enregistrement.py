@@ -49,6 +49,7 @@ class Enregistrement:
             "t_cruise" : np.zeros(self.default_size, dtype = np.float32),
             "l_cruise" : np.zeros(self.default_size, dtype = np.float32),
             "SGR" : np.zeros(self.default_size, dtype = np.float32),
+            "SAR" : np.zeros(self.default_size, dtype = np.float32),
             "ECCF": np.zeros(self.default_size, dtype = np.float32)
         }
 
@@ -131,6 +132,7 @@ class Enregistrement:
             self.data["t_cruise"][self.cruise_counter] = self.data["t_cruise"][self.cruise_counter - 1] + dt if self.cruise_counter > 1 else 0
             self.data["l_cruise"][self.cruise_counter] = Avion.getl()
             self.data["SGR"][self.cruise_counter] = Avion.Aero.getSGR()
+            self.data["SAR"][self.cruise_counter] = Avion.Aero.getSAR()
             self.data["ECCF"][self.cruise_counter] = Avion.Aero.getECCF()
             self.cruise_counter += 1
 
@@ -159,30 +161,30 @@ class Enregistrement:
         :param Avion: Instance de la classe avion
         '''
         # Masses mission
-        self.mission_data["FB_mission"] = Avion.Masse.m_fuel_mission
-        self.mission_data["FB_climb"] = Avion.Masse.m_fuel_climb
-        self.mission_data["FB_cruise"] = Avion.Masse.m_fuel_cruise
-        self.mission_data["FB_descent"] = Avion.Masse.m_fuel_descent
+        self.mission_data["FB_mission"] = Avion.Masse.getFuelMission()
+        self.mission_data["FB_climb"] = Avion.Masse.getFuelClimb()
+        self.mission_data["FB_cruise"] = Avion.Masse.getFuelCruise()
+        self.mission_data["FB_descent"] = Avion.Masse.getFuelDescent()
 
         # Masses réserve
-        self.mission_data["FB_reserve"] = Avion.Masse.m_fuel_reserve
-        self.mission_data["FB_diversion"] = Avion.Masse.m_fuel_diversion
-        self.mission_data["FB_holding"] = Avion.Masse.m_fuel_holding
-        self.mission_data["mF_contingency"] = Avion.Masse.m_fuel_contingency
+        self.mission_data["FB_reserve"] = Avion.Masse.getFuelReserve()
+        self.mission_data["FB_diversion"] = Avion.Masse.getFuelDiversion()
+        self.mission_data["FB_holding"] = Avion.Masse.getFuelHolding()
+        self.mission_data["mF_contingency"] = Avion.Masse.getFuelContingency()
 
         # Distances mission
-        self.mission_data["l_climb"] = Avion.l_climb
-        self.mission_data["l_cruise"] = Avion.l_cruise
-        self.mission_data["l_descent"] = Avion.l_descent
-        self.mission_data["l_diversion"] = Avion.l_diversion
-        self.mission_data["l_holding"] = Avion.l_holding
+        self.mission_data["l_climb"] = Avion.get_l_climb()
+        self.mission_data["l_cruise"] = Avion.get_l_cruise()
+        self.mission_data["l_descent"] = Avion.getl_descent()
+        self.mission_data["l_diversion"] = Avion.get_l_diversion()
+        self.mission_data["l_holding"] = Avion.get_l_holding()
 
         # Temps mission
-        self.mission_data["t_climb"] = Avion.t_climb
-        self.mission_data["t_cruise"] = Avion.t_cruise
-        self.mission_data["t_descent"] = Avion.t_descent
-        self.mission_data["t_diversion"] = Avion.t_diversion
-        self.mission_data["t_holding"] = Avion.t_holding
+        self.mission_data["t_climb"] = Avion.get_t_climb()
+        self.mission_data["t_cruise"] = Avion.get_t_cruise()
+        self.mission_data["t_descent"] = Avion.get_t_descent()
+        self.mission_data["t_diversion"] = Avion.get_t_diversion()
+        self.mission_data["t_holding"] = Avion.get_t_holding()
 
         valeurs_mises_en_forme = self.print_values()
         print(valeurs_mises_en_forme)
@@ -281,25 +283,16 @@ class Enregistrement:
                 np.zeros(self.default_size, dtype=np.float32)
             ])
 
-        # for key in self.data_cruise:
-        #     self.data_cruise[key] = np.concatenate([
-        #         self.data_cruise[key],
-        #         np.zeros(self.default_size, dtype=np.float32)
-        #     ])
-
     def cut(self):
         '''
         Enlève toutes les valeurs non atteintes après le counter.
         '''
-        cles_cruise = ["t_cruise", "l_cruise", "SGR", "ECCF"]
+        cles_cruise = ["t_cruise", "l_cruise", "SGR", "SAR", "ECCF"]
 
         for key in self.data:
             self.data[key] = self.data[key][:self.counter]
             if key in cles_cruise:
                 self.data[key] = self.data[key][:self.cruise_counter]
-
-        # for key in self.data_cruise:
-        #     self.data_cruise[key] = self.data_cruise[key][:self.cruise_counter]
 
 
 
@@ -312,8 +305,6 @@ class Enregistrement:
             self.data[key] = np.zeros(self.default_size, dtype=np.float32)
 
         self.cruise_counter = 0
-        # for key in self.data_cruise:
-        #     self.data_cruise[key] = np.zeros(self.default_size, dtype=np.float32)
 
     def export_csv(self, filepath):
         '''
@@ -339,11 +330,5 @@ class Enregistrement:
                 # On crée une liste avec le nom de la variable suivi de ses valeurs
                 ligne = [key] + donnees_utiles.tolist()
                 writer.writerow(ligne)
-                
-            # Export des données de croisière (optionnel, on peut préfixer pour les différencier)
-            # for key, array in self.data_cruise.items():
-            #     donnees_utiles = array[:self.cruise_counter]
-            #     ligne = [f"cruise_{key}"] + donnees_utiles.tolist()
-            #     writer.writerow(ligne)
 
             

@@ -141,4 +141,48 @@ class Masse:
         '''
         return self.m_fuel_reserve
 
+    def setFuelMission(self, m_fuel_mission):
+        self.m_fuel_mission = m_fuel_mission
+
+    def addFuelMission(self, dm_fuel):
+        self.m_fuel_mission += dm_fuel
+
+    # Montée
+    def setFuelClimb(self, m_fuel_climb):
+        self.m_fuel_climb = m_fuel_climb
+
+    def getFuelClimb(self):
+        return self.m_fuel_climb
+
+    # Croisière
+    def setFuelCruise(self, m_fuel_cruise):
+        self.m_fuel_cruise = m_fuel_cruise
+
+    def getFuelCruise(self):
+        return self.m_fuel_cruise
+
+    # Descente
+    def setFuelDescent(self, m_fuel_descent):
+        self.m_fuel_descent = m_fuel_descent
+
+    def getFuelDescent(self):
+        return self.m_fuel_descent
+
+    # Diversion
+    def setFuelDiversion(self, m_fuel_diversion):
+        self.m_fuel_diversion = m_fuel_diversion
+
+    def getFuelDiversion(self):
+        return self.m_fuel_diversion
+
+    # Holding
+    def setFuelHolding(self, m_fuel_holding):
+        self.m_fuel_holding = m_fuel_holding
+
+    def getFuelHolding(self):
+        return self.m_fuel_holding
+    
+    # Contingency
+    def getFuelContingency(self):
+        return self.m_fuel_contingency
 
