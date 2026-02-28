@@ -1,5 +1,6 @@
 from enregistrement.Enregistrement import Enregistrement
 from atmosphere.Atmosphere import Atmosphere
+from constantes.Constantes import Constantes
 from missions.Croisiere import Croisiere
 from missions.Diversion import Diversion
 from missions.Descente import Descente
@@ -55,11 +56,9 @@ class Mission:
         tend = timeit.default_timer()
         temps_total = (tend - tstart)
 
-        # Vérification de la validité de la solution
-        m_fuel_total = Avion.Masse.getFuelMission() + Avion.Masse.getFuelReserve()
-        assert m_fuel_total <= Avion.getMaxFuelWeight(), \
-              f"La mission demande trop de carburant (m_fuel obtenue: {m_fuel_total:.2f}, m_fuel max: {Avion.getMaxFuelWeight():.2f})" 
-
+        # Vérification de la solution obtenue
+        Mission.checkMission(Avion, Inputs)
+        
         print("")
         print(f"Temps de calcul complet: {temps_total:.4f} secondes")
         print("")
@@ -68,3 +67,13 @@ class Mission:
 
         # Fin de l'enregistrement
         Enregistrement.cut()
+
+    @staticmethod
+    def checkMission(Avion: Avion, Inputs: Inputs):
+        # Vérification de la validité de la solution (mettre une fonction précise)
+        m_fuel_total = Avion.Masse.getFuelMission() + Avion.Masse.getFuelReserve()
+        assert m_fuel_total <= Avion.getMaxFuelWeight(), \
+              f"La mission demande trop de carburant (m_fuel obtenue: {m_fuel_total:.2f}, m_fuel max: {Avion.getMaxFuelWeight():.2f})"
+
+        if (Avion.l_climb + Avion.l_descent > Inputs.l_mission_NM * Constantes.conv_NM_m):
+            print("La mission est trop courte au vu de la montée et descente souhaitées: la croisière n'a pas eu lieu.") 

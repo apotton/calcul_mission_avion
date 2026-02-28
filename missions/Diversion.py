@@ -75,7 +75,8 @@ class Diversion:
             Avion.Moteur.calculateSFCCruise()
 
             # Intégration
-            Avion.Add_dl(Avion.Aero.getTAS() * dt)
+            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Avion.Add_dl(Vx * dt)
 
             # Consommation
             Avion.Masse.burnFuel(dt)

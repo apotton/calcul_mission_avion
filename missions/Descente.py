@@ -119,7 +119,7 @@ class Descente:
             # Pente de descente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
             Vz = TAS_t * np.sin(pente)
-            Vx = TAS_t * np.cos(pente)
+            Vx = TAS_t * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
             # Mise à jour des positions
             Avion.Add_dh(Vz * dt)
@@ -159,9 +159,6 @@ class Descente:
             # TAS
             Avion.Aero.convertMachToTAS(Atmosphere)
 
-            # Mach_t = Avion.Aero.getMach()
-            TAS_t  = Avion.Aero.getTAS()
-
             # Coefficients aérodynamiques
             Avion.Aero.calculateCz(Atmosphere)
             Cz = Avion.Aero.getCz()
@@ -185,8 +182,8 @@ class Descente:
             # Pente de trajectoire
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
-            Vz = TAS_t * np.sin(pente)   # négatif car en descente
-            Vx = TAS_t * np.cos(pente)
+            Vz = Avion.Aero.getTAS() * np.sin(pente)   # négatif car en descente
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
             # Mise à jour position
             Avion.Add_dh(Vz * dt)
@@ -220,7 +217,6 @@ class Descente:
         # Vitesses
         Avion.Aero.convertCASToMach(Atmosphere)
         Avion.Aero.convertMachToTAS(Atmosphere)
-        TAS_t = Avion.Aero.getTAS()
 
         # Diminution de la vitesse jusqu'a la valeur désirée
         while CAS_t > CAS_target:
@@ -249,8 +245,7 @@ class Descente:
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
             # Mise à jour des vitesses
-            Avion.Aero.setTAS(max(TAS_t + ax * dt, 0.0))
-            TAS_t = Avion.Aero.getTAS() #Calcul de la nouvelle vitesse avec la resistance longitudinale
+            Avion.Aero.setTAS(max(Avion.Aero.getTAS() + ax * dt, 0.0))
 
             # Recalcul CAS depuis Mach/TAS
             Avion.Aero.convertTASToMach(Atmosphere)
@@ -258,7 +253,8 @@ class Descente:
             CAS_t = Avion.Aero.getCAS()
 
             # Cinématique
-            Avion.Add_dl(TAS_t * dt)
+            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
 
             # Fuel burn
@@ -314,9 +310,8 @@ class Descente:
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
             # Vitesses
-            TAS_t = Avion.Aero.getTAS()
-            Vz = TAS_t * np.sin(pente)
-            Vx = TAS_t * np.cos(pente)
+            Vz = Avion.Aero.getTAS() * np.sin(pente)
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
             # Intégration
             Avion.Add_dh(Vz * dt)

@@ -89,8 +89,8 @@ class Croisiere:
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
             # Vitesses
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
             Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente)
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
@@ -295,7 +295,7 @@ class Croisiere:
             Avion.Aero.convertMachToCAS(Atmosphere)
 
             # Vitesses
-            Vx = Avion.Aero.getTAS() + Atmosphere.getVwind()
+            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
 
             # Aérodynamique
             Avion.Aero.calculateCz(Atmosphere)
@@ -353,7 +353,7 @@ class Croisiere:
             Avion.Aero.convertMachToCAS(Atmosphere)
 
             # Vitesses
-            Vx = Avion.Aero.getTAS() + Atmosphere.getVwind()
+            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
 
             # Aérodynamique
             Avion.Aero.calculateCz(Atmosphere)
@@ -423,7 +423,8 @@ class Croisiere:
             Avion.Moteur.calculateSFCCruise()
 
             # Intégration
-            Avion.Add_dl(Avion.Aero.getTAS() * dt)
+            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
 
             # Consommation
@@ -438,4 +439,197 @@ class Croisiere:
 
 
 
+# =============
+# Dernière cruise (en travaux)
+# =============
 
+    @staticmethod
+    def checkUp_CI(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
+        '''
+        Vérifie si la montée en croisière est intéressante selon le critère économique ECCF (Cost Index).
+        '''
+        # Calcul du coût initial (ECCF)
+        Avion.Aero.calculateECCF(Atmosphere)
+        ECCF_init = Avion.Aero.getECCF()
+
+        # Sauvegarde de l'état
+        h_init = Avion.geth()
+        l_init = Avion.getl()
+        CAS_init = Avion.Aero.getCAS()
+        TAS_init = Avion.Aero.getTAS()
+        Mach_init = Avion.Aero.getMach()
+        Cz_init = Avion.Aero.getCz()
+        Cx_init = Avion.Aero.getCx()
+        F_init = Avion.Moteur.getF()
+        SFC_init = Avion.Moteur.getSFC()
+        P_init = Atmosphere.getP_t()
+        T_init = Atmosphere.getT_t()
+        Rho_init = Atmosphere.getRho_t()
+
+        # Paramètres 2000 ft plus haut
+        delta_h = Inputs.stepClimb_ft * Constantes.conv_ft_m
+        Avion.Add_dh(delta_h)
+        Atmosphere.CalculateRhoPT(Avion.geth())
+
+        # Évaluation des performances en haut
+        Avion.Aero.convertMachToTAS(Atmosphere)
+        Avion.Aero.calculateCz(Atmosphere)
+        Cz_up = Avion.Aero.getCz()
+
+        if Inputs.AeroSimplified:
+            Avion.Aero.calculateCxCruise_Simplified()
+        else:
+            Avion.Aero.calculateCx(Atmosphere)
+        Cx_up = Avion.Aero.getCx()
+
+        finesse_up = Cz_up / Cx_up
+        Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
+
+        Avion.Moteur.calculateFClimb()
+        F_N_up = Avion.Moteur.getF()
+        Avion.Moteur.calculateSFCCruise()
+        
+        # Calcul de l'ECCF à l'étage supérieur
+        Avion.Aero.calculateECCF(Atmosphere)
+        ECCF_up = Avion.Aero.getECCF()
+
+        # RRoC (Rate of Climb)
+        RRoC_up = (F_N_up - Rx_up) / Avion.Masse.getCurrentWeight() * Avion.Aero.getTAS()
+
+        # Restauration de l'état
+        Avion.set_h(h_init)
+        Avion.set_l(l_init)
+        Avion.Aero.setCAS(CAS_init)
+        Avion.Aero.setTAS(TAS_init)
+        Avion.Aero.setMach(Mach_init)
+        Avion.Aero.setCz(Cz_init)
+        Avion.Aero.setCx(Cx_init)
+        Avion.Moteur.setF(F_init)
+        Avion.Moteur.setSFC(SFC_init)
+        Atmosphere.setP(P_init)
+        Atmosphere.setT(T_init)
+        Atmosphere.setRho(Rho_init)
+
+        # Condition de montée : RRoC suffisant, pas au plafond, et ECCF_up plus petit (meilleur) que ECCF_init
+        return (RRoC_up > Inputs.RRoC_min_ft * Constantes.conv_ft_m / 60 and
+                Avion.geth() + delta_h < Avion.getPressurisationCeilingFt() * Constantes.conv_ft_m and
+                ECCF_up < ECCF_init)
+
+    @staticmethod
+    def calculateSpeed_CI(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
+        '''
+        Calcule le Mach optimal minimisant la fonction ECCF (Cost Index).
+        '''
+        # Sauvegarde des variables
+        Mach = Avion.Aero.getMach()
+        CAS  = Avion.Aero.getCAS()
+        TAS  = Avion.Aero.getTAS()
+        h    = Avion.geth()
+        Cz   = Avion.Aero.getCz()
+        Cx   = Avion.Aero.getCx()
+
+        # Grille de recherche
+        Mach_grid = np.arange(0.2, 0.85, 0.001)
+        Atmosphere.CalculateRhoPT(Avion.geth())
+
+        # Vectorisation TAS
+        Avion.Aero.setMach(Mach_grid)
+        Avion.Aero.convertMachToTAS(Atmosphere)
+        TAS_grid = Avion.Aero.getTAS()
+        
+        # Aérodynamique
+        Avion.Aero.calculateCz(Atmosphere)
+        if Inputs.AeroSimplified:
+            Avion.Aero.calculateCxCruise_Simplified()
+        else:
+            Avion.Aero.calculateCx(Atmosphere)
+
+        # Motorisation
+        Avion.Moteur.calculateFCruise()
+        Avion.Moteur.calculateSFC_Vectorized()
+
+        # Calcul vectorisé de l'ECCF 
+        # Formule classique : ECCF = (FuelFlow + CI) / V_sol
+        # FuelFlow = SFC * F (en kg/s)
+        # Note : On suppose ici que Inputs possède un attribut 'CI' pour le Cost Index.
+        FuelFlow_grid = Avion.Moteur.getSFC() * Avion.Moteur.getF()
+        V_sol_grid = TAS_grid + Inputs.Vw * Constantes.conv_kt_mps
+        
+        # Sécurité pour éviter la division par zéro
+        V_sol_grid = np.where(V_sol_grid <= 0, 1e-6, V_sol_grid)
+        
+        ECCF_grid = (FuelFlow_grid + Inputs.CI) / V_sol_grid
+
+        # Recherche de l'optimum (Minimum de l'ECCF)
+        idx_opt = np.argmin(ECCF_grid)
+        Mach_opt = Mach_grid[idx_opt]
+
+        # Calcul du CAS correspondant
+        Avion.Aero.setMach(Mach_opt)
+        Avion.Aero.convertMachToCAS(Atmosphere)
+        CAS_opt = Avion.Aero.getCAS()
+
+        # Remise à zéro
+        Avion.Aero.setMach(Mach)
+        Avion.Aero.setCAS(CAS)
+        Avion.Aero.setTAS(TAS)
+        Avion.set_h(h)
+        Avion.Aero.setCz(Cz)
+        Avion.Aero.setCx(Cx)
+
+        return Mach_opt, CAS_opt
+
+    @staticmethod
+    def cruiseCI(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, l_end, dt):
+        """
+        Croisière en mode Cost Index avec ajustement dynamique du Mach optimal
+        et montées (Step Climbs) éventuelles si cela est économiquement rentable.
+        """
+        while Avion.getl() < l_end - Avion.getl_descent():
+            
+            # 1. Calcul du Mach optimal pour l'ECCF actuel
+            Mach_opt, CAS_opt = Croisiere.calculateSpeed_CI(Avion, Atmosphere, Inputs)
+
+            # 2. Ajustement de la vitesse si on s'éloigne trop de l'optimum
+            if abs(Avion.Aero.getMach() - Mach_opt) > 0.01:
+                if Avion.Aero.getMach() < Mach_opt:
+                    Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_opt, dt=Inputs.dtClimb)
+                else:
+                    Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_opt, dt=Inputs.dtDescent)
+
+            # 3. Application du Mach optimal
+            Avion.Aero.setMach(Mach_opt)
+            Atmosphere.CalculateRhoPT(Avion.geth())
+            Avion.Aero.convertMachToTAS(Atmosphere)
+            Avion.Aero.convertMachToCAS(Atmosphere)
+            
+            Vx = Avion.Aero.getTAS() + Inputs.Vw
+
+            # 4. Évaluation du Step Climb
+            if (Avion.getl() < Inputs.cruiseClimbStop * Inputs.l_mission_NM * Constantes.conv_NM_m / 100 
+                and Avion.getl() > Inputs.cruiseClimbInit * Inputs.l_mission_NM * Constantes.conv_NM_m / 100 
+                and Croisiere.checkUp_CI(Avion, Atmosphere, Inputs)):
+                
+                Croisiere.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt=Inputs.dtClimb)
+            
+            else:
+                # 5. Vol en palier classique si pas de montée
+                Avion.Aero.calculateCz(Atmosphere)
+
+                if Inputs.AeroSimplified:
+                    Avion.Aero.calculateCxCruise_Simplified()
+                else:
+                    Avion.Aero.calculateCx(Atmosphere)
+
+                Avion.Moteur.calculateFCruise()
+                Avion.Moteur.calculateSFCCruise()
+
+                # Intégration
+                Avion.Add_dl(Vx * dt)
+                Avion.Add_dt(dt)
+                Avion.Masse.burnFuel(dt)
+
+                Avion.Aero.calculateSGR(Atmosphere)
+                Avion.Aero.calculateECCF(Atmosphere)
+
+                Enregistrement.save(Avion, Atmosphere, dt)  

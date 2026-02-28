@@ -274,6 +274,11 @@ class App(ctk.CTk):
         data_x_brut = self.Enregistrement.data[key_x][:self.Enregistrement.counter]
         data_y_brut = self.Enregistrement.data[key_y][:self.Enregistrement.counter]
 
+        if data_x_brut.size != data_y_brut.size:
+            messagebox.showinfo("Attention", "Vous avez sélectionné deux grandeurs n'ayant pas le même nombre d'éléments (sans doute" +
+                                "des données croisière et mission). Veuillez tracer des grandeurs de taille similaire.")
+            return
+
         # Helper function pour la conversion des unités
         def conv_aero(key, arr):
             if key == "h": return arr / Constantes.conv_ft_m, "ft"

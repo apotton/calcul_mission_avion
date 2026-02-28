@@ -113,7 +113,7 @@ class Montee:
 
             # Vitesses
             Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente)
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
@@ -186,7 +186,8 @@ class Montee:
             Avion.Masse.burnFuel(dt)
 
             # Cinématique
-            Avion.Add_dl(Avion.Aero.getTAS() * dt)
+            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
             
             # Pas de changement d'altitude en palier            
@@ -244,7 +245,7 @@ class Montee:
 
             # Vitesses
             Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente)
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
@@ -306,7 +307,7 @@ class Montee:
 
             # Vitesses
             Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente)
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)

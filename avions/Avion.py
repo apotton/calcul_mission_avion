@@ -91,6 +91,7 @@ class Avion:
         self.Masse = Masse(self)
         self.Aero = Aero(self)
         self.Moteur = ReseauMoteur(self, engine_path)
+        self.Vw = Inputs.Vw * Constantes.conv_kt_mps
 
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()

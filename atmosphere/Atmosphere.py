@@ -22,8 +22,9 @@ class Atmosphere:
         self.rho_t = 1.225  # Densité standard au niveau de la mer (kg/m^3)
         self.P_t = 101325.0 # Pression standard au niveau de la mer (Pa)
         self.T_t = 288.15   # Température standard au niveau de la mer (K)
-        self.Vwind_t = Inputs.Vw*Constantes.conv_kt_mps  # Vitesse du vent à l'altitude t (m/s) (utile ???)
-        self.Inputs = Inputs
+        self.DISA_sub_Cruise = Inputs.DISA_sub_Cruise
+        self.DISA_Cruise = Inputs.DISA_Cruise
+        self.hCruise = Inputs.hCruise_ft * Constantes.conv_ft_m
 
     def CalculateRhoPT(self, h_m, DISA_dC = 0.) :
         '''
@@ -31,12 +32,12 @@ class Atmosphere:
         
         :param self: Instance de la classe Atmosphere
         :param h_m: Altitude de l'avion (m)
-        :param DISA_dC: Différence de température avec l'atmosphère standard, utilisée pour le point performance
+        :param DISA_dC: Différence de température avec l'atmosphère standard, utilisée pour le point performance (°C)
         '''
-        if h_m < self.Inputs.hCruise_ft:
-            DISA = self.Inputs.DISA_sub_Cruise + DISA_dC
+        if h_m < self.hCruise:
+            DISA = self.DISA_sub_Cruise + DISA_dC
         else:
-            DISA = self.Inputs.DISA_Cruise + DISA_dC
+            DISA = self.DISA_Cruise + DISA_dC
 
             
         if h_m <= 11000:
@@ -111,9 +112,4 @@ class Atmosphere:
         Renvoie la température de l'air précédemment calculée (K)
         '''
         return self.T_t
-
-    def getVwind(self):
-        '''
-        Renvoie la vitesse du vent (m/s)
-        '''
-        return self.Vwind_t
+    

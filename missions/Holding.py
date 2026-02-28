@@ -122,7 +122,8 @@ class Holding:
             Avion.Masse.burnFuel(dt)
 
             # Cinématique
-            Avion.Add_dl(Avion.Aero.getTAS() * dt)
+            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
 
             # Enregistrement pour le pas de temps

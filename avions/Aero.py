@@ -318,7 +318,7 @@ class Aero:
         '''
         
         TAS_t = self.getTAS()
-        Vw = atmosphere.getVwind()
+        Vw = self.Avion.Vw
         finesse = self.getCz()/self.getCx()
         CI_t = 1.0  # Constante d'Injection (à définir précisément selon le contexte)
         m = self.Avion.Masse.getCurrentMass()
@@ -335,7 +335,7 @@ class Aero:
         :param atmosphere: Instance de la classe Atmosphere
         '''
 
-        Vw = atmosphere.getVwind()
+        Vw = self.Avion.Vw
         finesse = self.getCz()/self.getCx()
         m = self.Avion.Masse.getCurrentMass()
         SFC_actuelle = self.Avion.Moteur.getSFC()  # Specific Fuel Consumption (à définir précisément selon le contexte)
