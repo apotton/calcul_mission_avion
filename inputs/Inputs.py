@@ -6,36 +6,36 @@ class Inputs:
         # =====================
         # Fichiers des paramètres avions
         # =====================
-        self.csv_folder = "avions" # Dossier de stockage des fichiers csv
-        self.nom_fichier_csv = "Airbus_A320neo.csv" # Fichier csv des paramètres avions
+        self.csv_folder      = "avions"              # Dossier de stockage des fichiers csv
+        self.nom_fichier_csv = "Airbus_A320.csv"     # Fichier csv des paramètres avions
 
         # =====================
         # Fichier des moteurs
         # =====================
-        self.py_folder = "moteurs"
+        self.py_folder      = "moteurs"
         self.nom_fichier_py = "cfm56.py"
 
         # =====================
         # Paramètres généraux
         # =====================
         self.AeroSimplified = False
-        self.dtClimb = 10.      # s
-        self.dtCruise = 60.    # s
-        self.dtDescent = 10.    # s
-        self.maxIter = 10  # Nombre d'itérations max
-        self.precision = 1 # %
+        self.dtClimb        = 10.    # s
+        self.dtCruise       = 60.    # s
+        self.dtDescent      = 10.    # s
+        self.maxIter        = 20     # Nombre d'itérations max
+        self.precision      = 1      # %
 
         # =====================
         # MISSION
         # =====================
         self.m_payload = 20000   # kg
-        self.l_mission_NM = 500  # NM
+        self.l_mission_NM = 1500  # NM
 
         # =====================
         # MONTEE
         # =====================
-        self.hInit_ft = 1500.0      # ft
-        self.hAccel_ft = 10000.0        # ft
+        self.hInit_ft   = 1500.0         # ft
+        self.hAccel_ft  = 10000.0        # ft
         self.CAS_below_10000_mont_kt = 250.0  # kt
         self.Mach_climb = 0.78
 
@@ -52,9 +52,9 @@ class Inputs:
         
         # Croisière Mach SAR
         self.stepClimb_ft = 2000.0      # ft
-        self.RRoC_min_ft = 300.0     # ft/min
-        self.cruiseClimbInit = 20 # % de la distance mission (Moment à partir duquel on peut chosir de monter)
-        self.cruiseClimbStop = 80 # % de la distance mission (Moment jusqu'auquel on peut monter)
+        self.RRoC_min_ft = 300.0        # ft/min
+        self.cruiseClimbInit = 20       # % de la distance mission (Moment à partir duquel on peut chosir de monter)
+        self.cruiseClimbStop = 80       # % de la distance mission (Moment jusqu'auquel on peut monter)
 
         # Croisière alt SAR (dégradation du SAR)
         self.kSARcruise = 1 # %
@@ -72,9 +72,9 @@ class Inputs:
         # =====================
         # Critère de diversion
         # =====================
-        self.cruiseDiversionAlt_ft = 25000 # ft, altitude de croisière diversion
-        self.rangeDiversion_NM = 200 # nm, longueur de la diversion
-        self.MachCruiseDiversion = 0.65 # Mach de croisière diversion
+        self.cruiseDiversionAlt_ft = 25000  # ft, altitude de croisière diversion
+        self.rangeDiversion_NM = 200        # NM, longueur de la diversion
+        self.MachCruiseDiversion = 0.65     # Mach de croisière diversion
         
         # =====================
         # Critère Holding
@@ -108,11 +108,11 @@ class Inputs:
         # =====================
         # Input des calculs Point Performance
         # =====================
-        self.SpeedType = "Mach"  # Soit Mach, soit  TAS (kt), soit CAS (kt)
-        self.Speed = 0.78        # Valeur de la vitesse
-        self.altPP_ft = 38_000.   # Altitude (ft)
-        self.massPP = 60_000.     # Masse totale (kg)
-        self.DISA_PP = 0.0         # Delta ISA, différence de température avec l'atmosphère standard (°C)
+        self.SpeedType  = "Mach"    # Soit Mach, soit TAS (kt), soit CAS (kt)
+        self.Speed      = 0.78      # Valeur de la vitesse
+        self.altPP_ft   = 38_000.   # Altitude (ft)
+        self.massPP     = 60_000.   # Masse totale (kg)
+        self.DISA_PP    = 0.0       # Delta ISA, différence de température avec l'atmosphère standard (°C)
     
 
     def validate(self):

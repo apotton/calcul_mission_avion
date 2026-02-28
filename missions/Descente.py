@@ -11,10 +11,11 @@ class Descente:
         '''
         Réalise toute la descente depuis la fin de la croisière jusqu'à l'altitude finale.
 
-        :param Avion: instance de la classe Avion
-        :param Atmosphere: instance de la classe Atmosphere
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
-        :param dt: pas de temps (s)
+        :param Inputs: Instance de la classe Inputs
+        :param dt: Pas de temps (s)
         '''
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
@@ -25,12 +26,15 @@ class Descente:
 
         # Seconde phase
         h_target = Inputs.hDecel_ft * Constantes.conv_ft_m
-        Descente.descenteIsoMaxCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
+        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
-        # Dernière phase
+        # Troisième phase
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
-        Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, dt)
+        
+        # Quatrième et dernière phase
+        h_target = Inputs.hFinal_ft * Constantes.conv_ft_m
+        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
         Avion.setl_descent(Avion.getl() - l_init)
         Avion.set_t_descent(Avion.t - t_init)
@@ -46,6 +50,7 @@ class Descente:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param dt: Pas de temps (dt)
         '''
         # Reset de la distance de descente pour une estimation plus précise
@@ -57,12 +62,15 @@ class Descente:
 
         # Deuxième phase
         h_target = Inputs.hDecel_ft * Constantes.conv_ft_m
-        Descente.descenteIsoMaxCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
+        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
         # Troisième phase
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
-        Descente.descenteFinaleIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, dt)
+
+        # Quatrième et dernière phase
+        h_target = Inputs.hFinal_ft * Constantes.conv_ft_m
+        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
         Avion.setl_descent_diversion(Avion.getl() - l_init)
 
@@ -75,6 +83,7 @@ class Descente:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param dt: Pas de temps (s)
         '''
         # CAS max en m/s
@@ -89,7 +98,16 @@ class Descente:
             Avion.Aero.convertMachToCAS(Atmosphere)
             Avion.Aero.convertMachToTAS(Atmosphere)
 
-            CAS_t = Avion.Aero.getCAS()   
+            if Avion.Aero.getCAS() > CAS_max:
+                # Intersection du pas de temps
+                dt = (CAS_max - CAS_t) / (Avion.Aero.getCAS() - CAS_t) * dt
+
+                # Set du CAS visé
+                Avion.Aero.setCAS(CAS_max)
+                Avion.Aero.convertCASToMach(Atmosphere)
+                Avion.Aero.convertMachToTAS(Atmosphere)
+
+            CAS_t = Avion.Aero.getCAS()
             TAS_t = Avion.Aero.getTAS() 
 
             # Cz et Cx Calcul des coefs aéro
@@ -129,22 +147,20 @@ class Descente:
             
 
     @staticmethod
-    def descenteIsoMaxCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, h_end, dt):
+    def descenteIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, h_end, dt):
         '''
         Phase 2 : Descente jusqu'à 10000ft à vitesse constante Max CAS
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param h_end: Altitude finale de la phase de la descente (m)
         :param dt: Pas de temps (s)
         '''
+        h_t = Avion.geth()
 
-        # CAS imposée
-        CAS_t = Avion.getKVMO() * Constantes.conv_kt_mps  # kt -> m/s On descend à CAS fixé par la vitesse max de descente
-        Avion.Aero.setCAS(CAS_t)
-
-        while Avion.geth() > h_end:
+        while h_t > h_end:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
@@ -183,6 +199,15 @@ class Descente:
 
             # Mise à jour position
             Avion.Add_dh(Vz * dt)
+
+            if Avion.geth() < h_end:
+                # Intersection du pas de temps
+                dt = (h_end - h_t) / (Avion.geth() - h_t) * dt
+                # On se place à l'altitude visée
+                Avion.set_h(h_end)
+            
+            h_t = Avion.geth()
+
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
 
@@ -246,6 +271,16 @@ class Descente:
             # Recalcul CAS depuis Mach/TAS
             Avion.Aero.convertTASToMach(Atmosphere)
             Avion.Aero.convertMachToCAS(Atmosphere)
+
+            if Avion.Aero.getCAS() < CAS_target:
+                # Intersection du pas de temps
+                dt = (CAS_target - CAS_t) / (Avion.Aero.getCAS() - CAS_t) * dt
+
+                # Set du CAS visé
+                Avion.Aero.setCAS(CAS_target)
+                Avion.Aero.convertCASToMach(Atmosphere)
+                Avion.Aero.convertMachToTAS(Atmosphere)
+
             CAS_t = Avion.Aero.getCAS()
 
             # Cinématique
@@ -259,64 +294,4 @@ class Descente:
             Enregistrement.save(Avion, Atmosphere, dt)
             
 
-    # Phase 4 : Descente finale jusqu'à h_final
-    @staticmethod
-    def descenteFinaleIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
-        '''
-        Phase 4 : descente à CAS constante (250 kt) jusqu'à l'altitude finale de 1500ft
-
-        :param Avion: Instance de la classe Avion
-        :param Atmosphere: Instance de la classe Atmosphere
-        :param Enregistrement: Instance de la classe Enregistrement
-        :param dt: Pas de temps (s)
-        '''
-        
-        # Descente jusqu'à altitude finale
-        while Avion.geth() > Inputs.hFinal_ft * Constantes.conv_ft_m:
-            # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
-
-            # Mach depuis CAS
-            Avion.Aero.convertCASToMach(Atmosphere)
-
-            # TAS
-            Avion.Aero.convertMachToTAS(Atmosphere)
-
-            # Aérodynamique
-            Avion.Aero.calculateCz(Atmosphere)
-            Cz = Avion.Aero.getCz()
-
-            if Inputs.AeroSimplified:
-                Avion.Aero.calculateCxDescent_Simplified()
-            else:
-                Avion.Aero.calculateCx(Atmosphere)
-            Cx = Avion.Aero.getCx()
-
-            finesse = Cz / Cx
-
-            # Poussée moteur
-            Avion.Moteur.calculateFDescent()
-            F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCDescent()
-
-            # Résistance
-            Rx = Avion.Masse.getCurrentWeight() / finesse
-
-            # Pente
-            pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
-
-            # Vitesses
-            Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
-
-            # Intégration
-            Avion.Add_dh(Vz * dt)
-            Avion.Add_dl(Vx * dt)
-            Avion.Add_dt(dt)
-
-            # Fuel burn
-            Avion.Masse.burnFuel(dt)
-        
-            Enregistrement.save(Avion, Atmosphere, dt)
-            
 

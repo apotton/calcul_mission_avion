@@ -58,6 +58,7 @@ class Montee:
 
         h_target = Inputs.cruiseDiversionAlt_ft * Constantes.conv_ft_m
         Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.MachCruiseDiversion, dt)
+        
         Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
         
 
@@ -72,8 +73,9 @@ class Montee:
         :param h_lim: Altitude de fin (en mètres)
         :param dt: pas de temps (s)
         '''
+        h_t = Avion.geth()
 
-        while Avion.geth() < h_lim:
+        while h_t < h_lim:
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
@@ -111,13 +113,22 @@ class Montee:
             Vz = Avion.Aero.getTAS() * np.sin(pente)
             Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
-            # Fuel burn
-            Avion.Masse.burnFuel(dt)
-
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
+
+            if Avion.geth() > h_lim:
+                # Intersection du pas de temps
+                dt = (h_lim - h_t) / (Avion.geth() - h_t) * dt
+                # On se place à l'altitude visée
+                Avion.set_h(h_lim)
+            
+            h_t = Avion.geth()
+
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
+
+            # Fuel burn
+            Avion.Masse.burnFuel(dt)
 
             Enregistrement.save(Avion, Atmosphere, dt)
 
@@ -127,10 +138,12 @@ class Montee:
         Phase 2 : accélération en palier à 10 000 ft
         CAS : 250 kt -> CAS_climb_target
 
-        Avion       : instance de la classe Avion
-        Atmosphere  : instance de la classe Atmosphere
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
-        dt          : pas de temps (s)
+        :param Inputs: Instance de la classe Inputs
+        :param CAS_target: Vitesse CAS à atteindre
+        :param dt: Pas de temps (s)
         '''
 
         # Atmosphère (constante en palier)
@@ -139,9 +152,10 @@ class Montee:
         # Vitesses
         Avion.Aero.convertCASToMach(Atmosphere)
         Avion.Aero.convertMachToTAS(Atmosphere)
-        TAS_t  = Avion.Aero.getTAS()
 
-        while Avion.Aero.getCAS() < CAS_target:
+        CAS_t = Avion.Aero.getCAS()
+
+        while CAS_t < CAS_target:
 
             # Aérodynamique
             Avion.Aero.calculateCz(Atmosphere)
@@ -171,12 +185,22 @@ class Montee:
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()
 
             # Mise à jour vitesse
-            TAS_t = max(TAS_t + ax * dt, 0.0)
-            Avion.Aero.setTAS(TAS_t)
+            Avion.Aero.setTAS(Avion.Aero.getTAS() + ax*dt)
 
             # Recalcul Mach et CAS
             Avion.Aero.convertTASToMach(Atmosphere)
             Avion.Aero.convertMachToCAS(Atmosphere)
+
+            if Avion.Aero.getCAS() > CAS_target:
+                # Intersection du pas de temps
+                dt = (CAS_target - CAS_t) / (Avion.Aero.getCAS() - CAS_t) * dt
+
+                # Set du CAS visé
+                Avion.Aero.setCAS(CAS_target)
+                Avion.Aero.convertCASToMach(Atmosphere)
+                Avion.Aero.convertMachToTAS(Atmosphere)
+
+            CAS_t = Avion.Aero.getCAS()
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
@@ -201,17 +225,27 @@ class Montee:
         :param Mach_lim: Mach de fin de montée
         :param dt: pas de temps (s)
         '''
-        Avion.Aero.setCAS(Avion.getKVMO() * Constantes.conv_kt_mps)
+        Mach_t = Avion.Aero.getMach()
 
-        # Tant que l'on a pas atteint le Mach limite ou l'altitude limit
+        # Tant que l'on a pas atteint le Mach limite ou l'altitude limite
         while Avion.Aero.getMach() < Mach_lim and Avion.geth() < h_lim:
-
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
             # Vitesses
             Avion.Aero.convertCASToMach(Atmosphere)
+
+            # On checke si on a atteint le Mach visé
+            if Avion.Aero.getMach() > Mach_lim:
+                # On adapte le pas de temps à l'intersection des Machs
+                dt = (Mach_lim - Mach_t) / (Avion.Aero.getMach() - Mach_t) * dt
+
+                # On se place au Mach visé
+                Avion.Aero.setMach(Mach_lim)
+                Avion.Aero.convertMachToCAS(Atmosphere)
+            
             Avion.Aero.convertMachToTAS(Atmosphere)
+            Mach_t = Avion.Aero.getMach()
 
             # Aérodynamique
             Avion.Aero.calculateCz(Atmosphere)
@@ -264,9 +298,10 @@ class Montee:
         :param h_lim: Altitude de fin de montée (m)
         :param dt: pas de temps (s)
         '''
+        h_t = Avion.geth()
 
         # Tant que l'on n'a pas atteint l'altitude cible
-        while Avion.geth() < h_lim:
+        while h_t < h_lim:
 
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
@@ -305,12 +340,21 @@ class Montee:
             Vz = Avion.Aero.getTAS() * np.sin(pente)
             Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
 
-            # Fuel burn
-            Avion.Masse.burnFuel(dt)
-
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
+
+            if Avion.geth() > h_lim:
+                # Intersection du pas de temps
+                dt = (h_lim - h_t) / (Avion.geth() - h_t) * dt
+                # On se place à l'altitude visée
+                Avion.set_h(h_lim)
+            
+            h_t = Avion.geth()
+
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
+            
+            # Fuel burn
+            Avion.Masse.burnFuel(dt)
             
             Enregistrement.save(Avion, Atmosphere, dt)

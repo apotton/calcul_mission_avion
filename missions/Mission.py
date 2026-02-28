@@ -72,8 +72,8 @@ class Mission:
     def checkMission(Avion: Avion, Inputs: Inputs, ecart_mission):
         # Vérification de la validité de la solution (mettre une fonction précise)
         m_fuel_total = Avion.Masse.getFuelMission() + Avion.Masse.getFuelReserve()
-        # assert m_fuel_total <= Avion.getMaxFuelWeight(), \
-        #       f"\033[31mLa mission demande trop de carburant (m_fuel obtenue: {m_fuel_total:.2f}, m_fuel max: {Avion.getMaxFuelWeight():.2f})\033[0m"
+        assert m_fuel_total <= Avion.getMaxFuelWeight(), \
+              f"\033[31mLa mission demande trop de carburant (m_fuel obtenue: {m_fuel_total:.2f}, m_fuel max: {Avion.getMaxFuelWeight():.2f})\033[0m"
 
         succes = True
 

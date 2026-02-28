@@ -16,7 +16,7 @@ class Masse:
 
         # Masses mission
         self.m_payload          = self.Inputs.m_payload     # Payload de la mission
-        self.m_fuel_mission     = Avion.getMaxFuelWeight()  # Fuel nécessaire à la mission (set au max au début)
+        self.m_fuel_mission     = Avion.getMaxFuelWeight()/2  # Fuel nécessaire à la mission (set au max au début)
         self.m_fuel_contingency = 0.0                       # Fuel de contingence, ce qu'il doit obligatoirement resté au minimum à la fin de la mission (typiquement 5%)
         self.m_fuel_diversion   = 0.0                       # Fuel en cas de diversion vers un aéroport de dégagement
         self.m_fuel_holding     = 0.0                       # Fuel en cas de holding réglementaire
@@ -28,9 +28,6 @@ class Masse:
         self.m_fuel_climb       = 0.0
         self.m_fuel_cruise      = 0.0
         self.m_fuel_descent     = 0.0
-
-        # Si on a mis trop de carburant au début
-        assert self.m_fuel_mission + self.m_fuel_reserve <= Avion.getMaxFuelWeight(), "Trop de carburant dans l'avion"
 
         # Masses dynamiques
         self.m_fuel_remaining_t = self.m_fuel_mission + self.m_fuel_reserve # Fuel dans l'avion à l'instant t

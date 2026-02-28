@@ -240,7 +240,8 @@ def calculer_batch(app):
     #    (kg)
     colonnes = [
         ("Fuel",     "Load",  "(kg)"),  ("Payload", "Mass", "(kg)"), # Paramètres globaux
-        ("Mission",  "Range", "(NM)"),  ("Mission", "Time", "(min)"), ("Mission",  "Fuel", "(kg)"), 
+        ("Mission",  "Range", "(NM)"),
+        ("Mission",  "Dist",  "(NM)"),  ("Mission", "Time", "(min)"), ("Mission",  "Fuel", "(kg)"), 
         ("Climb",    "Dist",  "(NM)"),  ("Climb",   "Time", "(min)"), ("Climb",    "Fuel", "(kg)"), 
         ("Cruise",   "Dist",  "(NM)"),  ("Cruise",  "Time", "(min)"), ("Cruise",   "Fuel", "(kg)"), 
         ("Descent",  "Dist",  "(NM)"),  ("Descent", "Time", "(min)"), ("Descent",  "Fuel", "(kg)"),
@@ -300,6 +301,7 @@ def calculer_batch(app):
                 # Formatage des sorties
                 fuel_load = md["FB_mission"] + md["FB_reserve"]
                 mission_time = (md["t_climb"] + md["t_cruise"] + md["t_descent"]) / 60.0
+                l_mission = (md["l_climb"] + md["l_cruise"] + md["l_descent"])
                 t_reserve = (md['t_diversion'] + md['t_holding']) / 60.0
                 
                 conv = Constantes.conv_NM_m
@@ -307,7 +309,7 @@ def calculer_batch(app):
                 # Valeur de chaque colonne
                 valeurs = [
                     fuel_load, p,
-                    r,                      mission_time,             md['FB_mission'],
+                    r, l_mission/conv,      mission_time,             md['FB_mission'],
                     md['l_climb']   / conv, md['t_climb']   / 60.0,   md['FB_climb'],
                     md['l_cruise']  / conv, md['t_cruise']  / 60.0,   md["FB_cruise"],
                     md['l_descent'] / conv, md['t_descent'] / 60.0,   md['FB_descent'],

@@ -16,7 +16,8 @@ class Croisiere:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
-        :param dt: pas de temps (s)
+        :param Inputs: Instance de la classe Inputs
+        :param dt: Pas de temps (s)
         '''
         Avion.cruise = True
         l_end = Inputs.l_mission_NM * Constantes.conv_NM_m
@@ -43,6 +44,10 @@ class Croisiere:
         Avion.Masse.addFuelMission(m_init - Avion.Masse.getCurrentMass())
         Avion.cruise = False
 
+# ================
+# Fonctions utilitaires
+# ================
+
     @staticmethod
     def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
         '''
@@ -51,7 +56,8 @@ class Croisiere:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
-        :param dt: pas de temps (s)
+        :param Inputs: Instance de la classe Inputs
+        :param dt: Pas de temps (s)
         '''
         h_init = Avion.geth()
 
@@ -107,103 +113,104 @@ class Croisiere:
 
     @staticmethod
     def checkUp(Avion : Avion, Atmosphere: Atmosphere, Inputs: Inputs):
-            '''
-            Vérifie si la montée en croisière est intéressante
-            
-            :param Avion: Instance de la classe Avion
-            :param Atmosphere: Instance de la classe Atmosphere
-            '''
-            # Stockage des paramètres avant évaluation de montée
-            Avion.Aero.calculateECCF() 
-            Avion.Aero.calculateSGR()
-            ECCF_init = Avion.Aero.getECCF()
-            SGR_init = Avion.Aero.getSGR()
+        '''
+        Vérifie si la montée en croisière est intéressante
+        
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Inputs: Instance de la classe Inputs
+        '''
+        # Stockage des paramètres avant évaluation de montée
+        Avion.Aero.calculateECCF() 
+        Avion.Aero.calculateSGR()
+        ECCF_init = Avion.Aero.getECCF()
+        SGR_init = Avion.Aero.getSGR()
 
-            h_init = Avion.geth()
-            l_init = Avion.getl()
-            CAS_init = Avion.Aero.getCAS()
-            TAS_init = Avion.Aero.getTAS()
-            Mach_init = Avion.Aero.getMach()
-            Cz_init = Avion.Aero.getCz()
-            Cx_init = Avion.Aero.getCx()
-            F_init = Avion.Moteur.getF()
-            SFC_init = Avion.Moteur.getSFC()
-            P_init = Atmosphere.getP_t()
-            T_init = Atmosphere.getT_t()
-            Rho_init = Atmosphere.getRho_t()
+        h_init = Avion.geth()
+        l_init = Avion.getl()
+        CAS_init = Avion.Aero.getCAS()
+        TAS_init = Avion.Aero.getTAS()
+        Mach_init = Avion.Aero.getMach()
+        Cz_init = Avion.Aero.getCz()
+        Cx_init = Avion.Aero.getCx()
+        F_init = Avion.Moteur.getF()
+        SFC_init = Avion.Moteur.getSFC()
+        P_init = Atmosphere.getP_t()
+        T_init = Atmosphere.getT_t()
+        Rho_init = Atmosphere.getRho_t()
 
-            ## Calcul des paramètres 2000ft plus haut pour étudier le coût de monter
+        ## Calcul des paramètres 2000ft plus haut pour étudier le coût de monter
 
-            # Paramètres 2000 ft plus haut (pour décider la montée)
-            delta_h = Inputs.stepClimb_ft * Constantes.conv_ft_m
+        # Paramètres 2000 ft plus haut (pour décider la montée)
+        delta_h = Inputs.stepClimb_ft * Constantes.conv_ft_m
 
-            # Altitude virtuelle
-            Avion.Add_dh(delta_h)
+        # Altitude virtuelle
+        Avion.Add_dh(delta_h)
 
-            # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
+        # Atmosphère
+        Atmosphere.CalculateRhoPT(Avion.geth())
 
-            # TAS (Mach constant avant montée iso-Mach)
-            Avion.Aero.convertMachToTAS(Atmosphere)
-            Avion.Aero.getTAS()
+        # TAS (Mach constant avant montée iso-Mach)
+        Avion.Aero.convertMachToTAS(Atmosphere)
+        Avion.Aero.getTAS()
 
-            # Aérodynamique
-            Avion.Aero.calculateCz(Atmosphere)
-            Cz_up = Avion.Aero.getCz()
+        # Aérodynamique
+        Avion.Aero.calculateCz(Atmosphere)
+        Cz_up = Avion.Aero.getCz()
 
-            if Inputs.AeroSimplified:
-                Avion.Aero.calculateCxCruise_Simplified()
-            else:
-                Avion.Aero.calculateCx(Atmosphere)
-            Cx_up = Avion.Aero.getCx()
+        if Inputs.AeroSimplified:
+            Avion.Aero.calculateCxCruise_Simplified()
+        else:
+            Avion.Aero.calculateCx(Atmosphere)
+        Cx_up = Avion.Aero.getCx()
 
-            finesse_up = Cz_up / Cx_up
+        finesse_up = Cz_up / Cx_up
 
-            # Traînée / équivalent résistance
-            Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
+        # Traînée / équivalent résistance
+        Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
 
-            # Poussée moteur
-            Avion.Moteur.calculateFClimb()
-            F_N_up = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCCruise()
-            
-            #Calcul du coût économique ECCF et SGR
-            Avion.Aero.calculateECCF() 
-            Avion.Aero.calculateSGR()
-            ECCF_up = Avion.Aero.getECCF()
-            SGR_up = Avion.Aero.getSGR()
+        # Poussée moteur
+        Avion.Moteur.calculateFClimb()
+        F_N_up = Avion.Moteur.getF()
+        Avion.Moteur.calculateSFCCruise()
+        
+        #Calcul du coût économique ECCF et SGR
+        Avion.Aero.calculateECCF() 
+        Avion.Aero.calculateSGR()
+        ECCF_up = Avion.Aero.getECCF()
+        SGR_up = Avion.Aero.getSGR()
 
-            # RRoC (Rate of Climb virtuel)
-            RRoC_up = (F_N_up - Rx_up) / Avion.Masse.getCurrentWeight() * Avion.Aero.getTAS() #UTILISER LA MONTEE ISO MACH DE LA PHASE DE MONTEE MAINTENANT
+        # RRoC (Rate of Climb virtuel)
+        RRoC_up = (F_N_up - Rx_up) / Avion.Masse.getCurrentWeight() * Avion.Aero.getTAS() #UTILISER LA MONTEE ISO MACH DE LA PHASE DE MONTEE MAINTENANT
 
-            # Retour aux paramètres initaux pour la montée ou le reste de la croisière 
-            Avion.set_h(h_init)
-            Avion.set_l(l_init)
-            Avion.Aero.setCAS(CAS_init)
-            Avion.Aero.setTAS(TAS_init)
-            Avion.Aero.setMach(Mach_init)
-            Avion.Aero.setCz(Cz_init)
-            Avion.Aero.setCx(Cx_init)
-            Avion.Aero.setSGR(SGR_init)
-            Avion.Moteur.setF(F_init)
-            Avion.Moteur.setSFC(SFC_init)
-            Atmosphere.setP(P_init)
-            Atmosphere.setT(T_init)
-            Atmosphere.setRho(Rho_init)
+        # Retour aux paramètres initaux pour la montée ou le reste de la croisière 
+        Avion.set_h(h_init)
+        Avion.set_l(l_init)
+        Avion.Aero.setCAS(CAS_init)
+        Avion.Aero.setTAS(TAS_init)
+        Avion.Aero.setMach(Mach_init)
+        Avion.Aero.setCz(Cz_init)
+        Avion.Aero.setCx(Cx_init)
+        Avion.Aero.setSGR(SGR_init)
+        Avion.Aero.setECCF(ECCF_init)
+        Avion.Moteur.setF(F_init)
+        Avion.Moteur.setSFC(SFC_init)
+        Atmosphere.setP(P_init)
+        Atmosphere.setT(T_init)
+        Atmosphere.setRho(Rho_init)
 
-            if not (RRoC_up > Inputs.RRoC_min_ft*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s 
-                    Avion.geth()/Constantes.conv_ft_m + delta_h < Avion.getPressurisationCeilingFt()):  # Pas au plafond converti de m en ft
-                return False
-
-            if (Inputs.cruiseType == "Mach_SAR"):
-                # Condition de montée iso-Mach
-                return (SGR_up > SGR_init)
-            elif (Inputs.cruiseType == "CI"):
-                # Condition de montée Cost Index
-                return (ECCF_up < ECCF_init)
-            
+        if not (RRoC_up > Inputs.RRoC_min_ft*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s 
+                Avion.geth()/Constantes.conv_ft_m + delta_h < Avion.getPressurisationCeilingFt()):  # Pas au plafond converti de m en ft
             return False
 
+        if (Inputs.cruiseType == "Mach_SAR"):
+            # Condition de montée iso-Mach
+            return (SGR_up > SGR_init)
+        elif (Inputs.cruiseType == "CI"):
+            # Condition de montée Cost Index
+            return (ECCF_up < ECCF_init)
+        
+        return False
 
     @staticmethod
     def calculateSpeed_target(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
@@ -212,7 +219,7 @@ class Croisiere:
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
-        :return Mach_target: Le Mach objectif
+        :param Inputs: Instance de la classe Inputs
         '''
         # Sauvegarde des variables qui vont changer
         Mach = Avion.Aero.getMach()
@@ -285,13 +292,12 @@ class Croisiere:
             Avion.Aero.setMach(Mach_opt)
             Avion.Aero.convertMachToCAS(Atmosphere)
             CAS_opt = Avion.Aero.getCAS()
-            pass
 
         # Remise à zéro
-        Avion.Aero.setMach(Mach)
+        Avion.set_h(h)
         Avion.Aero.setCAS(CAS)
         Avion.Aero.setTAS(TAS)
-        Avion.set_h(h)
+        Avion.Aero.setMach(Mach)
         Avion.Aero.setCz(Cz)
         Avion.Aero.setCz(Cx)
         Avion.Aero.setSAR(SAR)
@@ -302,19 +308,27 @@ class Croisiere:
 
         return Mach_opt, CAS_opt
 
+# =================
+# Types de croisières
+# =================
+
     @staticmethod
     def cruiseMachSAR(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, l_end, dt):
         """
         Croisière en palier à Mach constant, avec des éventuelles montées d'un pallier d'altitude.
 
-        :param Avion: instance de la classe Avion
-        :param Atmosphere: instance de la classe Atmosphere
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
-        :param l_end: distance à parcourir en croisière avant de commencer la descente (m)
+        :param Inputs: Instance de la classe Inputs
+        :param l_end: Distance à parcourir en croisière avant de commencer la descente (m)
+        :param dt: Pas de temps (s)
         """
+        l_t = Avion.getl()
+        l_target = l_end - Avion.getl_descent()
 
         # Tant que l'on n'a pas parcouru assez de distance
-        while (Avion.getl() < l_end - Avion.getl_descent()):
+        while (l_t < l_target):
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
@@ -341,13 +355,23 @@ class Croisiere:
             if (Avion.getl() < Inputs.cruiseClimbStop*Inputs.l_mission_NM*Constantes.conv_NM_m/100 \
                 and Avion.getl() > Inputs.cruiseClimbInit*Inputs.l_mission_NM*Constantes.conv_NM_m/100 \
                 and Croisiere.checkUp(Avion, Atmosphere, Inputs)):
-                Croisiere.climbIsoMach(Avion,Atmosphere,Enregistrement, Inputs, dt = Inputs.dtClimb)
+                Croisiere.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtClimb)
             else :
                 # Fuel burn
                 Avion.Masse.burnFuel(dt)
 
                 # Mise à jour avion (pas de changement d'altitude)
                 Avion.Add_dl(Vx * dt)
+
+                # Si on a dépassé la distance visée
+                if Avion.getl() > l_target:
+                    # Intersection du pas de temps
+                    dt = (l_target - l_t) / (Avion.getl() - l_t) * dt
+                    # On se place à la distance visée
+                    Avion.set_l(l_target)
+                
+                l_t = Avion.getl()
+
                 Avion.Add_dt(dt)
 
                 # Paramètres économiques
@@ -364,18 +388,20 @@ class Croisiere:
         """
         Croisière à altitude et Mach constant.
 
-        :param Avion: instance de la classe Avion
-        :param Atmosphere: instance de la classe Atmosphere
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
-        :param l_end: distance à parcourir en croisière avant de commencer la descente (m)
+        :param Inputs: Instance de la classe Inputs
+        :param l_end: Distance à parcourir en croisière avant de commencer la descente (m)
+        :param dt: Pas de temps (s)
         """
         # Atmosphère
         Atmosphere.CalculateRhoPT(Avion.geth())
-        Avion.Aero.setMach(Inputs.MachCruise)
+        l_t = Avion.getl()
+        l_target = l_end - Avion.getl_descent()
 
         # Tant que l'on n'a pas parcouru assez de distance
-        while (Avion.getl() < l_end - Avion.getl_descent()):
-
+        while (l_t < l_target):
 
             # Vitesse
             Avion.Aero.convertMachToTAS(Atmosphere)
@@ -396,12 +422,22 @@ class Croisiere:
             Avion.Moteur.calculateFCruise()
             Avion.Moteur.calculateSFCCruise()
 
-            # Fuel burn
-            Avion.Masse.burnFuel(dt)
-
             # Mise à jour avion (pas de changement d'altitude)
             Avion.Add_dl(Vx * dt)
+
+            # Si on a dépassé la distance visée
+            if Avion.getl() > l_target:
+                # Intersection du pas de temps
+                dt = (l_target - l_t) / (Avion.getl() - l_t) * dt
+                # On se place à la distance visée
+                Avion.set_l(l_target)
+            
+            l_t = Avion.getl()
+
             Avion.Add_dt(dt)
+
+            # Fuel burn
+            Avion.Masse.burnFuel(dt)
 
             # Paramètres économiques
             Avion.Aero.calculateSGR()
@@ -424,8 +460,10 @@ class Croisiere:
         :param l_end: distance à parcourir en croisière avant de commencer la descente (m)
         :param dt: pas de temps
         """
+        l_t = Avion.getl()
+        l_target = l_end - Avion.getl_descent()
         
-        while Avion.getl() < l_end - Avion.getl_descent():
+        while (l_t < l_target):
             Mach_opt, CAS_opt = Croisiere.calculateSpeed_target(Avion, Atmosphere, Inputs)
 
             # Si on est trop loin du Mach optimal, on rejoint la vitesse cible en palier
@@ -455,6 +493,16 @@ class Croisiere:
             # Intégration
             Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
             Avion.Add_dl(Vx * dt)
+
+            # Si on a dépassé la distance visée
+            if Avion.getl() > l_target:
+                # Intersection du pas de temps
+                dt = (l_target - l_t) / (Avion.getl() - l_t) * dt
+                # On se place à la distance visée
+                Avion.set_l(l_target)
+            
+            l_t = Avion.getl()
+
             Avion.Add_dt(dt)
 
             # Consommation
@@ -482,7 +530,10 @@ class Croisiere:
         :param l_end: Distance à de croisière (m)
         :param dt: Pas de temps (s)        
         """
-        while Avion.getl() < l_end - Avion.getl_descent():
+        l_t = Avion.getl()
+        l_target = l_end - Avion.getl_descent()
+
+        while (l_t < l_target):
             
             # Calcul du Mach optimal pour l'ECCF actuel
             Mach_opt, CAS_opt = Croisiere.calculateSpeed_target(Avion, Atmosphere, Inputs)
@@ -523,6 +574,16 @@ class Croisiere:
 
                 # Intégration
                 Avion.Add_dl(Vx * dt)
+
+                # Si on a dépassé la distance visée
+                if Avion.getl() > l_target:
+                    # Intersection du pas de temps
+                    dt = (l_target - l_t) / (Avion.getl() - l_t) * dt
+                    # On se place à la distance visée
+                    Avion.set_l(l_target)
+                
+                l_t = Avion.getl()
+
                 Avion.Add_dt(dt)
                 Avion.Masse.burnFuel(dt)
 
