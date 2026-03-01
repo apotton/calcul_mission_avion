@@ -47,9 +47,10 @@ class Mission:
             # Calcul de précision (écart relatif)
             ecart_mission = abs(FB_mission - Avion.Masse.getFuelMission()) / FB_mission
             ecart_range = abs(Inputs.rangeMission_NM - (Avion.l_climb + Avion.l_cruise + Avion.l_descent)/Constantes.conv_NM_m)
+            ecart_diversion = abs(Inputs.rangeDiversion_NM - Avion.l_diversion / Constantes.conv_NM_m)
 
             # On pénalise beaucoup l'écart sur le carburant et un peu l'écart sur le range
-            precision = ecart_mission * 100 + ecart_range * 20
+            precision = ecart_mission * 100 + ecart_range * 20 + ecart_diversion * 20
             print(f"Boucle n°{n_iter+1} - Précision {precision:.3f}%")
 
             # Remise à zéro pour la boucle suivante
