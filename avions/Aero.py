@@ -13,7 +13,7 @@ class Aero:
         #Coef aero
         self.Avion = avion
         self.Inputs = self.Avion.Inputs
-        self.Cx_t = self.Avion.getCx0Climb()
+        self.Cx_t = 0.
         self.Cz_t = 0. #Uniquement pour l'initialisation 
 
         #Vitesses
@@ -316,21 +316,25 @@ class Aero:
         Calcule l'Economic Cruise Climb Fuel (ECCF) à l'instant t en fonction des
         conditions atmosphériques et des caractéristiques de l'avion.
         '''
-        self.ECCF_t = (self.Avion.Moteur.getFF() + self.Avion.CI) / (self.TAS_t + self.Avion.Vw)
+        self.ECCF_t = self.Avion.CI / (self.TAS_t + self.Avion.Vw) \
+                    + ((self.Avion.Moteur.getSFC() * self.Avion.Masse.getCurrentWeight())
+                    / ((self.TAS_t + self.Avion.Vw) * self.Cz_t / self.Cx_t))
         
     def calculateSAR(self):
         '''
         Calcul du SAR (Specific Air Range): distance parcourue dans une masse d'air par unité de
         carburant consommée (m/kg, exprimée usuellement en NM/kg).
         '''
-        self.SAR_t = self.TAS_t / self.Avion.Moteur.getFF()
+        self.SAR_t = (self.TAS_t * self.Cz_t / self.Cx_t /
+                    (self.Avion.Moteur.getSFC() * self.Avion.Masse.getCurrentWeight()))
 
     def calculateSGR(self):
         '''
         Calcule du SGR (Specific Ground Range): distance parcourue par rapport au sol par unité
         de carburant consommée (m/kg, exprimée usuellement en NM/kg).
         '''
-        self.SGR_t = (self.TAS_t + self.Avion.Vw) / self.Avion.Moteur.getFF()
+        self.SGR_t = ((self.TAS_t + self.Avion.Vw) * self.Cz_t / self.Cx_t /
+                    (self.Avion.Moteur.getSFC() * self.Avion.Masse.getCurrentWeight()))
 
     #Getters 
     def getCx(self):

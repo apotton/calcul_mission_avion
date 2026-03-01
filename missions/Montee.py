@@ -111,7 +111,7 @@ class Montee:
 
             # Vitesses
             Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw_kt * Constantes.conv_kt_mps
 
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
@@ -206,7 +206,7 @@ class Montee:
             Avion.Masse.burnFuel(dt)
 
             # Cinématique
-            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
             
@@ -226,11 +226,12 @@ class Montee:
         :param dt: pas de temps (s)
         '''
         Mach_t = Avion.Aero.getMach()
+        h_t = Avion.geth()
 
         # Tant que l'on a pas atteint le Mach limite ou l'altitude limite
-        while Avion.Aero.getMach() < Mach_lim and Avion.geth() < h_lim:
+        while Avion.Aero.getMach() < Mach_lim and h_t < h_lim:
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
+            Atmosphere.CalculateRhoPT(h_t)
 
             # Vitesses
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -275,13 +276,22 @@ class Montee:
 
             # Vitesses
             Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw_kt * Constantes.conv_kt_mps
 
             # Fuel burn
             Avion.Masse.burnFuel(dt)
 
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
+
+            if Avion.geth() > h_lim:
+                # Intersection du pas de temps
+                dt = (h_lim - h_t) / (Avion.geth() - h_t) * dt
+                # On se place à l'altitude visée
+                Avion.set_h(h_lim)
+            
+            h_t = Avion.geth()
+
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
 
@@ -338,7 +348,7 @@ class Montee:
 
             # Vitesses
             Vz = Avion.Aero.getTAS() * np.sin(pente)
-            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw_kt * Constantes.conv_kt_mps
 
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)

@@ -85,7 +85,7 @@ class Diversion:
             Avion.Moteur.calculateSFCCruise()
 
             # Intégration
-            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps
             Avion.Add_dl(Vx * dt)
 
             if Avion.getl() > l_target:

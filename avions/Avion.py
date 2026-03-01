@@ -35,8 +35,8 @@ class Avion:
 
     t                       = 0.     # Temps écoulé
     h_t                     = 0.     # Altitude actuelle (m)
-
     l_t                     = 0.     # Distance totale parcourue (m)    
+
     l_climb                 = 0.     # Distance nécessaire pour la montée (m)
     l_cruise                = 0.     # Distance nécessaire pour la croisière (m)
     l_descent               = 0.     # Distance nécessaire pour la descente (m)
@@ -51,6 +51,10 @@ class Avion:
     t_holding               = 0.     # Temps nécessaire à la phase de holding
 
     cruise                  = False  # Etat de l'avion (en croisière ou non)
+
+    saveAvion               = {}     # Dictionnaire des variables avion
+    saveAero                = {}     # Dictionnaire des variables aéro
+    saveMoteur              = {}     # Dictionnaire des variables moteur
 
     def __init__(self, Inputs: Inputs):
         '''
@@ -86,13 +90,15 @@ class Avion:
                     # Attribution dynamique des attributs
                     setattr(self, cle, valeur)
 
+        # Variables qu'il est plus pratique d'avoir ici (unités SI)
+        self.Vw = Inputs.Vw_kt * Constantes.conv_kt_mps # Passage de kt à m/s
+        self.CI = Inputs.CI_kg_min / 60 # Passage de kg/min à kg/s
+
         # Initialisation des sous-classes
         self.Inputs = Inputs
         self.Masse = Masse(self)
         self.Aero = Aero(self)
         self.Moteur = ReseauMoteur(self, engine_path)
-        self.Vw = Inputs.Vw * Constantes.conv_kt_mps # Passage de kt à m/s
-        self.CI = Inputs.CI_kg_min / 60 # Passage de kg/min à kg/s
 
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()
@@ -281,7 +287,7 @@ class Avion:
     def get_t_descent(self):
         return self.t_descent
 
-    def getl_descent(self):
+    def get_l_descent(self):
         return self.l_descent
     
     def setl_descent(self, l_descent: float):
@@ -332,4 +338,47 @@ class Avion:
     def get_l_holding(self):
         return self.l_holding
     
-   
+    # Enregistrement de l'état actuel
+    def save(self):
+        '''
+        Enregistre dans la classe avion les variables instantannées afin de 
+        les récupérer plus tard.
+        '''
+        self.saveAvion = {
+            "h_t": self.h_t,
+            "l_t": self.l_t,
+            "t"  : self.t
+        }
+
+        self.saveAero = {
+            "Cx_t"  : self.Aero.Cx_t,
+            "Cz_t"  : self.Aero.Cz_t,
+            "Mach_t": self.Aero.Mach_t,
+            "CAS_t" : self.Aero.CAS_t,
+            "TAS_t" : self.Aero.TAS_t,
+            "SGR_t" : self.Aero.SGR_t ,
+            "SAR_t" : self.Aero.SAR_t ,
+            "ECCF_t": self.Aero.ECCF_t
+        }
+
+        self.saveMoteur = {
+            "F_t"   : self.Moteur.F_t,
+            "FF_t"  : self.Moteur.FF_t,
+            "SFC_t" : self.Moteur.SFC_t
+        }
+    
+    def loadSave(self):
+        '''
+        Remet les variables instantannées à leur valeur sauvegardée.
+        '''
+        # Données Avion
+        for key, value in self.saveAvion.items():
+            setattr(self, key, value)
+
+        # Données Aero
+        for key, value in self.saveAero.items():
+            setattr(self.Aero, key, value)
+
+        # Données moteur
+        for key, value in self.saveMoteur.items():
+            setattr(self.Moteur, key, value)

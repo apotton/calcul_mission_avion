@@ -53,8 +53,8 @@ class OngletMission(ctk.CTkScrollableFrame):
         f_global.grid_columnconfigure((0, 7), weight=1)
         
         # Deux champs globaux côte à côte: Payload et distance
-        addField(app, f_global, "Payload", "m_payload", "18000", "kg", row=0, col=1)
-        addField(app, f_global, "Distance", "l_mission_NM", "1000", "nm", row=0, col=4)
+        addField(app, f_global, "Payload", "mPayload", "18000", "kg", row=0, col=1)
+        addField(app, f_global, "Distance", "rangeMission_NM", "1000", "nm", row=0, col=4)
 
         # Montée
         f_climb = ctk.CTkFrame(tab)
@@ -145,9 +145,9 @@ class OngletAutres(ctk.CTkScrollableFrame):
         ctk.CTkLabel(f_hold, text="Environnement & Réserves", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
         
         # Champs de la partie environnement et réserves
-        addField(app, f_hold, "Temps Holding", "Time_holding", "30", "min", row=1, col=1)
+        addField(app, f_hold, "Temps Holding", "Time_holding_min", "30", "min", row=1, col=1)
         addField(app, f_hold, "Contingency", "Contingency", "5", "%", row=2, col=1)
-        addField(app, f_hold, "Vitesse Vent Vw", "Vw", "0", "kt", row=3, col=1)
+        addField(app, f_hold, "Vitesse Vent Vw", "Vw_kt", "0", "kt", row=3, col=1)
         addField(app, f_hold, "DISA Croisière", "DISA_Cruise", "0", "K", row=4, col=1)
         addField(app, f_hold, "DISA Sous Crois.", "DISA_sub_Cruise", "0", "K", row=5, col=1)
 

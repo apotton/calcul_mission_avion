@@ -66,11 +66,15 @@ class Descente:
 
         # Troisième phase
         CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
+        # print(f"H avant: {Avion.geth()}")
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
+        # print(f"H actuelle: {Avion.geth()}")
 
         # Quatrième et dernière phase
         h_target = Inputs.hFinal_ft * Constantes.conv_ft_m
         Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
+        # print(f"H target: {h_target}")
+        # print(f"H finale: {Avion.geth()}")
 
         Avion.setl_descent_diversion(Avion.getl() - l_init)
 
@@ -90,7 +94,10 @@ class Descente:
         CAS_max = Avion.getKVMO() * Constantes.conv_kt_mps
         CAS_t = Avion.Aero.getCAS()
 
-        while CAS_t < CAS_max:
+        h_min = Inputs.hDecel_ft * Constantes.conv_ft_m
+        h_t = Avion.geth()
+
+        while (CAS_t < CAS_max) and (h_t > h_min):
             # Atmosphère
             Atmosphere.CalculateRhoPT(Avion.geth())
 
@@ -133,10 +140,19 @@ class Descente:
             # Pente de descente
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
             Vz = TAS_t * np.sin(pente)
-            Vx = TAS_t * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = TAS_t * np.cos(pente) + Inputs.Vw_kt * Constantes.conv_kt_mps
 
             # Mise à jour des positions
             Avion.Add_dh(Vz * dt)
+
+            if Avion.geth() < h_min:
+                # Intersection du pas de temps
+                dt = (h_min - h_t) / (Avion.geth() - h_t) * dt
+                # On se place à l'altitude visée
+                Avion.set_h(h_min)
+            
+            h_t = Avion.geth()
+
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
 
@@ -195,7 +211,7 @@ class Descente:
             pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
 
             Vz = Avion.Aero.getTAS() * np.sin(pente)   # négatif car en descente
-            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw_kt * Constantes.conv_kt_mps
 
             # Mise à jour position
             Avion.Add_dh(Vz * dt)
@@ -284,7 +300,7 @@ class Descente:
             CAS_t = Avion.Aero.getCAS()
 
             # Cinématique
-            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
 

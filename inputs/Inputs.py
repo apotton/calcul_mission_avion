@@ -28,8 +28,8 @@ class Inputs:
         # =====================
         # MISSION
         # =====================
-        self.m_payload = 20000   # kg
-        self.l_mission_NM = 1500  # NM
+        self.mPayload = 1000   # kg
+        self.rangeMission_NM = 1500  # NM
 
         # =====================
         # MONTEE
@@ -43,8 +43,7 @@ class Inputs:
         # CROISIERE
         # =====================
         # Type de croisière
-        self.cruiseType = "Alt_Mach" # "Alt_Mach", "Alt_SAR", "Mach_SAR" ou "CI"
-
+        self.cruiseType = "Mach_SAR" # "Alt_Mach", "Alt_SAR", "Mach_SAR" ou "CI"
 
         # Croisière Alt Mach (et toutes les autres)
         self.hCruise_ft = 38000       # ft
@@ -79,7 +78,7 @@ class Inputs:
         # =====================
         # Critère Holding
         # =====================
-        self.Time_holding = 30  # min
+        self.Time_holding_min = 30  # min
         
         # =====================
         # Critère contingency
@@ -89,7 +88,7 @@ class Inputs:
         # =====================
         # Paramètres de l'environnement
         # =====================
-        self.Vw = 0                   # kt
+        self.Vw_kt = 0                # kt
         self.DISA_Cruise = 0          # K
         self.DISA_sub_Cruise = 0      # K
 

@@ -19,18 +19,23 @@ Mission.Principal(A320, test_atmos, Saving, inputs)
 
 Saving.cut()
 
-plt.figure()
-plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
-plt.xlabel("Distance parcourue (NM)")
-plt.ylabel("Mach")
-plt.show()
-
 # plt.figure()
-# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["Mach"])
 # plt.xlabel("Distance parcourue (NM)")
-# plt.ylabel("Altitude (ft)")
+# plt.ylabel("Mach")
 # plt.show()
 
+plt.figure()
+plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("Altitude (ft)")
+plt.show()
+
+plt.figure()
+plt.plot(Saving.data["t"]/Constantes.conv_NM_m, Saving.data["CAS"]/Constantes.conv_kt_mps)
+plt.xlabel("Distance parcourue (NM)")
+plt.ylabel("CAS (kt)")
+plt.show()
 
 # plt.figure()
 # plt.plot(Saving.data["l_cruise"]/Constantes.conv_NM_m, Saving.data["ECCF"])
@@ -68,11 +73,11 @@ plt.show()
 # plt.ylabel("Finesse")
 # plt.show()
 
-plt.figure()
-plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["m"])
-plt.xlabel("Distance parcourue (NM)")
-plt.ylabel("Masse (kg)")
-plt.show()
+# plt.figure()
+# plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["m"])
+# plt.xlabel("Distance parcourue (NM)")
+# plt.ylabel("Masse (kg)")
+# plt.show()
 
 # plt.figure()
 # plt.plot(Saving.data["l"]/Constantes.conv_NM_m, Saving.data["h"]/Constantes.conv_ft_m)
@@ -89,9 +94,9 @@ plt.show()
 # plt.plot(Saving.data_simu["l_descent_diversion"])
 # plt.show()
 
-plt.figure()
-plt.plot(Saving.data_simu["FB_mission"])
-plt.show()
+# plt.figure()
+# plt.plot(Saving.data_simu["FB_mission"])
+# plt.show()
 
 
 # Profilage : python -m cProfile -o output.prof alexandre.py

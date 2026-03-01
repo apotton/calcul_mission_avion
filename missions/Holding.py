@@ -36,7 +36,7 @@ class Holding:
             Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
 
         #  Vol en palier
-        Holding.holdPalier(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtCruise)
+        Holding.holdPalier(Avion, Atmosphere, Enregistrement, Inputs, t_init, dt = Inputs.dtCruise)
 
         Avion.set_l_holding(Avion.getl() - l_init)
         Avion.set_t_holding(Avion.get_t() - t_init)
@@ -85,7 +85,7 @@ class Holding:
         return Mach_target, CAS_target
 
     @staticmethod
-    def holdPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
+    def holdPalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, t_init, dt):
         '''
         Vol en palier à vitesse constante pendant une durée définie.
         
@@ -95,9 +95,13 @@ class Holding:
         :param dt: Pas de temps (dt)
         '''
         # Nombre de pas de temps de holding
-        n_pas_de_temps = int(Inputs.Time_holding * 60 / dt)
+        t_target = t_init + Inputs.Time_holding_min * 60
+        t = Avion.get_t()
 
-        for _ in range(n_pas_de_temps):
+        while t < t_target:
+            if (t + dt > t_target):
+                dt = t_target - t
+                
             # Atmosphere
             Atmosphere.CalculateRhoPT(Avion.geth())
 
@@ -121,9 +125,10 @@ class Holding:
             Avion.Masse.burnFuel(dt)
 
             # Cinématique
-            Vx = Avion.Aero.getTAS() + Inputs.Vw * Constantes.conv_kt_mps
+            Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
+            t = Avion.get_t()
 
             # Enregistrement pour le pas de temps
             Enregistrement.save(Avion, Atmosphere, dt)

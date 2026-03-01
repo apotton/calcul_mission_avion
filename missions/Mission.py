@@ -23,12 +23,12 @@ class Mission:
         '''
         n_iter = 0
         Inputs.validate()
-        ecart_mission = 100 # %
+        precision = 100 # %
         Enregistrement.reset()
-        Enregistrement.save_simu(Avion, ecart_mission)
+        Enregistrement.save_simu(Avion, precision)
 
         tstart = timeit.default_timer()
-        while ecart_mission > Inputs.precision and n_iter < Inputs.maxIter:
+        while precision > Inputs.precision and n_iter < Inputs.maxIter:
             # Initialisations
             Enregistrement.reset()
             FB_mission = Avion.Masse.getFuelMission()
@@ -45,19 +45,23 @@ class Mission:
             Holding.Hold(Avion, Atmosphere, Enregistrement, Inputs)
 
             # Calcul de précision (écart relatif)
-            ecart_mission = abs(FB_mission - Avion.Masse.getFuelMission()) / FB_mission * 100
-            print(f"Boucle n°{n_iter+1} - Précision {ecart_mission:.3f}%")
+            ecart_mission = abs(FB_mission - Avion.Masse.getFuelMission()) / FB_mission
+            ecart_range = abs(Inputs.rangeMission_NM - (Avion.l_climb + Avion.l_cruise + Avion.l_descent)/Constantes.conv_NM_m)
+
+            # On pénalise beaucoup l'écart sur le carburant et un peu l'écart sur le range
+            precision = ecart_mission * 100 + ecart_range * 20
+            print(f"Boucle n°{n_iter+1} - Précision {precision:.3f}%")
 
             # Remise à zéro pour la boucle suivante
             Avion.reset()
-            Enregistrement.save_simu(Avion, ecart_mission)
+            Enregistrement.save_simu(Avion, precision)
             n_iter += 1
 
         tend = timeit.default_timer()
         temps_total = (tend - tstart)
 
         # Vérification de la solution obtenue
-        Mission.checkMission(Avion, Inputs, ecart_mission)
+        Mission.checkMission(Avion, Inputs, precision)
         
         print("")
         print(f"Temps de calcul complet: {temps_total:.4f} secondes")
@@ -69,7 +73,7 @@ class Mission:
         Enregistrement.cut()
 
     @staticmethod
-    def checkMission(Avion: Avion, Inputs: Inputs, ecart_mission):
+    def checkMission(Avion: Avion, Inputs: Inputs, precision):
         # Vérification de la validité de la solution (mettre une fonction précise)
         m_fuel_total = Avion.Masse.getFuelMission() + Avion.Masse.getFuelReserve()
         assert m_fuel_total <= Avion.getMaxFuelWeight(), \
@@ -78,12 +82,12 @@ class Mission:
         succes = True
 
         # Croisière inexistante
-        if (Avion.l_climb + Avion.l_descent > Inputs.l_mission_NM * Constantes.conv_NM_m):
+        if (Avion.l_climb + Avion.l_descent > Inputs.rangeMission_NM * Constantes.conv_NM_m):
             succes = False
             print("\033[33mLa mission est trop courte au vu de la montée et descente souhaitées: la croisière n'a pas eu lieu.\033[0m") 
 
         # Précision non atteinte
-        if (ecart_mission > Inputs.precision):
+        if (precision > Inputs.precision):
             succes = False
             print("\033[33mLa précision demandée n'a pas été atteinte. Essayez d'augmenter le nombre d'itérations ou de réduire les pas de temps.\033[0m")
 

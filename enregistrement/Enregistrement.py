@@ -150,7 +150,7 @@ class Enregistrement:
         :param ecart_mission: Ecart relatif sur le fuel burn mission (%)
         '''
         self.data_simu["ecart_mission"].append(ecart_mission)
-        self.data_simu["l_descent"].append(Avion.getl_descent())
+        self.data_simu["l_descent"].append(Avion.get_l_descent())
         self.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
         self.data_simu["FB_mission"].append(Avion.Masse.getFuelMission())
 
@@ -175,7 +175,7 @@ class Enregistrement:
         # Distances mission
         self.mission_data["l_climb"] = Avion.get_l_climb()
         self.mission_data["l_cruise"] = Avion.get_l_cruise()
-        self.mission_data["l_descent"] = Avion.getl_descent()
+        self.mission_data["l_descent"] = Avion.get_l_descent()
         self.mission_data["l_diversion"] = Avion.get_l_diversion()
         self.mission_data["l_holding"] = Avion.get_l_holding()
 

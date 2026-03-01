@@ -15,6 +15,8 @@ import numpy as np
 import csv
 import os
 
+import traceback
+
 # ==========================
 # MÉTIER : INSTANCIATION ET FICHIERS
 # ==========================
@@ -152,12 +154,15 @@ def calculer_mission(app):
     # Une fois qu'on a importé les inputs, on crée l'interface
     app.Atmosphere = Atmosphere(app.Inputs)
 
-    print("\nLancement calcul de mission...\n")
-    load_avion(app)
-    if not(app.Avion):
-        return
-
     try:
+        print("\nLancement calcul de mission...\n")
+        # Chargement de l'avion
+        load_avion(app)
+
+        # Dernier check (redondant normalement)
+        if not(app.Avion):
+            return
+        
         # Lancement du calcul de boucle mission
         app.Enregistrement.reset()
         Mission.Principal(app.Avion, app.Atmosphere, app.Enregistrement, app.Inputs)
@@ -171,6 +176,7 @@ def calculer_mission(app):
         app.tracer_graphique() 
     except Exception as e:
         print(f"Erreur lors du calcul de la mission : {e}")
+        # print(traceback.format_exc()) # Erreur complète
     
     # Fin de l'enregistrement de l'output
     app.redirector.stop_logging()
@@ -246,8 +252,8 @@ def calculer_batch(app):
         ("Cruise",   "Dist",  "(NM)"),  ("Cruise",  "Time", "(min)"), ("Cruise",   "Fuel", "(kg)"), 
         ("Descent",  "Dist",  "(NM)"),  ("Descent", "Time", "(min)"), ("Descent",  "Fuel", "(kg)"),
                                         ("Reserve", "Time", "(min)"), ("Reserve",  "Fuel", "(kg)"), 
-                                        ("Div",     "Time", "(min)"), ("Div",      "Fuel", "(kg)"),
-                                        ("Hold",    "Time", "(min)"), ("Hold",     "Fuel", "(kg)"),
+        ("Div",      "Dist",  "(NM)"),  ("Div",     "Time", "(min)"), ("Div",      "Fuel", "(kg)"),
+        ("Hold",     "Dist",  "(NM)"),  ("Hold",    "Time", "(min)"), ("Hold",     "Fuel", "(kg)"),
                                                                       ("Conting.", "Fuel", "(kg)")
     ]
     
@@ -260,14 +266,14 @@ def calculer_batch(app):
     summary_lines.append("")
     
     # Sauvegarde de l'état original
-    orig_payload = app.vars["m_payload"].get()
-    orig_range = app.vars["l_mission_NM"].get()
+    orig_payload = app.vars["mPayload"].get()
+    orig_range = app.vars["rangeMission_NM"].get()
 
     # Boucles Batch (groupement par payloads)
     for p in payloads:
-        app.vars["m_payload"].set(str(p))
+        app.vars["mPayload"].set(str(p))
         for r in ranges:
-            app.vars["l_mission_NM"].set(str(r))
+            app.vars["rangeMission_NM"].set(str(r))
             
             # Choix du nom sous-dossier (payload et range)
             nom_dossier = f"m_payload_{int(p)}-range_{int(r)}"
@@ -309,14 +315,14 @@ def calculer_batch(app):
                 # Valeur de chaque colonne
                 valeurs = [
                     fuel_load, p,
-                    r, l_mission/conv,      mission_time,             md['FB_mission'],
-                    md['l_climb']   / conv, md['t_climb']   / 60.0,   md['FB_climb'],
-                    md['l_cruise']  / conv, md['t_cruise']  / 60.0,   md["FB_cruise"],
-                    md['l_descent'] / conv, md['t_descent'] / 60.0,   md['FB_descent'],
-                                            t_reserve,                md['FB_reserve'],
-                                            md['t_diversion'] / 60.0, md['FB_diversion'],
-                                            md['t_holding']   / 60.0, md['FB_holding'],
-                                                                      md['mF_contingency']
+                    r, l_mission/conv,        mission_time,             md['FB_mission'],
+                    md['l_climb']     / conv, md['t_climb']   / 60.0,   md['FB_climb'],
+                    md['l_cruise']    / conv, md['t_cruise']  / 60.0,   md["FB_cruise"],
+                    md['l_descent']   / conv, md['t_descent'] / 60.0,   md['FB_descent'],
+                                              t_reserve,                md['FB_reserve'],
+                    md['l_diversion'] / conv, md['t_diversion'] / 60.0, md['FB_diversion'],
+                    md['l_holding']   / conv, md['t_holding']   / 60.0, md['FB_holding'],
+                                                                        md['mF_contingency']
                 ]
                 
                 ligne_valeurs = "".join(f"{v:10.1f}" for v in valeurs)
@@ -333,8 +339,8 @@ def calculer_batch(app):
         print(f">> Payload {p}kg terminée.")
         
     # Restauration GUI et sauvegarde Batch
-    app.vars["m_payload"].set(orig_payload)
-    app.vars["l_mission_NM"].set(orig_range)
+    app.vars["mPayload"].set(orig_payload)
+    app.vars["rangeMission_NM"].set(orig_range)
     
     # Écriture Summary.txt
     summary_text = "\n".join(summary_lines)
