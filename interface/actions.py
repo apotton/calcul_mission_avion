@@ -176,7 +176,7 @@ def calculer_mission(app):
         app.tracer_graphique() 
     except Exception as e:
         print(f"Erreur lors du calcul de la mission : {e}")
-        # print(traceback.format_exc()) # Erreur complète
+        print(traceback.format_exc()) # Erreur complète
     
     # Fin de l'enregistrement de l'output
     app.redirector.stop_logging()
@@ -189,11 +189,19 @@ def calculer_pp(app):
 
     # Set des valeurs renseignées dans la classe Inputs 
     try:
-        app.Inputs.SpeedType = app.vars["SpeedType"].get()
-        app.Inputs.Speed     = float(app.vars["Speed"].get())
-        app.Inputs.altPP_ft  = float(app.vars["altPP_ft"].get())
-        app.Inputs.massPP    = float(app.vars["massPP"].get())
-        app.Inputs.DISA_PP   = float(app.vars["DISA_PP"].get())
+        app.Inputs.cCz          = float(app.vars["cCz"].get())
+        app.Inputs.cCx          = float(app.vars["cCx"].get())
+        app.Inputs.cFF_climb    = float(app.vars["cFF_climb"].get())
+        app.Inputs.cFN_climb    = float(app.vars["cFN_climb"].get())
+        app.Inputs.cFF_cruise   = float(app.vars["cFF_cruise"].get())
+        app.Inputs.cFN_cruise   = float(app.vars["cFN_cruise"].get())
+        app.Inputs.cFF_descent  = float(app.vars["cFF_descent"].get())
+        app.Inputs.cFN_descent  = float(app.vars["cFN_descent"].get())
+        app.Inputs.SpeedType    = app.vars["SpeedType"].get()
+        app.Inputs.Speed        = float(app.vars["Speed"].get())
+        app.Inputs.altPP_ft     = float(app.vars["altPP_ft"].get())
+        app.Inputs.massPP       = float(app.vars["massPP"].get())
+        app.Inputs.DISA_PP      = float(app.vars["DISA_PP"].get())
     except ValueError:
         messagebox.showerror("Erreur", "Valeurs numériques invalides pour le Point Performance.")
         return
@@ -330,6 +338,7 @@ def calculer_batch(app):
                 
             except Exception as e:
                 print(f"Erreur fatale sur cette itération: {e}")
+                print(traceback.format_exc()) # Erreur complète
                 summary_lines.append(f"Erreur pour Payload={p}, Range={r}: {e}")
             
             # Fin de l'interception des outputs

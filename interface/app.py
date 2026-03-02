@@ -153,13 +153,13 @@ class App(ctk.CTk):
 
         # Boutons avec appels lambda pour passer 'self' aux fonctions externes
         ctk.CTkButton(
-            btn_frame_bas, text="Importer CSV", 
+            btn_frame_bas, text="Importer config calcul", 
             command=lambda: importer_csv(self), 
             fg_color="#E67E22", hover_color="#D35400"
         ).grid(row=0, column=0, padx=5, sticky="ew")
         
         ctk.CTkButton(
-            btn_frame_bas, text="Exporter CSV", 
+            btn_frame_bas, text="Exporter config calcul", 
             command=lambda: exporter_csv(self), 
             fg_color="#27AE60", hover_color="#2ECC71"
         ).grid(row=0, column=1, padx=5, sticky="ew")

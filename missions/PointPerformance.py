@@ -98,19 +98,15 @@ class PointPerformance():
 
         # Structuration des résultats pour l'affichage
         donnees_perf = {
-            "Avion: " + Avion.getName():[],
+            "Avion: " + Avion.getName():[
+                ("Masse totale", Avion.Masse.getCurrentMass(), "kg")
+            ],
             "Conditions Atmosphériques": [
                 ("Altitude", Avion.geth() / Constantes.conv_ft_m , "ft"),
                 ("Température", T - 273.15 , "°C"),
                 ("ΔISA", DISA, "°C"),
                 ("Pression", P, "Pa"),
-                ("Densité (rho)", rho, "kg/m³")
-            ],
-            "Masses": [
-                ("Masse totale", Avion.Masse.getCurrentMass(), "kg"),
-                ("Masse à vide", Avion.getEmptyWeight(), "kg"),
-                ("Masse carburant", Avion.Masse.getFuelRemaining(), "kg"),
-                ("Masse payload", Avion.Masse.m_payload, "kg")
+                ("Densité (rho)", rho, "kg/m³"),
             ],
             "Vitesses & Pressions": [
                 ("Mach", Mach, "-"),

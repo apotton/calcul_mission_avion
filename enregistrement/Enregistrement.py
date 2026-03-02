@@ -11,8 +11,6 @@ class Enregistrement:
         # Compteur (pour la taille à chaque changement)
         self.counter = 0
 
-        self.cruise_counter = 0
-
         self.data = {
             # Cinématique
             "t" : np.zeros(self.default_size, dtype=np.float32),
@@ -29,10 +27,6 @@ class Enregistrement:
             "Cx" : np.zeros(self.default_size, dtype=np.float32),
             "finesse"  : np.zeros(self.default_size, dtype=np.float32),
 
-            # Vitesses composantes
-            "Vx" : np.zeros(self.default_size, dtype=np.float32),
-            "Vz" : np.zeros(self.default_size, dtype=np.float32),
-
             # Propulsion
             "F_N" : np.zeros(self.default_size, dtype=np.float32),
             "SFC" : np.zeros(self.default_size, dtype=np.float32),
@@ -47,15 +41,11 @@ class Enregistrement:
             "T" : np.zeros(self.default_size, dtype=np.float32),
             "rho" : np.zeros(self.default_size, dtype=np.float32),
 
-            "t_cruise" : np.zeros(self.default_size, dtype = np.float32),
-            "l_cruise" : np.zeros(self.default_size, dtype = np.float32),
+            # Paramètres économiques croisière
             "SGR" : np.zeros(self.default_size, dtype = np.float32),
             "SAR" : np.zeros(self.default_size, dtype = np.float32),
             "ECCF": np.zeros(self.default_size, dtype = np.float32)
         }
-
-        # self.data_cruise = {
-        # }
 
         # Données de convergence simu
         self.data_simu = {
@@ -127,16 +117,17 @@ class Enregistrement:
         self.data["T"][self.counter] = Atmosphere.getT_t()
         self.data["rho"][self.counter] = Atmosphere.getRho_t()
 
-        self.counter += 1
 
         if Avion.cruise:
-            self.data["t_cruise"][self.cruise_counter] = self.data["t_cruise"][self.cruise_counter - 1] + dt if self.cruise_counter > 1 else 0
-            self.data["l_cruise"][self.cruise_counter] = Avion.getl()
-            self.data["SGR"][self.cruise_counter] = Avion.Aero.getSGR()
-            self.data["SAR"][self.cruise_counter] = Avion.Aero.getSAR()
-            self.data["ECCF"][self.cruise_counter] = Avion.Aero.getECCF()
-            self.cruise_counter += 1
+            self.data["SGR"][self.counter] = Avion.Aero.getSGR()
+            self.data["SAR"][self.counter] = Avion.Aero.getSAR()
+            self.data["ECCF"][self.counter] = Avion.Aero.getECCF()
+        else :
+            self.data["SGR"][self.counter] = float('nan')
+            self.data["SAR"][self.counter] = float('nan')
+            self.data["ECCF"][self.counter] = float('nan')
 
+        self.counter += 1
         
         if self.counter >= len(self.data["t"]):
             self.extend()
@@ -291,12 +282,9 @@ class Enregistrement:
         '''
         Enlève toutes les valeurs non atteintes après le counter.
         '''
-        cles_cruise = ["t_cruise", "l_cruise", "SGR", "SAR", "ECCF"]
 
         for key in self.data:
             self.data[key] = self.data[key][:self.counter]
-            if key in cles_cruise:
-                self.data[key] = self.data[key][:self.cruise_counter]
 
 
 
@@ -307,8 +295,6 @@ class Enregistrement:
         self.counter = 0
         for key in self.data:
             self.data[key] = np.zeros(self.default_size, dtype=np.float32)
-
-        self.cruise_counter = 0
 
     def exportCSV(self, filepath):
         '''
