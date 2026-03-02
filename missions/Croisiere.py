@@ -63,79 +63,6 @@ class Croisiere:
 # ================
 
     @staticmethod
-    def climbIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
-        '''
-        Montée iso-Mach à Mach constant jusqu'à ce que les critères de montée ne soient plus vérifiés.
-
-        :param Avion: Instance de la classe Avion
-        :param Atmosphere: Instance de la classe Atmosphere
-        :param Enregistrement: Instance de la classe Enregistrement
-        :param Inputs: Instance de la classe Inputs
-        :param dt: Pas de temps (s)
-        '''
-        h_target = Avion.geth() + Inputs.stepClimb_ft * Constantes.conv_ft_m
-        h_t = Avion.geth()
-
-        while h_t < h_target:
-
-            # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
-
-            # Vitesse
-            Avion.Aero.convertMachToTAS(Atmosphere)
-            Avion.Aero.convertMachToCAS(Atmosphere)
-
-            # Aérodynamique
-            Avion.Aero.calculateCz(Atmosphere)
-            Cz = Avion.Aero.getCz()
-
-            if Inputs.AeroSimplified:
-                Avion.Aero.calculateCxClimb_Simplified()
-            else:
-                Avion.Aero.calculateCx(Atmosphere)
-            Cx = Avion.Aero.getCx()
-
-            finesse = Cz / Cx
-
-            # Traînée
-            Rx = Avion.Masse.getCurrentWeight() / finesse
-
-            # Poussée
-            Avion.Moteur.calculateFClimb()
-            F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCClimb() #On prend quelles tables du coup ? 
-
-            # Pente
-            pente = np.arcsin((F_N - Rx) / Avion.Masse.getCurrentWeight())
-
-            # Vitesses
-            Vx = Avion.Aero.getTAS() * np.cos(pente) + Inputs.Vw_kt * Constantes.conv_kt_mps
-            Vz = Avion.Aero.getTAS() * np.sin(pente)
-
-            # Mise à jour avion
-            Avion.Add_dh(Vz * dt)
-
-            if Avion.geth() > h_target:
-                # Intersection du pas de temps
-                dt = (h_target - h_t) / (Avion.geth() - h_t) * dt
-                # On se place à l'altitude visée
-                Avion.set_h(h_target)
-            
-            h_t = Avion.geth()
-
-            Avion.Add_dl(Vx * dt)
-            Avion.Add_dt(dt)
-
-            # Fuel burn
-            Avion.Masse.burnFuel(dt)
-
-            # Paramètres économiques
-            Avion.Aero.calculateSGR()
-            Avion.Aero.calculateECCF()
-            
-            Enregistrement.save(Avion, Atmosphere, dt)
-
-    @staticmethod
     def checkUp(Avion : Avion, Atmosphere: Atmosphere, Inputs: Inputs):
         '''
         Vérifie si la montée en croisière est intéressante
@@ -339,7 +266,9 @@ class Croisiere:
             if (Avion.getl() < Inputs.cruiseClimbStop*Inputs.rangeMission_NM*Constantes.conv_NM_m/100 \
                 and Avion.getl() > Inputs.cruiseClimbInit*Inputs.rangeMission_NM*Constantes.conv_NM_m/100 \
                 and Croisiere.checkUp(Avion, Atmosphere, Inputs)):
-                Croisiere.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtClimb)
+
+                h_target = Avion.geth() + Inputs.stepClimb_ft * Constantes.conv_ft_m
+                Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt = Inputs.dtClimb)
             else :
                 # Fuel burn
                 Avion.Masse.burnFuel(dt)
@@ -542,9 +471,8 @@ class Croisiere:
                 and Avion.getl() > Inputs.cruiseClimbInit * Inputs.rangeMission_NM * Constantes.conv_NM_m / 100
                 and Croisiere.checkUp(Avion, Atmosphere, Inputs)):
                 
-                # print("Résultat: " + str(Croisiere.checkUp(Avion, Atmosphere, Inputs)))
-                Croisiere.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt=Inputs.dtClimb)
-                # pass
+                h_target = Avion.geth() + Inputs.stepClimb_ft * Constantes.conv_ft_m
+                Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt=Inputs.dtClimb)
             else:
                 # Vol en palier classique si pas de montée
                 Avion.Aero.calculateCz(Atmosphere)
