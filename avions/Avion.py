@@ -110,7 +110,6 @@ class Avion:
         self.t         = 0.     # Temps écoulé
         self.l_t       = 0.     # Distance totale parcourue (m)    
         self.h_t       = 0.     # Altitude actuelle (m)
-        self.diversion = False  # Etat de l'avion (en diversion ou non)
         self.cruise    = False  # On est pas en croisière
         self.Masse.initializeMission()
 

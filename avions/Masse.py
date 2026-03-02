@@ -16,14 +16,14 @@ class Masse:
         assert Avion.Inputs.mPayload <= self.Avion.getMaxPLWeight(), f"Payload supérieur à la masse maximale autorisée ({self.Avion.getMaxPLWeight()} kg)"
 
         # Masses mission
-        self.m_payload          = Avion.Inputs.mPayload     # Payload de la mission
+        self.m_payload          = Avion.Inputs.mPayload       # Payload de la mission
         self.m_fuel_mission     = Avion.getMaxFuelWeight()/2  # Fuel nécessaire à la mission (set au max au début)
-        self.m_fuel_contingency = 0.0                       # Fuel de contingence, ce qu'il doit obligatoirement resté au minimum à la fin de la mission (typiquement 5%)
-        self.m_fuel_diversion   = 0.0                       # Fuel en cas de diversion vers un aéroport de dégagement
-        self.m_fuel_holding     = 0.0                       # Fuel en cas de holding réglementaire
+        self.m_fuel_contingency = 0.0                         # Fuel de contingence, ce qu'il doit obligatoirement resté au minimum à la fin de la mission (typiquement 5%)
+        self.m_fuel_diversion   = 0.0                         # Fuel en cas de diversion vers un aéroport de dégagement
+        self.m_fuel_holding     = 0.0                         # Fuel en cas de holding réglementaire
         self.m_fuel_reserve     = (self.m_fuel_contingency
                                 +  self.m_fuel_diversion
-                                +  self.m_fuel_holding)     # Fuel de reserve : diversion + holding + contingency
+                                +  self.m_fuel_holding)       # Fuel de reserve : diversion + holding + contingency
 
         # Masses détaillées
         self.m_fuel_climb       = 0.0
