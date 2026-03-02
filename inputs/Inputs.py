@@ -36,7 +36,7 @@ class Inputs:
         # =====================
         self.hInit_ft   = 1500.0         # ft
         self.hAccel_ft  = 10000.0        # ft
-        self.CAS_below_10000_mont_kt = 250.0  # kt
+        self.CASinit_kt = 250.0  # kt
         self.Mach_climb = 0.78
 
         # =====================
@@ -64,7 +64,7 @@ class Inputs:
         # =====================
         # DESCENTE
         # =====================
-        self.CAS_below_10000_desc_kt = 250.0  # kt
+        self.CASfinal_kt = 250.0  # kt
         self.hDecel_ft = 10000.0 # ft, altitude finale de maxCAS
         self.hFinal_ft = 1500.0 # ft, altitude finale mission
 
@@ -124,10 +124,10 @@ class Inputs:
         if self.hInit_ft > self.hAccel_ft:
             print("Altitude initiale supérieur à l'altitude de pallier en montée")
 
-        if self.CAS_below_10000_mont_kt > 250:
+        if self.CASinit_kt > 250:
             print("Vitesse de montée sous 10 000ft trop élevée (>250kt)")
 
-        if self.CAS_below_10000_desc_kt > 250:
+        if self.CASfinal_kt > 250:
             print("Vitesse de descente sous 10 000ft trop élevée (>250kt)")
 
         if (abs(self.Mach_climb - self.MachCruise) > 0.01):

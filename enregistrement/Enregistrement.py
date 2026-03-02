@@ -1,4 +1,5 @@
 from atmosphere.Atmosphere import Atmosphere
+from constantes.Constantes import Constantes
 from avions.Avion import Avion
 import numpy as np
 
@@ -141,7 +142,7 @@ class Enregistrement:
             self.extend()
 
 
-    def save_simu(self, Avion: Avion, ecart_mission):
+    def saveSimu(self, Avion: Avion, ecart_mission):
         '''
         Enregistre les données de performance de la boucle (l'écart de précision,
         les longueurs de descente et la masse de fuel brulée pour la mission).
@@ -151,10 +152,10 @@ class Enregistrement:
         '''
         self.data_simu["ecart_mission"].append(ecart_mission)
         self.data_simu["l_descent"].append(Avion.get_l_descent())
-        self.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
         self.data_simu["FB_mission"].append(Avion.Masse.getFuelMission())
+        self.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
 
-    def save_final(self, Avion: Avion):
+    def saveFinal(self, Avion: Avion):
         '''
         Enregistre les valeurs finales des caractéristiques de la mission (masses, distances...)
 
@@ -186,13 +187,11 @@ class Enregistrement:
         self.mission_data["t_diversion"] = Avion.get_t_diversion()
         self.mission_data["t_holding"] = Avion.get_t_holding()
 
-        valeurs_mises_en_forme = self.print_values()
+        valeurs_mises_en_forme = self.printValues()
         print(valeurs_mises_en_forme)
         
-    def print_values(self):
-        NM_PER_METER = 1.0 / 1852.0
-        MIN_PER_SECOND = 1.0 / 60.0
-
+    def printValues(self):
+        # Dictionnaire des grandeurs à afficher
         phases = [
             ("Montée", 
             self.mission_data["l_climb"], 
@@ -241,10 +240,13 @@ class Enregistrement:
         lines.append(header)
         lines.append(separator)
 
+        # Itération sur toutes les phases pour arriver au total
         for name, dist_m, time_s, fuel in phases:
+            # Pour le total de la mission, on met un séparateur
             if name == "Mission":
                 lines.append(separator)
 
+            # Le contingency fuel ne compte pas comme un vol, on passe à la suite
             if name == "Contingence":
                 total_fuel += fuel
                 lines.append(
@@ -252,12 +254,13 @@ class Enregistrement:
                 )
                 continue
             else:
-                dist_nm = dist_m * NM_PER_METER
-                time_min = time_s * MIN_PER_SECOND
+                dist_nm = dist_m / Constantes.conv_NM_m
+                time_min = time_s / 60.
                 lines.append(
                     f"{name:<12}{dist_nm:>15.1f}{time_min:>15.1f}{fuel:>18.1f}"
                 )
 
+            # On remet un séparateur pour la mission et on ne compte pas sa distance parcourue
             if name == "Mission":
                 lines.append(separator)
             else:
@@ -270,6 +273,7 @@ class Enregistrement:
             f"{'TOTAL':<12}{total_distance:>15.1f}{total_time:>15.1f}{total_fuel:>18.1f}"
         )
 
+        # On renvoie la string formatée
         return "\n".join(lines)
 
 
@@ -306,7 +310,7 @@ class Enregistrement:
 
         self.cruise_counter = 0
 
-    def export_csv(self, filepath):
+    def exportCSV(self, filepath):
         '''
         Exporte les données enregistrées sous forme de fichier CSV.
         Format : NomVariable;Valeur1;Valeur2;...

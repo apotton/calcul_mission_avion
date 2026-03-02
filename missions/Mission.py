@@ -25,7 +25,7 @@ class Mission:
         Inputs.validate()
         precision = 100 # %
         Enregistrement.reset()
-        Enregistrement.save_simu(Avion, precision)
+        Enregistrement.saveSimu(Avion, precision)
 
         tstart = timeit.default_timer()
         while precision > Inputs.precision and n_iter < Inputs.maxIter:
@@ -55,7 +55,7 @@ class Mission:
 
             # Remise à zéro pour la boucle suivante
             Avion.reset()
-            Enregistrement.save_simu(Avion, precision)
+            Enregistrement.saveSimu(Avion, precision)
             n_iter += 1
 
         tend = timeit.default_timer()
@@ -68,7 +68,7 @@ class Mission:
         print(f"Temps de calcul complet: {temps_total:.4f} secondes")
         print("")
 
-        Enregistrement.save_final(Avion)
+        Enregistrement.saveFinal(Avion)
 
         # Fin de l'enregistrement
         Enregistrement.cut()

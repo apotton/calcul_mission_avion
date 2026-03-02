@@ -168,7 +168,7 @@ def calculer_mission(app):
         Mission.Principal(app.Avion, app.Atmosphere, app.Enregistrement, app.Inputs)
         
         chemin_resultats = chemin_dossier / "resultats_vol.csv"
-        app.Enregistrement.export_csv(str(chemin_resultats))
+        app.Enregistrement.exportCSV(str(chemin_resultats))
         print(f"\n>> Résultats sauvegardés dans {chemin_resultats}")
         
         # Affichage graphes
@@ -300,7 +300,7 @@ def calculer_batch(app):
                 # Run d'une mission individuelle
                 app.Enregistrement.reset()
                 Mission.Principal(app.Avion, app.Atmosphere, app.Enregistrement, app.Inputs)
-                app.Enregistrement.export_csv(str(sub_dir / "resultats_vol.csv"))
+                app.Enregistrement.exportCSV(str(sub_dir / "resultats_vol.csv"))
                 
                 md = app.Enregistrement.mission_data
                 

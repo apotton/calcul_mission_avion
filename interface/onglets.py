@@ -63,7 +63,7 @@ class OngletMission(ctk.CTkScrollableFrame):
         ctk.CTkLabel(f_climb, text="Montée", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
         addField(app, f_climb, "Altitude Initiale", "hInit_ft", "1500.0", "ft", row=1, col=1)
         addField(app, f_climb, "Altitude Accel.", "hAccel_ft", "10000.0", "ft", row=2, col=1)
-        addField(app, f_climb, "CAS < 10000ft", "CAS_below_10000_mont_kt", "250.0", "kt", row=3, col=1)
+        addField(app, f_climb, "CAS < 10000ft", "CASinit_kt", "250.0", "kt", row=3, col=1)
         addField(app, f_climb, "Mach Climb", "Mach_climb", "0.78", "", row=4, col=1)
 
         # Croisière (Dynamique)
@@ -85,7 +85,7 @@ class OngletMission(ctk.CTkScrollableFrame):
         f_desc.pack(fill="x", pady=5)
         f_desc.grid_columnconfigure((0, 4), weight=1)
         ctk.CTkLabel(f_desc, text="Descente", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
-        addField(app, f_desc, "CAS < 10000ft", "CAS_below_10000_desc_kt", "250.0", "kt", row=1, col=1)
+        addField(app, f_desc, "CAS < 10000ft", "CASfinal_kt", "250.0", "kt", row=1, col=1)
         addField(app, f_desc, "Altitude Decel.", "hDecel_ft", "10000.0", "ft", row=2, col=1)
         addField(app, f_desc, "Altitude Finale", "hFinal_ft", "1500.0", "ft", row=3, col=1)
         self.updateCruiseFields()

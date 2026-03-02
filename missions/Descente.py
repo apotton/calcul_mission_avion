@@ -29,7 +29,7 @@ class Descente:
         Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
         # Troisième phase
-        CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
+        CAS_target = Inputs.CASfinal_kt * Constantes.conv_kt_mps
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
         
         # Quatrième et dernière phase
@@ -65,7 +65,7 @@ class Descente:
         Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
         # Troisième phase
-        CAS_target = Inputs.CAS_below_10000_desc_kt * Constantes.conv_kt_mps
+        CAS_target = Inputs.CASfinal_kt * Constantes.conv_kt_mps
         # print(f"H avant: {Avion.geth()}")
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
         # print(f"H actuelle: {Avion.geth()}")

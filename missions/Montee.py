@@ -23,7 +23,7 @@ class Montee:
 
         # Initialisations
         Avion.set_h(Inputs.hInit_ft*Constantes.conv_ft_m)
-        Avion.Aero.setCAS(Inputs.CAS_below_10000_mont_kt * Constantes.conv_kt_mps)
+        Avion.Aero.setCAS(Inputs.CASinit_kt * Constantes.conv_kt_mps)
 
         h_target = Inputs.hAccel_ft * Constantes.conv_ft_m
         Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)

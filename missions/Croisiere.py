@@ -142,7 +142,7 @@ class Croisiere:
         return False
 
     @staticmethod
-    def calculateSpeed_target(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
+    def calculateSpeedTarget(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
         '''
         Calcule la vitesse Mach telle que l'on soit à k*SAR (souvent 99%), ou alors au minimum de l'ECCF.
 
@@ -224,6 +224,70 @@ class Croisiere:
 # =================
 
     @staticmethod
+    def cruiseAltMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, l_end, dt):
+        """
+        Croisière à altitude et Mach constant.
+
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
+        :param l_end: Distance à parcourir en croisière avant de commencer la descente (m)
+        :param dt: Pas de temps (s)
+        """
+        # Atmosphère
+        Atmosphere.CalculateRhoPT(Avion.geth())
+        l_t = Avion.getl()
+        l_target = l_end - Avion.get_l_descent()
+
+        # Tant que l'on n'a pas parcouru assez de distance
+        while (l_t < l_target):
+
+            # Vitesse
+            Avion.Aero.convertMachToTAS(Atmosphere)
+            Avion.Aero.convertMachToCAS(Atmosphere)
+
+            # Vitesses
+            Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps
+
+            # Aérodynamique
+            Avion.Aero.calculateCz(Atmosphere)
+
+            if Inputs.AeroSimplified:
+                Avion.Aero.calculateCxCruise_Simplified()
+            else:
+                Avion.Aero.calculateCx(Atmosphere)
+
+            # Poussée moteur
+            Avion.Moteur.calculateFCruise()
+            Avion.Moteur.calculateSFCCruise()
+
+            # Mise à jour avion (pas de changement d'altitude)
+            Avion.Add_dl(Vx * dt)
+
+            # Si on a dépassé la distance visée
+            if Avion.getl() > l_target:
+                # Intersection du pas de temps
+                dt = (l_target - l_t) / (Avion.getl() - l_t) * dt
+                # On se place à la distance visée
+                Avion.set_l(l_target)
+            
+            l_t = Avion.getl()
+
+            Avion.Add_dt(dt)
+
+            # Fuel burn
+            Avion.Masse.burnFuel(dt)
+
+            # Paramètres économiques
+            Avion.Aero.calculateSGR()
+            Avion.Aero.calculateSAR()
+            Avion.Aero.calculateECCF()
+
+            # Enregistrement au pas de temps
+            Enregistrement.save(Avion, Atmosphere, dt)
+
+    @staticmethod
     def cruiseMachSAR(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, l_end, dt):
         """
         Croisière en palier à Mach constant, avec des éventuelles montées d'un pallier d'altitude.
@@ -297,71 +361,6 @@ class Croisiere:
 
 
     @staticmethod
-    def cruiseAltMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, l_end, dt):
-        """
-        Croisière à altitude et Mach constant.
-
-        :param Avion: Instance de la classe Avion
-        :param Atmosphere: Instance de la classe Atmosphere
-        :param Enregistrement: Instance de la classe Enregistrement
-        :param Inputs: Instance de la classe Inputs
-        :param l_end: Distance à parcourir en croisière avant de commencer la descente (m)
-        :param dt: Pas de temps (s)
-        """
-        # Atmosphère
-        Atmosphere.CalculateRhoPT(Avion.geth())
-        l_t = Avion.getl()
-        l_target = l_end - Avion.get_l_descent()
-
-        # Tant que l'on n'a pas parcouru assez de distance
-        while (l_t < l_target):
-
-            # Vitesse
-            Avion.Aero.convertMachToTAS(Atmosphere)
-            Avion.Aero.convertMachToCAS(Atmosphere)
-
-            # Vitesses
-            Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps
-
-            # Aérodynamique
-            Avion.Aero.calculateCz(Atmosphere)
-
-            if Inputs.AeroSimplified:
-                Avion.Aero.calculateCxCruise_Simplified()
-            else:
-                Avion.Aero.calculateCx(Atmosphere)
-
-            # Poussée moteur
-            Avion.Moteur.calculateFCruise()
-            Avion.Moteur.calculateSFCCruise()
-
-            # Mise à jour avion (pas de changement d'altitude)
-            Avion.Add_dl(Vx * dt)
-
-            # Si on a dépassé la distance visée
-            if Avion.getl() > l_target:
-                # Intersection du pas de temps
-                dt = (l_target - l_t) / (Avion.getl() - l_t) * dt
-                # On se place à la distance visée
-                Avion.set_l(l_target)
-            
-            l_t = Avion.getl()
-
-            Avion.Add_dt(dt)
-
-            # Fuel burn
-            Avion.Masse.burnFuel(dt)
-
-            # Paramètres économiques
-            Avion.Aero.calculateSGR()
-            Avion.Aero.calculateSAR()
-            Avion.Aero.calculateECCF()
-
-            # Enregistrement au pas de temps
-            Enregistrement.save(Avion, Atmosphere, dt)
-
-
-    @staticmethod
     def cruiseAltSAR(Avion:Avion, Atmosphere:Atmosphere, Enregistrement:Enregistrement, Inputs: Inputs, l_end, dt):
         """
         Croisière à altitude constante avec optimisation du SAR.
@@ -377,7 +376,7 @@ class Croisiere:
         l_target = l_end - Avion.get_l_descent()
         
         while (l_t < l_target):
-            Mach_opt, CAS_opt = Croisiere.calculateSpeed_target(Avion, Atmosphere, Inputs)
+            Mach_opt, CAS_opt = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
 
             # Si on est trop loin du Mach optimal, on rejoint la vitesse cible en palier
             if (abs(Avion.Aero.getMach() - Mach_opt) > 0.01):
@@ -449,7 +448,7 @@ class Croisiere:
         while (l_t < l_target):
             
             # Calcul du Mach optimal pour l'ECCF actuel
-            Mach_opt, CAS_opt = Croisiere.calculateSpeed_target(Avion, Atmosphere, Inputs)
+            Mach_opt, CAS_opt = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
 
             # Ajustement de la vitesse si on s'éloigne trop de l'optimum
             if abs(Avion.Aero.getMach() - Mach_opt) > 0.01:

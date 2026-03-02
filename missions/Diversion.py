@@ -58,7 +58,7 @@ class Diversion:
         l_target = l_end - Avion.getl_descent_diversion()
         
         while (l_t < l_target):
-            Mach_opt, CAS_opt = Croisiere.calculateSpeed_target(Avion, Atmosphere, Inputs)
+            Mach_opt, CAS_opt = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
 
             # Ajustement de la vitesse si on s'éloigne trop de l'optimum
             if abs(Avion.Aero.getMach() - Mach_opt) > 0.01:

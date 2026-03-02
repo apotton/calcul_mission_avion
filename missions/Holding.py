@@ -26,7 +26,7 @@ class Holding:
         
         # La vitesse souhaitée est celle qui maximise la finesse
         Atmosphere.CalculateRhoPT(Avion.geth())
-        _, CAS_target = Holding.calculateMach_target(Avion, Atmosphere, Inputs)
+        _, CAS_target = Holding.calculateMachTarget(Avion, Atmosphere, Inputs)
 
         if (Avion.Aero.getCAS() < CAS_target):
             # Accélération en palier
@@ -43,7 +43,14 @@ class Holding:
         Avion.Masse.setFuelHolding(m_init - Avion.Masse.getCurrentMass())
         
     @staticmethod
-    def calculateMach_target(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
+    def calculateMachTarget(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
+        '''
+        Méthode décidant de la vitesse de la holding, en chosissant la finesse maximale
+
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Inputs: Instance de la classe Inputs
+        '''
         # Sauvegarde des variables qui vont changer
         Mach = Avion.Aero.getMach()
         CAS  = Avion.Aero.getCAS()
@@ -92,6 +99,7 @@ class Holding:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param dt: Pas de temps (dt)
         '''
         # Nombre de pas de temps de holding
