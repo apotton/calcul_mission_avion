@@ -2,7 +2,8 @@ from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
 from avions.Avion import Avion
 import numpy as np
-
+from itertools import zip_longest
+import csv
 
 class Enregistrement:
     def __init__(self):
@@ -45,6 +46,42 @@ class Enregistrement:
             "SGR" : np.zeros(self.default_size, dtype = np.float32),
             "SAR" : np.zeros(self.default_size, dtype = np.float32),
             "ECCF": np.zeros(self.default_size, dtype = np.float32)
+        }
+
+        self.units = {
+            # Cinématique
+            "t" : "s",
+            "h" : "m",
+            "l" : "m",
+
+            # Vitesses
+            "CAS"  : "m/s",
+            "TAS"  : "m/s",
+            "Mach" : "-",
+
+            # Aérodynamique
+            "Cz"       : "-",
+            "Cx"       : "-",
+            "finesse"  : "-",
+
+            # Propulsion
+            "F_N" : "N",
+            "SFC" : "kg/(N.s)",
+            "FF"  : "kg/s",
+
+            # Masse / carburant
+            "FB" : "kg",
+            "m"  : "kg",
+
+            # Atmosphere
+            "P" : "Pa",
+            "T" : "K",
+            "rho" : "kg/m³",
+
+            # Paramètres économiques croisière
+            "SGR" : "m/kg",
+            "SAR" : "m/kg",
+            "ECCF": "kg/m"
         }
 
         # Données de convergence simu
@@ -218,6 +255,12 @@ class Enregistrement:
             "-",
             "-", 
             self.mission_data["mF_contingency"]),
+
+            ("Reserves",
+             self.mission_data["l_diversion"] + self.mission_data["l_holding"],
+             self.mission_data["t_diversion"] + self.mission_data["t_holding"],
+             self.mission_data["FB_diversion"] + self.mission_data["FB_holding"] + self.mission_data["mF_contingency"]
+             )
         ]
 
         total_distance = 0.0
@@ -234,7 +277,7 @@ class Enregistrement:
         # Itération sur toutes les phases pour arriver au total
         for name, dist_m, time_s, fuel in phases:
             # Pour le total de la mission, on met un séparateur
-            if name == "Mission":
+            if name == "Mission" or name == "Reserves":
                 lines.append(separator)
 
             # Le contingency fuel ne compte pas comme un vol, on passe à la suite
@@ -252,14 +295,13 @@ class Enregistrement:
                 )
 
             # On remet un séparateur pour la mission et on ne compte pas sa distance parcourue
-            if name == "Mission":
+            if name == "Mission" or name == "Reserves":
                 lines.append(separator)
             else:
                 total_distance += dist_nm
                 total_time += time_min
                 total_fuel += fuel
 
-        lines.append(separator)
         lines.append(
             f"{'TOTAL':<12}{total_distance:>15.1f}{total_time:>15.1f}{total_fuel:>18.1f}"
         )
@@ -298,27 +340,39 @@ class Enregistrement:
 
     def exportCSV(self, filepath):
         '''
-        Exporte les données enregistrées sous forme de fichier CSV.
-        Format : NomVariable;Valeur1;Valeur2;...
+        Exporte les données enregistrées sous forme de fichier CSV en colonnes.
+        Format : 
+        NomVariable1;NomVariable2;...
+        Unite1;Unite2;...
+        Valeur1_1;Valeur2_1;...
         
         :param filepath: Chemin complet du fichier de destination
         '''
-        import csv
         with open(filepath, "w", encoding="utf-8", newline='') as f:
             writer = csv.writer(f, delimiter=';')
-
-            # Export des données principales ponctuelles
-            for key, array in self.mission_data.items():
-                ligne = [key, str(array)]
-                # ligne = [key] + np.array(array).tolist()
-                writer.writerow(ligne)
             
-            # Export des données principales array
-            for key, array in self.data.items():
-                # On coupe le tableau à la taille réelle de la simulation
-                donnees_utiles = array[:self.counter]
-                # On crée une liste avec le nom de la variable suivi de ses valeurs
-                ligne = [key] + donnees_utiles.tolist()
-                writer.writerow(ligne)
+            # Extraction des clés (noms des variables)
+            noms_variables = list(self.data.keys())
+            
+            # Gestion des unités
+            ligne_unites = [self.units.get(clef, "") for clef in noms_variables]
+            
+            # Écriture de la ligne des en-têtes, puis de la ligne des unités
+            writer.writerow(noms_variables)
+            writer.writerow(ligne_unites)
+            
+            # 3. Extraction des données pour chaque colonne
+            colonnes_donnees = [
+                ["" if np.isnan(val) else val for val in self.data[clef].tolist()] 
+                for clef in noms_variables
+            ]
+            
+            # Transposition (colonnes -> lignes) et écriture
+            # zip_longest permet de regrouper le 1er élément de chaque liste, puis le 2ème, etc.
+            # fillvalue='' permet de combler les trous si les listes n'ont pas exactement la même taille.
+            lignes_transposees = zip_longest(*colonnes_donnees, fillvalue='')
+            
+            # Écriture de toutes les lignes de données d'un seul coup
+            writer.writerows(lignes_transposees)
 
             

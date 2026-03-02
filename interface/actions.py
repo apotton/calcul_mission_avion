@@ -397,33 +397,42 @@ def importer_mission(app):
     # Lire Paramètres (à l'aide d'import CSV)
     if (dossier / "param.csv").exists():
         importer_csv(app, dossier / "param.csv")
-        
-    # Lire Résultats de vol pour les graphiques : reconstruction de la classe Enregistrement
+    
+    # Lecture du csv des résultats
     if (dossier / "resultats_vol.csv").exists():
         app.Enregistrement.reset()
+        
         with open(dossier / "resultats_vol.csv", "r", encoding="utf-8") as f:
             reader = csv.reader(f, delimiter=';')
-            for row in reader:
-                if not row: continue
-                key = row[0]
-                # Parse Mission Data
-                if key in app.Enregistrement.mission_data:
-                    try: app.Enregistrement.mission_data[key] = float(row[1])
-                    except: pass
-                # Parse Cruise Data
-                elif key.startswith('cruise_'):
-                    real_key = key.replace('cruise_', '')
-                    if real_key in app.Enregistrement.data_cruise:
-                        vals = np.array(row[1:], dtype=np.float32)
-                        l = len(vals)
-                        app.Enregistrement.data_cruise[real_key][:l] = vals
-                        app.Enregistrement.cruise_counter = max(app.Enregistrement.cruise_counter, l)
-                # Parse Main Data
-                elif key in app.Enregistrement.data:
-                    vals = np.array(row[1:], dtype=np.float32)
-                    l = len(vals)
-                    app.Enregistrement.data[key][:l] = vals
-                    app.Enregistrement.counter = max(app.Enregistrement.counter, l)
+            
+            # On charge toutes les lignes en mémoire
+            lignes = list(reader)
+            
+            if len(lignes) >= 2:
+                # Extraction des en-têtes (clés) et des unités
+                noms_variables = lignes[0]
+                donnees_lignes = lignes[2:] # Tout le reste correspond aux données
+                
+                if donnees_lignes:
+                    # Transposition : on bascule les lignes en colonnes
+                    # zip(*donnees_lignes) prend toutes les lignes et regroupe les éléments par colonne
+                    colonnes = list(zip(*donnees_lignes))
+                    
+                    # Traitement colonne par colonne
+                    for i, key in enumerate(noms_variables):
+                        if key in app.Enregistrement.data:
+                            # On récupère la colonne brute (une liste de chaînes de caractères)
+                            colonne_brute = colonnes[i]
+                            
+                            # Conversion : on remplace "" par np.nan, puis on convertit en float32
+                            vals = np.array(
+                                [np.nan if val == "" else val for val in colonne_brute], 
+                                dtype=np.float32
+                            )
+                            
+                            l = len(vals)
+                            app.Enregistrement.data[key][:l] = vals
+                            app.Enregistrement.counter = max(app.Enregistrement.counter, l)
                     
         # app.right_tabview.set("Graphiques")
         app.tracer_graphique()

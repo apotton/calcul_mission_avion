@@ -13,7 +13,12 @@ from inputs.Inputs import Inputs
 
 # Import modules Python
 from tkinter import messagebox
-import customtkinter as ctk # pip install customtkinter
+try:
+    import customtkinter as ctk
+except:
+    print("\033[31mModule customtkinter non trouvé: veuillez l'installer avec la commande 'pip install customtkinter'\033[0m")
+    exit()
+
 from pathlib import Path
 import sys
 
@@ -230,18 +235,18 @@ class App(ctk.CTk):
         
         # Liste des données traçables (arrays dans Enregistrement.data)
         keys = list(self.Enregistrement.data.keys()) # + list(self.Enregistrement.data_cruise.keys())
-        
-        # Choix de l'axe X
-        ctk.CTkLabel(f_controls, text="Axe X :").pack(side="left", padx=10)
-        self.cb_x = ctk.CTkComboBox(f_controls, values=keys, width=120)
-        self.cb_x.set("l") 
-        self.cb_x.pack(side="left", padx=5)
 
         # Choix de l'axe Y
         ctk.CTkLabel(f_controls, text="Axe Y :").pack(side="left", padx=10)
         self.cb_y = ctk.CTkComboBox(f_controls, values=keys, width=120)
         self.cb_y.set("h") 
         self.cb_y.pack(side="left", padx=5)
+        
+        # Choix de l'axe X
+        ctk.CTkLabel(f_controls, text="Axe X :").pack(side="left", padx=10)
+        self.cb_x = ctk.CTkComboBox(f_controls, values=keys, width=120)
+        self.cb_x.set("l") 
+        self.cb_x.pack(side="left", padx=5)
 
         # Bouton tracer
         ctk.CTkButton(f_controls, text="Tracer", command=self.tracer_graphique, width=100).pack(side="left", padx=20)
