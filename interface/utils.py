@@ -38,10 +38,10 @@ class PrintRedirector:
         self.silent_mode = False
 
     def write(self, texte):
-        # 1. Nettoyage du texte pour le fichier (on supprime tous les codes ANSI)
+        # Nettoyage du texte pour le fichier (on supprime tous les codes ANSI)
         clean_text = re.sub(r'\033\[[\d;]*m', '', texte)
         
-        # 2. Écriture dans le fichier de log si actif
+        # Écriture dans le fichier de log si actif
         if self.log_filepath:
             try:
                 with open(self.log_filepath, "a", encoding="utf-8") as f:
@@ -49,7 +49,7 @@ class PrintRedirector:
             except Exception:
                 pass
 
-        # 3. Écriture dans l'interface avec interprétation des couleurs
+        # Écriture dans l'interface avec interprétation des couleurs
         if not self.silent_mode:
             # On découpe la string en gardant les codes ANSI comme éléments de la liste
             parts = ANSI_PATTERN.split(texte)

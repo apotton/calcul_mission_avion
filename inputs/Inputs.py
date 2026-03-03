@@ -73,7 +73,6 @@ class Inputs:
         # =====================
         self.cruiseDiversionAlt_ft = 25000  # ft, altitude de croisière diversion
         self.rangeDiversion_NM = 200        # NM, longueur de la diversion
-        self.MachCruiseDiversion = 0.65     # Mach de croisière diversion
         
         # =====================
         # Critère Holding

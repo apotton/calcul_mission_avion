@@ -20,6 +20,8 @@ class Diversion:
         :param Inputs: Instance de la classe Inputs
         '''
         # Entrée en diversion
+        Avion.setPhase(3)
+        Enregistrement.save(Avion, Atmosphere, 0)
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
         l_init = Avion.getl()

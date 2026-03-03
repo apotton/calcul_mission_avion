@@ -1,17 +1,20 @@
 # Import autres éléments de l'interface
 from interface.utils import PrintRedirector
-from interface.actions import calculer_mission, importer_mission, calculer_pp, \
-                              calculer_batch, importer_batch   # importe les fonctions actions
+from interface.actions import calculerMission, importerMission, calculerPP, \
+                              calculerBatch, importerBatch   # importe les fonctions actions
 from interface.onglets import OngletMission, OngletAutres, OngletOptions, OngletPP, OngletBatch
-from interface.actions import importer_csv, exporter_csv
+from interface.actions import importCSV, exportCSV
 
 # Code de calcul mission
 from enregistrement.Enregistrement import Enregistrement
 from constantes.Constantes import Constantes
-from atmosphere.Atmosphere import Atmosphere
 from inputs.Inputs import Inputs
 
-# Import modules Python
+
+import csv
+import numpy as np
+
+# Import module tkinter (affiche une erreur en rouge dans la console si il n'est pas installé)
 from tkinter import messagebox
 try:
     import customtkinter as ctk
@@ -49,6 +52,8 @@ class App(ctk.CTk):
         # Clés à ne pas exporter globalement
         self.pp_keys    = ["SpeedType", "Speed", "altPP_ft", "massPP", "DISA_PP"]
         self.batch_keys = ["batch_ranges", "batch_payloads"]
+        self.batch_root_dir = None
+        self.batch_missions_map = {} # Dictionnaire pour traduire le nom joli en nom de dossier
         
         # Objets du code mission
         self.Avion           = None
@@ -73,9 +78,9 @@ class App(ctk.CTk):
         self.left_frame.grid_columnconfigure(0, weight=1)
 
         # Construction des sélections, boutons et onglets
-        self.build_top_selection()
-        self.build_action_buttons()
-        self.build_tabs()
+        self.buildTopSelection()
+        self.buildActionButtons()
+        self.buildTabs()
         self.build_bottom_buttons()
 
         # Partie droite: outputs
@@ -94,15 +99,15 @@ class App(ctk.CTk):
         sys.stdout = self.redirector
 
         # Tab Graphiques
-        self.build_tab_graphiques()
+        self.buildTabGraphiques()
 
         # Initialisation dynamique
-        self.on_tab_change() # Définit le bouton principal au lancement
+        self.onTabChange() # Définit le bouton principal au lancement
 
     # ==========================
     # MÉTHODES DE CONSTRUCTION
     # ==========================
-    def build_top_selection(self):
+    def buildTopSelection(self):
         '''
         Construit les deux menus déroulants du haut (avion, moteur) à partir des répertoires.
         '''
@@ -111,7 +116,7 @@ class App(ctk.CTk):
         top_frame.grid_columnconfigure((0, 5), weight=1)
 
         # Place les noms des avions/moteurs dans la classe (cb_avion, cv_moteur)
-        self.charger_listes_fichiers()
+        self.chargerListeFichiers()
 
         # Sélection avion
         ctk.CTkLabel(top_frame, text="Avion :").grid(row=0, column=1, padx=5, pady=5, sticky="e")
@@ -125,7 +130,7 @@ class App(ctk.CTk):
         self.cb_moteur.set("") 
         self.cb_moteur.grid(row=0, column=4, padx=5, pady=5, sticky="w")
 
-    def build_action_buttons(self):
+    def buildActionButtons(self):
         '''
         Construit les boutons sous ceux de sélection avion/moteur, qui servent à importer
         ou exporter les missions/batch, ou faire le calcul Point Performance.
@@ -137,13 +142,13 @@ class App(ctk.CTk):
 
         # Bouton Calculer Dynamique
         self.btn_calculer = ctk.CTkButton(self.btn_frame, text="Calculer Mission",
-                                          command=lambda: calculer_mission(self), 
+                                          command=lambda: calculerMission(self), 
                                           fg_color="#2980b9", hover_color="#3498db")
         self.btn_calculer.grid(row=0, column=0, padx=5, pady=0, sticky="ew")
 
         # Bouton Importer Dynamique
-        self.btn_importer = ctk.CTkButton(self.btn_frame, text="Importer Mission",
-                                          command=lambda: importer_mission(self), 
+        self.btn_importer = ctk.CTkButton(self.btn_frame, text="Importer résultats Mission",
+                                          command=lambda: importerMission(self), 
                                           fg_color="#27ae60", hover_color="#2ecc71")
         self.btn_importer.grid(row=0, column=1, padx=5, pady=0, sticky="ew")
 
@@ -159,22 +164,22 @@ class App(ctk.CTk):
         # Boutons avec appels lambda pour passer 'self' aux fonctions externes
         ctk.CTkButton(
             btn_frame_bas, text="Importer config calcul", 
-            command=lambda: importer_csv(self), 
+            command=lambda: importCSV(self), 
             fg_color="#E67E22", hover_color="#D35400"
         ).grid(row=0, column=0, padx=5, sticky="ew")
         
         ctk.CTkButton(
             btn_frame_bas, text="Exporter config calcul", 
-            command=lambda: exporter_csv(self), 
+            command=lambda: exportCSV(self), 
             fg_color="#27AE60", hover_color="#2ECC71"
         ).grid(row=0, column=1, padx=5, sticky="ew")
 
-    def build_tabs(self):
+    def buildTabs(self):
         '''
         Construction des onglets de l'interface.
         '''
         # Appel à une fonction à chaque changement d'onglet
-        self.tabview = ctk.CTkTabview(self.left_frame, command=self.on_tab_change)
+        self.tabview = ctk.CTkTabview(self.left_frame, command=self.onTabChange)
         self.tabview.grid(row=2, column=0, sticky="nsew")
 
         # Ajout de chaque onglet, dans l'ordre
@@ -191,7 +196,7 @@ class App(ctk.CTk):
         self.onglet_PP      = OngletPP(self.tabview.tab("Point Performance"), app=self)
         self.onglet_batch   = OngletBatch(self.tabview.tab("Batch"), app=self)
 
-    def on_tab_change(self):
+    def onTabChange(self):
         '''
         Change dynamiquement le comportement des boutons selon l'onglet actif.
         '''
@@ -199,11 +204,11 @@ class App(ctk.CTk):
         
         # Gérer le texte et la commande du bouton de calcul
         if current_tab == "Point Performance":
-            self.btn_calculer.configure(text="Calculer PP", command=lambda: calculer_pp(self))
+            self.btn_calculer.configure(text="Calculer PP", command=lambda: calculerPP(self))
         elif current_tab == "Batch":
-            self.btn_calculer.configure(text="Calculer Batch", command=lambda: calculer_batch(self))
+            self.btn_calculer.configure(text="Calculer Batch", command=lambda: calculerBatch(self))
         else:
-            self.btn_calculer.configure(text="Calculer Mission", command=lambda: calculer_mission(self))
+            self.btn_calculer.configure(text="Calculer Mission", command=lambda: calculerMission(self))
             
         # Gérer l'affichage du bouton d'importation et le centrage
         if current_tab == "Point Performance": # Cas particulier: un seul bouton
@@ -217,14 +222,14 @@ class App(ctk.CTk):
             
             # Changement des noms et fonctions appelées
             if current_tab == "Batch":
-                self.btn_importer.configure(text="Importer Batch", command=lambda: importer_batch(self), fg_color="#8e44ad", hover_color="#9b59b6")
+                self.btn_importer.configure(text="Importer résultats Batch", command=lambda: importerBatch(self), fg_color="#8e44ad", hover_color="#9b59b6")
             else:
-                self.btn_importer.configure(text="Importer Mission", command=lambda: importer_mission(self), fg_color="#27ae60", hover_color="#2ecc71")
+                self.btn_importer.configure(text="Importer résultats Mission", command=lambda: importerMission(self), fg_color="#27ae60", hover_color="#2ecc71")
 
 # ==========================
 # LOGIQUE GRAPHIQUE (GRAPHIQUES & CHAMPS)
 # ==========================
-    def build_tab_graphiques(self):
+    def buildTabGraphiques(self):
         '''
         Construction de l'onglet "Graphiques" dans la partie outputs.
         '''
@@ -248,8 +253,16 @@ class App(ctk.CTk):
         self.cb_x.set("l") 
         self.cb_x.pack(side="left", padx=5)
 
+        # Choix de la mission pour les batchs
+        self.lbl_batch = ctk.CTkLabel(f_controls, text="Mission :")
+        self.lbl_batch.pack(side="left", padx=(15, 5))
+        
+        self.cb_batch = ctk.CTkComboBox(f_controls, values=["Mission unique"], width=200, command=self.loadBatchMission)
+        self.cb_batch.set("Mission unique")
+        self.cb_batch.pack(side="left", padx=5)
+
         # Bouton tracer
-        ctk.CTkButton(f_controls, text="Tracer", command=self.tracer_graphique, width=100).pack(side="left", padx=20)
+        ctk.CTkButton(f_controls, text="Tracer", command=self.tracerGraphique, width=100).pack(side="left", padx=20)
 
         # Paramètres de la figure matplotlib
         self.fig, self.ax = plt.subplots(figsize=(6, 4), dpi=100)
@@ -263,9 +276,10 @@ class App(ctk.CTk):
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
-    def tracer_graphique(self):
+    def tracerGraphique(self):
         '''
-        Effectue les tracés des valeurs sélectionnées, avec des unités aéronautiques.
+        Effectue les tracés des valeurs sélectionnées, avec des unités aéronautiques 
+        et des couleurs selon la phase de vol.
         '''
         # Check si l'Enregistrement contient des données
         if self.Enregistrement.counter == 0:
@@ -280,9 +294,12 @@ class App(ctk.CTk):
         data_y_brut = self.Enregistrement.data[key_y][:self.Enregistrement.counter]
 
         if data_x_brut.size != data_y_brut.size:
-            messagebox.showinfo("Attention", "Vous avez sélectionné deux grandeurs n'ayant pas le même nombre d'éléments (sans doute" +
+            messagebox.showinfo("Attention", "Vous avez sélectionné deux grandeurs n'ayant pas le même nombre d'éléments (sans doute " +
                                 "des données croisière et mission). Veuillez tracer des grandeurs de taille similaire.")
             return
+
+        # Récupération du tableau des phases
+        phases = self.Enregistrement.data["phase"][:self.Enregistrement.counter]
 
         # Helper function pour la conversion des unités
         def conv_aero(key, arr):
@@ -304,17 +321,106 @@ class App(ctk.CTk):
         data_x, unit_x = conv_aero(key_x, data_x_brut)
         data_y, unit_y = conv_aero(key_y, data_y_brut)
 
-        # Affichage du graphique, des labels et des unités
+        # Dictionnaire associant la valeur de la phase à un nom et une couleur bien lisible
+        phase_mapping = {
+            0: {"nom": "Montée", "couleur": "#27ae60"},     # Vert
+            1: {"nom": "Croisière", "couleur": "#2980b9"},  # Bleu
+            2: {"nom": "Descente", "couleur": "#e67e22"},   # Orange
+            3: {"nom": "Diversion", "couleur": "#8e44ad"},  # Violet
+            4: {"nom": "Holding", "couleur": "#c0392b"}     # Rouge
+        }
+
+        # Nettoyage du graphique
         self.ax.clear()
-        self.ax.plot(data_x, data_y, color='#2980b9', linewidth=2)
+
+        # Tracé segmenté par phase
+        import numpy as np # Assure-toi que numpy est bien importé en haut de ton fichier
+        
+        for val_phase, infos in phase_mapping.items():
+            # Création d'un masque booléen (True là où la phase correspond)
+            masque = (phases == val_phase)
+            
+            # S'il y a des données pour cette phase, on trace le segment
+            if np.any(masque):
+                self.ax.plot(data_x[masque], data_y[masque], 
+                             color=infos["couleur"], 
+                             linewidth=2, 
+                             label=infos["nom"])
+
+        # Affichage des labels et des unités
         self.ax.set_xlabel(f"{key_x} [{unit_x}]", fontweight='bold')
         self.ax.set_ylabel(f"{key_y} [{unit_y}]", fontweight='bold')
         self.ax.set_title(f"{key_y} = f({key_x})")
         self.ax.grid(True, linestyle='--', alpha=0.7)
+        
+        # Ajout de la légende à l'endroit le moins encombrant ("best")
+        self.ax.legend(loc="best", framealpha=0.9)
+        
         self.fig.tight_layout()
         self.canvas.draw()
 
-    def charger_listes_fichiers(self):
+    def loadBatchMission(self, choice=None):
+        ''' Charge silencieusement les résultats d'une mission spécifique du batch pour les tracer '''
+        if not self.batch_root_dir or choice == "Mission unique" or not choice:
+            return
+            
+        vrai_nom_dossier = self.batch_missions_map.get(choice)
+        if not vrai_nom_dossier:
+            return
+            
+        chemin_csv = self.batch_root_dir / vrai_nom_dossier / "resultats_vol.csv"
+        
+        if not chemin_csv.exists():
+            return
+            
+        # Chargement silencieux dans Enregistrement
+        self.chargerFichierResultats(chemin_csv)
+
+    def chargerFichierResultats(self, chemin_csv):
+        '''
+        Remplit l'attribut enregistrement de la classe avec les données issues du CSV.
+
+        :param chemin_csv: Chemin complet du fichier resultats_vol.csv
+        '''
+        self.Enregistrement.reset()
+        
+        with open(chemin_csv, "r", encoding="utf-8") as f:
+            reader = csv.reader(f, delimiter=';')
+            
+            # On charge toutes les lignes en mémoire
+            lignes = list(reader)
+            
+            if len(lignes) >= 2:
+                # Extraction des en-têtes (clés) et des unités
+                noms_variables = lignes[0]
+                donnees_lignes = lignes[2:] # Tout le reste correspond aux données
+                
+                if donnees_lignes:
+                    # Transposition : on bascule les lignes en colonnes
+                    # zip(*donnees_lignes) prend toutes les lignes et regroupe les éléments par colonne
+                    colonnes = list(zip(*donnees_lignes))
+                    
+                    # Traitement colonne par colonne
+                    for i, key in enumerate(noms_variables):
+                        if key in self.Enregistrement.data:
+                            # On récupère la colonne brute (une liste de chaînes de caractères)
+                            colonne_brute = colonnes[i]
+                            
+                            # Conversion : on remplace "" par np.nan, puis on convertit en float32
+                            vals = np.array(
+                                [np.nan if val == "" else val for val in colonne_brute], 
+                                dtype=np.float32
+                            )
+                            
+                            l = len(vals)
+                            self.Enregistrement.data[key][:l] = vals
+                            self.Enregistrement.counter = max(self.Enregistrement.counter, l)
+
+        # Retrace automatiquement avec les nouvelles données
+        self.tracerGraphique()
+
+
+    def chargerListeFichiers(self):
         '''
         Importe dans la classe le nom des avions et des moteurs.
         '''

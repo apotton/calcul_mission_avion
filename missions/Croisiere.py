@@ -19,7 +19,8 @@ class Croisiere:
         :param Inputs: Instance de la classe Inputs
         :param dt: Pas de temps (s)
         '''
-        Avion.cruise = True
+        Avion.setPhase(1)
+        Enregistrement.save(Avion, Atmosphere, 0)
         l_end = Inputs.rangeMission_NM * Constantes.conv_NM_m
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
@@ -56,7 +57,6 @@ class Croisiere:
         Avion.set_t_cruise(Avion.get_t() - t_init)
         Avion.Masse.setFuelCruise(m_init - Avion.Masse.getCurrentMass())
         Avion.Masse.addFuelMission(m_init - Avion.Masse.getCurrentMass())
-        Avion.cruise = False
 
 # ================
 # Fonctions utilitaires

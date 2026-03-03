@@ -36,6 +36,7 @@ class Avion:
     t                       = 0.     # Temps écoulé
     h_t                     = 0.     # Altitude actuelle (m)
     l_t                     = 0.     # Distance totale parcourue (m)    
+    phase                   = 0      # Phase de la mission (montée, croisière, descente, diversion)
 
     l_climb                 = 0.     # Distance nécessaire pour la montée (m)
     l_cruise                = 0.     # Distance nécessaire pour la croisière (m)
@@ -49,8 +50,6 @@ class Avion:
     t_descent               = 0.     # Temps nécessaire à la descente
     t_diversion             = 0.     # Temps nécessaire à la diversion
     t_holding               = 0.     # Temps nécessaire à la phase de holding
-
-    cruise                  = False  # Etat de l'avion (en croisière ou non)
 
     saveAvion               = {}     # Dictionnaire des variables avion
     saveAero                = {}     # Dictionnaire des variables aéro
@@ -110,7 +109,6 @@ class Avion:
         self.t         = 0.     # Temps écoulé
         self.l_t       = 0.     # Distance totale parcourue (m)    
         self.h_t       = 0.     # Altitude actuelle (m)
-        self.cruise    = False  # On est pas en croisière
         self.Masse.initializeMission()
 
     def setupDescentes(self):
@@ -120,6 +118,11 @@ class Avion:
         self.l_descent = 3 * self.Inputs.hCruise_ft / 1000 * Constantes.conv_NM_m
         self.l_descent_diversion = 3 * self.Inputs.cruiseDiversionAlt_ft / 1000 * Constantes.conv_NM_m
 
+    def getPhase(self):
+        return self.phase
+
+    def setPhase(self, phase: int):
+        self.phase = phase
 
     def Add_dl(self, dl: float):
         '''

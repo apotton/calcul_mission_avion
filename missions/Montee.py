@@ -16,6 +16,7 @@ class Montee:
         :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
+        Avion.setPhase(0)
         Avion.Masse.setFuelMission(0.)
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
@@ -54,10 +55,18 @@ class Montee:
         Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
+        h_target = Inputs.cruiseDiversionAlt_ft * Constantes.conv_ft_m
+
+        # Obtention de la vitesse objectif
+        from missions.Croisiere import Croisiere # Empêche une importation circulaire
+        h_init = Avion.geth()
+        Avion.set_h(h_target)
+        Mach_target, CAS_target = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
+        Avion.set_h(h_init)
+
         Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
 
-        h_target = Inputs.cruiseDiversionAlt_ft * Constantes.conv_ft_m
-        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.MachCruiseDiversion, dt)
+        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Mach_target, dt)
         
         Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
         

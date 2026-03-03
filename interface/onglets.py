@@ -46,15 +46,14 @@ class OngletMission(ctk.CTkScrollableFrame):
         # Création de l'onglets
         tab = ctk.CTkScrollableFrame(self.app.tabview.tab("Mission"), fg_color="transparent")
         tab.pack(fill="both", expand=True)
-
-        # Création de l'espace où iront les champs
-        f_global = ctk.CTkFrame(tab)
-        f_global.pack(fill="x", pady=5)
-        f_global.grid_columnconfigure((0, 7), weight=1)
         
-        # Deux champs globaux côte à côte: Payload et distance
-        addField(app, f_global, "Payload", "mPayload", "18000", "kg", row=0, col=1)
-        addField(app, f_global, "Distance", "rangeMission_NM", "1000", "nm", row=0, col=4)
+        # Deux champs globaux: Payload et distance
+        f_mission = ctk.CTkFrame(tab)
+        f_mission.pack(fill="x", pady=5)
+        f_mission.grid_columnconfigure((0, 4), weight=1)
+        ctk.CTkLabel(f_mission, text="Mission", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
+        addField(app, f_mission, "Payload", "mPayload", "18000", "kg", row=1, col=1)
+        addField(app, f_mission, "Distance", "rangeMission_NM", "1000", "nm", row=2, col=1)
 
         # Montée
         f_climb = ctk.CTkFrame(tab)
@@ -136,7 +135,6 @@ class OngletAutres(ctk.CTkScrollableFrame):
         # Champs de la diversion
         addField(app, f_div, "Altitude Croisière", "cruiseDiversionAlt_ft", "25000", "ft", row=1, col=1)
         addField(app, f_div, "Distance", "rangeDiversion_NM", "200", "nm", row=2, col=1)
-        addField(app, f_div, "Mach Croisière", "MachCruiseDiversion", "0.65", "", row=3, col=1)
 
         # Apparence de la partie environnement et réserves
         f_hold = ctk.CTkFrame(tab)
@@ -217,15 +215,6 @@ class OngletPP(ctk.CTkFrame):
         # Choix du type de vitesse
         app.vars["SpeedType"] = ctk.StringVar(value="Mach") # Valeur par défaut
         self.lbl_unit_speed_pp = ctk.CTkLabel(f_pp, text="-", width=30, anchor="w")
-        # addField(app, f_pp, "Vitesse", "Speed", "0.78", "", row=1, col=1) # Unité gérée manuellement
-
-        # addField(app, parent, label, var_name, default_value, unit="", row=0, col=0, width=120)
-        # Pousse les éléments au centre
-        # parent.grid_columnconfigure(0, weight=1)
-        # parent.grid_columnconfigure(4, weight=1)
-
-        # Affichage du nom de la variable
-        # ctk.CTkLabel(f_pp, text="Vitesse").grid(row=1, column=1, padx=(10, 5), pady=5, sticky="e")
 
         # Ajout dans le dictionnaire des variables
         if "Speed" not in app.vars or not isinstance(app.vars["Speed"], (ctk.StringVar, ctk.BooleanVar)):
@@ -235,13 +224,9 @@ class OngletPP(ctk.CTkFrame):
         self.champ_vitesse_pp = ctk.CTkEntry(f_pp, textvariable=app.vars["Speed"], width=120)
         self.champ_vitesse_pp.grid(row=1, column=1+1, padx=5, pady=5, sticky="ew")
 
-        # Ajout de l'unité
-        # if "": ctk.CTkLabel(f_pp, text="", width=30, anchor="w").grid(row=1, column=1+2, padx=(5, 10), pady=5, sticky="w")
-
-
         # Remplacement de "Vitesse" par le choix du type de vitesse
         ctk.CTkComboBox(f_pp, variable=app.vars["SpeedType"], values=["Mach", "TAS", "CAS"],
-                        command=self.update_pp_speed_label, width=120).grid(row=1, column=1, padx=5, pady=5)
+                        command=self.updatePPSpeedLabel, width=120).grid(row=1, column=1, padx=5, pady=5)
         self.lbl_unit_speed_pp.grid(row=1, column=3, padx=(5, 10), pady=5, sticky="w")
         
         # Autres champs
@@ -249,7 +234,7 @@ class OngletPP(ctk.CTkFrame):
         addField(app, f_pp, "Masse", "massPP", "60000", "kg", row=3, col=1)
         addField(app, f_pp, "ΔISA", "DISA_PP", "0", "°C", row=4, col=1)
 
-    def update_pp_speed_label(self, choice):
+    def updatePPSpeedLabel(self, choice):
         ''' Change l'unité de la vitesse sélectionnée, ainsi que la valeur par défaut. '''
         if choice == "Mach":
             self.lbl_unit_speed_pp.configure(text="-")

@@ -27,6 +27,10 @@ class Mission:
         Enregistrement.reset()
         Enregistrement.saveSimu(Avion, precision)
 
+        print(f"Mission range: {Inputs.rangeMission_NM:.1f} nm.")
+        print(f"Payload mission: {Inputs.mPayload:.1f} kg.")
+        print("")
+
         tstart = timeit.default_timer()
         while precision > Inputs.precision and n_iter < Inputs.maxIter:
             # Initialisations

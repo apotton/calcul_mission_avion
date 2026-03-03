@@ -20,6 +20,8 @@ class Holding:
         :param Enregistrement: Instance de la classe Enregistrement
         :param dt: Pas de temps (s)
         '''
+        Avion.setPhase(4)
+        Enregistrement.save(Avion, Atmosphere, 0)
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
         l_init = Avion.getl()
@@ -52,12 +54,7 @@ class Holding:
         :param Inputs: Instance de la classe Inputs
         '''
         # Sauvegarde des variables qui vont changer
-        Mach = Avion.Aero.getMach()
-        CAS  = Avion.Aero.getCAS()
-        TAS  = Avion.Aero.getTAS()
-        h    = Avion.geth()
-        Cz   = Avion.Aero.getCz()
-        Cx   = Avion.Aero.getCx()
+        Avion.save()
 
         # Calcul vectorisé du Mach optimal
         Atmosphere.CalculateRhoPT(Avion.geth())
@@ -82,12 +79,7 @@ class Holding:
         CAS_target = Avion.Aero.getCAS()
 
         # Remise à zéro
-        Avion.Aero.setMach(Mach)
-        Avion.Aero.setCAS(CAS)
-        Avion.Aero.setTAS(TAS)
-        Avion.set_h(h)
-        Avion.Aero.setCz(Cz)
-        Avion.Aero.setCz(Cx)
+        Avion.loadSave()
 
         return Mach_target, CAS_target
 

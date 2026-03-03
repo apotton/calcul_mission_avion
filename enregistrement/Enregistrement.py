@@ -13,6 +13,9 @@ class Enregistrement:
         self.counter = 0
 
         self.data = {
+            # Phase de la mission
+            "phase": np.zeros(self.default_size, dtype = np.float32),
+
             # Cinématique
             "t" : np.zeros(self.default_size, dtype=np.float32),
             "h" : np.zeros(self.default_size, dtype=np.float32),
@@ -45,10 +48,13 @@ class Enregistrement:
             # Paramètres économiques croisière
             "SGR" : np.zeros(self.default_size, dtype = np.float32),
             "SAR" : np.zeros(self.default_size, dtype = np.float32),
-            "ECCF": np.zeros(self.default_size, dtype = np.float32)
+            "ECCF": np.zeros(self.default_size, dtype = np.float32),
         }
 
         self.units = {
+            # Phase de la mission
+            "phase" : "-",
+
             # Cinématique
             "t" : "s",
             "h" : "m",
@@ -154,8 +160,10 @@ class Enregistrement:
         self.data["T"][self.counter] = Atmosphere.getT_t()
         self.data["rho"][self.counter] = Atmosphere.getRho_t()
 
+        self.data["phase"][self.counter] = Avion.getPhase()
 
-        if Avion.cruise:
+
+        if (Avion.getPhase() == 1) and self.data["phase"][self.counter-1] == 1:
             self.data["SGR"][self.counter] = Avion.Aero.getSGR()
             self.data["SAR"][self.counter] = Avion.Aero.getSAR()
             self.data["ECCF"][self.counter] = Avion.Aero.getECCF()
