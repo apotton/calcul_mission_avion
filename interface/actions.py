@@ -137,7 +137,7 @@ def calculerMission(app):
     if not checkAvion(app): return
 
     # Remise à zéro de l'interface de sortie
-    app.textbox_out.delete("1.0", "end")
+    # app.textbox_out.delete("1.0", "end")
     
     # Préparation des dossiers
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -216,7 +216,7 @@ def calculerPP(app):
     app.Atmosphere = Atmosphere(app.Inputs)
 
     # Remise à zéro de la console
-    app.textbox_out.delete("1.0", "end")
+    # app.textbox_out.delete("1.0", "end")
     loadAvion(app)
     if not(app.Avion):
         return
@@ -244,7 +244,7 @@ def calculerBatch(app):
         return
 
     # Remise à zéro de la console
-    app.textbox_out.delete("1.0", "end")
+    # app.textbox_out.delete("1.0", "end")
     
     # Préparation dossier racine (date et heure)
     timestamp = datetime.now().strftime("BATCH_%Y-%m-%d_%H-%M-%S")
@@ -402,6 +402,7 @@ def calculerBatch(app):
     # Affichage final
     print("\n=== RÉSULTATS BATCH ===")
     print(summary_text)
+    print(f"\n>> Résultats sauvegardés dans {root_dir}")
 
 # ==========================
 # MÉTIER : IMPORTATIONS
@@ -420,7 +421,7 @@ def importerMission(app):
     
     # Lire Output et afficher dans la console
     if (dossier / "output.txt").exists():
-        app.textbox_out.delete("1.0", "end")
+        # app.textbox_out.delete("1.0", "end")
         with open(dossier / "output.txt", "r", encoding="utf-8") as f:
             app.textbox_out.insert("end", f.read())
             
@@ -455,7 +456,7 @@ def importerBatch(app):
     
     # Affichage uniquement de la sortie texte
     if (dossier / "summary.txt").exists():
-        app.textbox_out.delete("1.0", "end")
+        # app.textbox_out.delete("1.0", "end")
         with open(dossier / "summary.txt", "r", encoding="utf-8") as f:
             app.textbox_out.insert("end", f.read())
         app.right_tabview.set("Console")

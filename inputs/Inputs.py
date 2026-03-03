@@ -36,8 +36,7 @@ class Inputs:
         # =====================
         self.hInit_ft   = 1500.0         # ft
         self.hAccel_ft  = 10000.0        # ft
-        self.CASinit_kt = 250.0  # kt
-        self.Mach_climb = 0.78
+        self.CASinit_kt = 250.0          # kt
 
         # =====================
         # CROISIERE
@@ -51,7 +50,7 @@ class Inputs:
         
         # Croisière Mach SAR
         self.stepClimb_ft = 2000.0      # ft
-        self.RRoC_min_ft = 300.0        # ft/min
+        self.RRoC_ft_min = 300.0        # ft/min
         self.cruiseClimbInit = 20       # % de la distance mission (Moment à partir duquel on peut chosir de monter)
         self.cruiseClimbStop = 80       # % de la distance mission (Moment jusqu'auquel on peut monter)
 
@@ -114,9 +113,6 @@ class Inputs:
     
 
     def validate(self):
-        if self.Mach_climb > 0.9:
-            print("Mach climb incohérent")
-
         if self.hFinal_ft > self.hDecel_ft:
             print("Altitude finale supérieur à l'altitude de pallier en descente")
 
@@ -128,9 +124,6 @@ class Inputs:
 
         if self.CASfinal_kt > 250:
             print("Vitesse de descente sous 10 000ft trop élevée (>250kt)")
-
-        if (abs(self.Mach_climb - self.MachCruise) > 0.01):
-            print("Mach de fin de montée et Mach de début de croisière sont éloignées")
 
     def getAirplaneFile(self):
         ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe. '''

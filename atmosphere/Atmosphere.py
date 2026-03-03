@@ -26,7 +26,7 @@ class Atmosphere:
         self.DISA_Cruise = Inputs.DISA_Cruise
         self.hCruise = Inputs.hCruise_ft * Constantes.conv_ft_m
 
-    def CalculateRhoPT(self, h_m, DISA_dC = 0.) :
+    def CalculateRhoPT(self, h, DISA_dC = 0.) :
         '''
         Calcule les conditions atmosphériques (rho, P, T) en unités SI d'un avion, en prenant en compte l'écart avec l'atmosphère standard.
         
@@ -34,21 +34,21 @@ class Atmosphere:
         :param h_m: Altitude de l'avion (m)
         :param DISA_dC: Différence de température avec l'atmosphère standard, utilisée pour le point performance (°C)
         '''
-        if h_m < self.hCruise:
+        if h < self.hCruise:
             DISA = self.DISA_sub_Cruise + DISA_dC
         else:
             DISA = self.DISA_Cruise + DISA_dC
 
             
-        if h_m <= 11000:
+        if h <= 11000:
             # Troposphère (Altitude à gradient constant : h <= 11000 m)
             
             # Température (T = T0 + T_h*h + DISA)
-            T = self.T0_K + self.Th_Kparm * h_m + DISA
+            T = self.T0_K + self.Th_Kparm * h + DISA
             
             # Pression (Formule de pression pour gradient constant)
             exponent_p = -Constantes.g / (self.r * self.Th_Kparm)
-            p = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * h_m) ** exponent_p 
+            p = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * h) ** exponent_p 
             
             
         else:
@@ -61,7 +61,7 @@ class Atmosphere:
             T = T_11_ISA_0 + DISA
             
             # Pression (Formule de pression pour couche isotherme)
-            exponent_p_strato = -Constantes.g / (self.r * T_11_ISA_0) * (h_m - 11000)
+            exponent_p_strato = -Constantes.g / (self.r * T_11_ISA_0) * (h - 11000)
             p = p_11 * np.exp(exponent_p_strato)
             
         # Densité (Loi des gaz parfaits)

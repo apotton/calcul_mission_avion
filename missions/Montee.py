@@ -33,7 +33,17 @@ class Montee:
         Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
 
         h_target = Inputs.hCruise_ft * Constantes.conv_ft_m
-        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.Mach_climb, Inputs.dtClimb)
+
+        if Inputs.cruiseType == "Alt_SAR" or Inputs.cruiseType == "CI":
+            from missions.Croisiere import Croisiere # Empêche une importation circulaire
+            h_init = Avion.geth()
+            Avion.set_h(h_target)
+            Mach_target, _ = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
+            Avion.set_h(h_init)
+        else:
+            Mach_target = Inputs.MachCruise
+
+        Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Mach_target, Inputs.dtClimb)
         Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
         Avion.set_l_climb(Avion.getl() - l_init)

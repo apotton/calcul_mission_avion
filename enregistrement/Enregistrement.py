@@ -32,9 +32,9 @@ class Enregistrement:
             "finesse"  : np.zeros(self.default_size, dtype=np.float32),
 
             # Propulsion
-            "F_N" : np.zeros(self.default_size, dtype=np.float32),
-            "SFC" : np.zeros(self.default_size, dtype=np.float32),
+            "F" : np.zeros(self.default_size, dtype=np.float32),
             "FF" : np.zeros(self.default_size, dtype=np.float32),
+            "SFC" : np.zeros(self.default_size, dtype=np.float32),
 
             # Masse / carburant
             "FB" : np.zeros(self.default_size, dtype=np.float32),
@@ -71,9 +71,9 @@ class Enregistrement:
             "finesse"  : "-",
 
             # Propulsion
-            "F_N" : "N",
-            "SFC" : "kg/(N.s)",
+            "F" : "N",
             "FF"  : "kg/s",
+            "SFC" : "kg/(N.s)",
 
             # Masse / carburant
             "FB" : "kg",
@@ -127,6 +127,8 @@ class Enregistrement:
             "t_holding": 0.0
         }
 
+        self.discontinuous_data = ["F", "FF", "SFC", "SGR", "SAR", "ECCF"]
+
     
     def save(self, Avion: Avion, Atmosphere: Atmosphere, dt):
         '''
@@ -136,6 +138,27 @@ class Enregistrement:
         :param Atmosphere: Instance de la classe Atmosphere
         :param dt: Pas de temps (s)
         '''
+        # Gestion de la discontinuité des valeurs en changement de phase
+        if self.counter > 0:
+            if self.data["phase"][self.counter - 1] != Avion.getPhase():
+                # La plupart des variables sont continues
+                for key in self.data:
+                    self.data[key][self.counter] = self.data[key][self.counter-1]
+
+                # Celles-là ne le sont pas
+                self.data["phase"][self.counter] = Avion.getPhase()
+                self.data["F"][self.counter] = Avion.Moteur.getF()
+                self.data["FF"][self.counter] = Avion.Moteur.getFF()
+                self.data["SFC"][self.counter] = Avion.Moteur.getSFC()
+
+                if Avion.getPhase() == 1:
+                    self.data["SAR"][self.counter] = Avion.Aero.getSAR()
+                    self.data["SGR"][self.counter] = Avion.Aero.getSGR()
+                    self.data["ECCF"][self.counter] = Avion.Aero.getECCF()
+
+                self.counter += 1
+
+
         self.data["t"][self.counter] = self.data["t"][self.counter - 1] + dt if self.counter > 1 else 0
 
         self.data["h"][self.counter] = Avion.geth()
@@ -149,9 +172,9 @@ class Enregistrement:
         self.data["Cx"][self.counter] = Avion.Aero.getCx()
         self.data["finesse"][self.counter]  = Avion.Aero.getCz() / Avion.Aero.getCx()
 
-        self.data["F_N"][self.counter] = Avion.Moteur.getF()
-        self.data["SFC"][self.counter] = Avion.Moteur.getSFC()
+        self.data["F"][self.counter] = Avion.Moteur.getF()
         self.data["FF"][self.counter] = Avion.Moteur.getFF()
+        self.data["SFC"][self.counter] = Avion.Moteur.getSFC()
 
         self.data["FB"][self.counter] = Avion.Masse.getFuelBurned()
         self.data["m"][self.counter] = Avion.Masse.getCurrentMass()
@@ -163,7 +186,7 @@ class Enregistrement:
         self.data["phase"][self.counter] = Avion.getPhase()
 
 
-        if (Avion.getPhase() == 1) and self.data["phase"][self.counter-1] == 1:
+        if (Avion.getPhase() == 1):
             self.data["SGR"][self.counter] = Avion.Aero.getSGR()
             self.data["SAR"][self.counter] = Avion.Aero.getSAR()
             self.data["ECCF"][self.counter] = Avion.Aero.getECCF()

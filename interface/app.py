@@ -141,9 +141,10 @@ class App(ctk.CTk):
         self.btn_frame.grid_columnconfigure((0, 1), weight=1) # 2 colonnes
 
         # Bouton Calculer Dynamique
-        self.btn_calculer = ctk.CTkButton(self.btn_frame, text="Calculer Mission",
+        self.btn_calculer = ctk.CTkButton(self.btn_frame, text="Calculer Mission", font=("Helvetica",14, "bold"),
                                           command=lambda: calculerMission(self), 
-                                          fg_color="#2980b9", hover_color="#3498db")
+                                          fg_color="#1d79b7", hover_color="#4b9ed5",
+                                          border_color="#2c4da0", border_width=2)
         self.btn_calculer.grid(row=0, column=0, padx=5, pady=0, sticky="ew")
 
         # Bouton Importer Dynamique
@@ -310,7 +311,7 @@ class App(ctk.CTk):
             if key == "t": return arr / 60, "min"
             if key == "P": return arr / 100, "hPa"
             if key == "T": return arr - 273.15, "°C"
-            if key == "F_N": return arr / 1000, "kN"
+            if key == "F": return arr / 1000, "kN"
             if key in ["SAR", "SGR"]: return arr / Constantes.conv_NM_m , "NM/kg"
             if key == "ECCF": return arr * Constantes.conv_NM_m, "kg/NM"
             # Grandeurs qui restent en unités SI

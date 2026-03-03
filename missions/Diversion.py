@@ -21,7 +21,7 @@ class Diversion:
         '''
         # Entrée en diversion
         Avion.setPhase(3)
-        Enregistrement.save(Avion, Atmosphere, 0)
+        # Enregistrement.save(Avion, Atmosphere, 0)
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
         l_init = Avion.getl()

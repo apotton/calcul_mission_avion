@@ -62,8 +62,8 @@ class OngletMission(ctk.CTkScrollableFrame):
         ctk.CTkLabel(f_climb, text="Montée", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
         addField(app, f_climb, "Altitude Initiale", "hInit_ft", "1500.0", "ft", row=1, col=1)
         addField(app, f_climb, "Altitude Accel.", "hAccel_ft", "10000.0", "ft", row=2, col=1)
-        addField(app, f_climb, "CAS < 10000ft", "CASinit_kt", "250.0", "kt", row=3, col=1)
-        addField(app, f_climb, "Mach Climb", "Mach_climb", "0.78", "", row=4, col=1)
+        addField(app, f_climb, "CAS initiale", "CASinit_kt", "250.0", "kt", row=3, col=1)
+        # addField(app, f_climb, "Mach Climb", "Mach_climb", "0.78", "", row=4, col=1)
 
         # Croisière (Dynamique)
         self.f_cruise = ctk.CTkFrame(tab)
@@ -84,7 +84,7 @@ class OngletMission(ctk.CTkScrollableFrame):
         f_desc.pack(fill="x", pady=5)
         f_desc.grid_columnconfigure((0, 4), weight=1)
         ctk.CTkLabel(f_desc, text="Descente", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=5)
-        addField(app, f_desc, "CAS < 10000ft", "CASfinal_kt", "250.0", "kt", row=1, col=1)
+        addField(app, f_desc, "CAS finale", "CASfinal_kt", "250.0", "kt", row=1, col=1)
         addField(app, f_desc, "Altitude Decel.", "hDecel_ft", "10000.0", "ft", row=2, col=1)
         addField(app, f_desc, "Altitude Finale", "hFinal_ft", "1500.0", "ft", row=3, col=1)
         self.updateCruiseFields()
@@ -99,18 +99,21 @@ class OngletMission(ctk.CTkScrollableFrame):
 
         # Champs présents tout le temps: Mach et altitude
         addField(self.app, self.f_cruise_dyn, "Altitude Croisière", "hCruise_ft", "38000", "ft", row=0, col=1)
-        addField(self.app, self.f_cruise_dyn, "Mach Croisière", "MachCruise", "0.78", "", row=1, col=1)
+
+        if c_type in ["Mach_SAR", "Alt_Mach"]:
+            addField(self.app, self.f_cruise_dyn, "Mach Croisière", "MachCruise", "0.78", "", row=1, col=1)
 
         # Spécificités de chaque type de croisière
         if c_type in ["Mach_SAR", "CI"]:
-            addField(self.app, self.f_cruise_dyn, "Step Climb", "stepClimb_ft", "2000.0", "ft", row=2, col=1)
-            addField(self.app, self.f_cruise_dyn, "RRoC min", "RRoC_min_ft", "300.0", "ft/min", row=3, col=1)
-            addField(self.app, self.f_cruise_dyn, "Init Montée", "cruiseClimbInit", "20", "% dist", row=4, col=1)
-            addField(self.app, self.f_cruise_dyn, "Stop Montée", "cruiseClimbStop", "80", "% dist", row=5, col=1)
+            delta_row = 1 if c_type == "CI" else 0
+            addField(self.app, self.f_cruise_dyn, "Step Climb", "stepClimb_ft", "2000.0", "ft", row=2 - delta_row, col=1)
+            addField(self.app, self.f_cruise_dyn, "RRoC min", "RRoC_ft_min", "300.0", "ft/min", row=3 - delta_row, col=1)
+            addField(self.app, self.f_cruise_dyn, "Init Montée", "cruiseClimbInit", "20", "% dist", row=4 - delta_row, col=1)
+            addField(self.app, self.f_cruise_dyn, "Stop Montée", "cruiseClimbStop", "80", "% dist", row=5 - delta_row, col=1)
         elif c_type == "Alt_SAR":
             addField(self.app, self.f_cruise_dyn, "Dégradation SAR", "kSARcruise", "1", "%", row=2, col=1)
         if c_type == "CI":
-            addField(self.app, self.f_cruise_dyn, "Cost Index", "CI_kg_min", "0", "kg/min", row=6, col=1)
+            addField(self.app, self.f_cruise_dyn, "Cost Index", "CI_kg_min", "0", "kg/min", row=5, col=1)
 
 
 

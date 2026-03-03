@@ -6,6 +6,8 @@ from missions.Montee import Montee
 from inputs.Inputs import Inputs
 from avions.Avion import Avion
 import numpy as np
+from scipy.interpolate import CubicSpline
+from scipy.optimize import minimize_scalar, root_scalar
 import matplotlib.pyplot as plt
 
 class Croisiere:
@@ -20,26 +22,11 @@ class Croisiere:
         :param dt: Pas de temps (s)
         '''
         Avion.setPhase(1)
-        Enregistrement.save(Avion, Atmosphere, 0)
+        # Enregistrement.save(Avion, Atmosphere, 0)
         l_end = Inputs.rangeMission_NM * Constantes.conv_NM_m
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
         l_init = Avion.getl()
-
-        # Si on n'y est pas, on monte/descend à la vitesse voulue
-        if abs(Avion.Aero.getMach() - Inputs.MachCruise) > 0.01:
-            Atmosphere.CalculateRhoPT(Avion.geth())
-            Avion.save()
-            Avion.Aero.setMach(Inputs.MachCruise)
-            Avion.Aero.convertMachToCAS(Atmosphere)
-            CAS_target = Avion.Aero.getCAS()
-            Avion.loadSave()
-
-            if (Avion.Aero.getMach() < Inputs.MachCruise):
-                Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
-            else:
-                Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtDescent)
-
         
         if Inputs.cruiseType == "Mach_SAR":
             Croisiere.cruiseMachSAR(Avion, Atmosphere, Enregistrement, Inputs, l_end, dt)
@@ -128,7 +115,7 @@ class Croisiere:
         Avion.loadSave()
 
         # Critères généraux
-        if (RRoC_up > Inputs.RRoC_min_ft*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s 
+        if (RRoC_up > Inputs.RRoC_ft_min*Constantes.conv_ft_m/60 and               # RRoC suffisant converti de ft/min en m/s 
                 Avion.geth()/Constantes.conv_ft_m + delta_h < Avion.getPressurisationCeilingFt()):  # Pas au plafond converti de m en ft
 
             # Critères spécifiques à chaque croisière
@@ -154,7 +141,7 @@ class Croisiere:
         Avion.save()
 
         # Grille des Mach de calcul
-        Mach_grid = np.arange(0.2, 0.82, 0.001)
+        Mach_grid = np.arange(0.2, 0.82, 0.0001)
 
         # Atmosphere
         Atmosphere.CalculateRhoPT(Avion.geth())
@@ -196,6 +183,7 @@ class Croisiere:
             Mach_sub = Mach_grid[idx_max:]
             # On inverse l'interpolation car np.interp exige une croissance, ici on est décroissant après SAR_max
             Mach_opt = np.interp(SAR_target, SAR_sub[::-1], Mach_sub[::-1])
+
             Avion.Aero.setMach(Mach_opt)
             Avion.Aero.convertMachToCAS(Atmosphere)
             CAS_opt = Avion.Aero.getCAS()
@@ -456,6 +444,8 @@ class Croisiere:
                     Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_opt, dt=Inputs.dtClimb)
                 else:
                     Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_opt, dt=Inputs.dtDescent)
+            else:
+                Avion.Aero.setMach(Mach_opt)
 
             # Application du Mach optimal
             Avion.Aero.setMach(Mach_opt)
