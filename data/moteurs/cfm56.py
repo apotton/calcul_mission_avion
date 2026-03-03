@@ -355,14 +355,38 @@ def load():
         [0.411885764, 0.45947558, 0.502748001, 0.551889273, 0.6017]
     ], dtype=np.float64)
 
+    # ==============================================================================
+    # DONNÉES D'ÉMISSIONS DE POLLUANTS
+    # ==============================================================================
+
+    # Niveaux de poussée: 7%, 30%, 85%, 100%
+    # fuel_flow_ref = [FF_idle, FF_app, FF_co, FF_to] # En kg/s
+
+    # Source: https://www.easa.europa.eu/en/domains/environment/icao-aircraft-engine-emissions-databank
+    fuel_flow_ref = np.array([0.1011, 0.3096, 0.9182, 1.1266], dtype=np.float32) # kg/s
+    EI_HC_ref     = np.array([2.3090, 0.0611, 0.0244, 0.0289], dtype=np.float32) # g/kg
+    EI_CO_ref     = np.array([34.017, 3.5900, 0.1944, 0.2778], dtype=np.float32) # g/kg
+    EI_NOx_ref    = np.array([4.1622, 8.7222, 17.140, 21.808], dtype=np.float32) # g/kg
+    EI_nvPM_Mass  = np.array([0.791,  1.543,  42.275, 61.413], dtype=np.float32)/1000 # g/kg
+
     return DonneesMoteur(mach_table,
-                 alt_table_ft,
-                 Fn_MCL_table,
-                 Fn_FI_table,
-                 SFC_MCL_table,
-                 FF_FI_table,
-                 mach_table_crl,
-                 cruise_data,
-                 mach_table_crl_holding,
-                 fn_lbf_crl_holding,
-                 sfc_crl_holding)
+                         alt_table_ft,
+                         Fn_MCL_table,
+                         Fn_FI_table,
+                         SFC_MCL_table,
+                         FF_FI_table,
+                         mach_table_crl,
+                         cruise_data,
+                         mach_table_crl_holding,
+                         fn_lbf_crl_holding,
+                         sfc_crl_holding,
+                         fuel_flow_ref,
+                         EI_HC_ref,
+                         EI_CO_ref,
+                         EI_NOx_ref,
+                         EI_nvPM_Mass)
+
+
+
+
+

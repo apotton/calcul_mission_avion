@@ -5,6 +5,8 @@ import numpy as np
 from itertools import zip_longest
 import csv
 
+from moteurs.CalculEmissions import getAllEmissions
+
 class Enregistrement:
     def __init__(self):
         self.default_size = 10000  # Taille par défaut des tableaux numpy
@@ -49,6 +51,12 @@ class Enregistrement:
             "SGR" : np.zeros(self.default_size, dtype = np.float32),
             "SAR" : np.zeros(self.default_size, dtype = np.float32),
             "ECCF": np.zeros(self.default_size, dtype = np.float32),
+
+            # Emissions polluantes
+            "eHC"  : np.zeros(self.default_size, dtype = np.float32),
+            "eCO"  : np.zeros(self.default_size, dtype = np.float32),
+            "eNOx" : np.zeros(self.default_size, dtype = np.float32),
+            "envPM": np.zeros(self.default_size, dtype = np.float32),
         }
 
         self.units = {
@@ -87,7 +95,13 @@ class Enregistrement:
             # Paramètres économiques croisière
             "SGR" : "m/kg",
             "SAR" : "m/kg",
-            "ECCF": "kg/m"
+            "ECCF": "kg/m",
+
+            # Emissions polluantes
+            "eHC"  : "kg/s",
+            "eCO"  : "kg/s",
+            "eNOx" : "kg/s",
+            "envPM": "kg/s",
         }
 
         # Données de convergence simu
@@ -124,7 +138,33 @@ class Enregistrement:
             "t_cruise": 0.0,
             "t_descent": 0.0,
             "t_diversion": 0.0,
-            "t_holding": 0.0
+            "t_holding": 0.0,
+            ## Emissions
+            # Montée
+            "eHC_climb": 0.0,
+            "eCO_climb": 0.0,
+            "eNOx_climb": 0.0,
+            "envPM_climb": 0.0,
+            # Croisière
+            "eHC_cruise": 0.0,
+            "eCO_cruise": 0.0,
+            "eNOx_cruise": 0.0,
+            "envPM_cruise": 0.0,
+            # Descente
+            "eHC_descent": 0.0,
+            "eCO_descent": 0.0,
+            "eNOx_descent": 0.0,
+            "envPM_descent": 0.0,
+            # Diversion
+            "eHC_diversion": 0.0,
+            "eCO_diversion": 0.0,
+            "eNOx_diversion": 0.0,
+            "envPM_diversion": 0.0,
+            # Holding
+            "eHC_holding": 0.0,
+            "eCO_holding": 0.0,
+            "eNOx_holding": 0.0,
+            "envPM_holding": 0.0,
         }
 
         self.discontinuous_data = ["F", "FF", "SFC", "SGR", "SAR", "ECCF"]
@@ -214,7 +254,7 @@ class Enregistrement:
         self.data_simu["FB_mission"].append(Avion.Masse.getFuelMission())
         self.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
 
-    def saveFinal(self, Avion: Avion):
+    def saveFinal(self, Avion: Avion, Atmosphere: Atmosphere):
         '''
         Enregistre les valeurs finales des caractéristiques de la mission (masses, distances...)
 
@@ -246,8 +286,13 @@ class Enregistrement:
         self.mission_data["t_diversion"] = Avion.get_t_diversion()
         self.mission_data["t_holding"] = Avion.get_t_holding()
 
-        valeurs_mises_en_forme = self.printValues()
-        print(valeurs_mises_en_forme)
+        # Emissions
+        self.cut()
+        getAllEmissions(Avion, Atmosphere, self)
+
+        self.printValues()
+        self.printEmissions()
+        # print(valeurs_mises_en_forme)
         
     def printValues(self):
         # Dictionnaire des grandeurs à afficher
@@ -302,6 +347,12 @@ class Enregistrement:
         header = f"{'Phase':<12}{'Distance (NM)':>15}{'Temps (min)':>15}{'Fuel Burn (kg)':>18}"
         separator = "-" * len(header)
 
+        lines.append('\n')
+        lines.append(separator)
+        lines.append("                   RÉSUMÉ DE LA MISSION")
+        lines.append(separator)
+        lines.append("\n")
+
         lines.append(header)
         lines.append(separator)
 
@@ -338,8 +389,98 @@ class Enregistrement:
         )
 
         # On renvoie la string formatée
-        return "\n".join(lines)
+        print("\n".join(lines))
 
+    def printEmissions(self):
+        # Dictionnaire des grandeurs à afficher
+        phases = [
+            ("Montée", 
+            self.mission_data["eHC_climb"], 
+            self.mission_data["eCO_climb"], 
+            self.mission_data["eNOx_climb"],
+            self.mission_data["envPM_climb"]),
+
+            ("Croisière", 
+            self.mission_data["eHC_cruise"], 
+            self.mission_data["eCO_cruise"], 
+            self.mission_data["eNOx_cruise"],
+            self.mission_data["envPM_cruise"]),
+
+            ("Descente", 
+            self.mission_data["eHC_descent"], 
+            self.mission_data["eCO_descent"], 
+            self.mission_data["eNOx_descent"],
+            self.mission_data["envPM_cruise"]),
+
+            ("Mission", 
+            self.mission_data["eHC_climb"] + self.mission_data["eHC_cruise"] + self.mission_data["eHC_descent"], 
+            self.mission_data["eCO_climb"] + self.mission_data["eCO_cruise"] + self.mission_data["eCO_descent"], 
+            self.mission_data["eNOx_climb"] + self.mission_data["eNOx_cruise"] + self.mission_data["eNOx_descent"], 
+            self.mission_data["envPM_climb"] + self.mission_data["envPM_cruise"] + self.mission_data["envPM_descent"]),
+
+            ("Diversion", 
+            self.mission_data["eHC_diversion"],
+            self.mission_data["eCO_diversion"], 
+            self.mission_data["eNOx_diversion"],
+            self.mission_data["envPM_diversion"]),
+
+            ("Holding", 
+            self.mission_data["eHC_holding"],
+            self.mission_data["eCO_holding"], 
+            self.mission_data["eNOx_holding"],
+            self.mission_data["envPM_holding"]),
+
+            ("Reserves",
+             self.mission_data["eHC_diversion"] + self.mission_data["eHC_holding"],
+             self.mission_data["eCO_diversion"] + self.mission_data["eCO_holding"],
+             self.mission_data["eNOx_diversion"] + self.mission_data["eNOx_holding"],
+             self.mission_data["envPM_diversion"] + self.mission_data["envPM_holding"])
+        ]
+
+        totalHC = 0.0
+        totalCO = 0.0
+        totalNOx = 0.0
+        totalnvPM = 0.0
+
+        lines = []
+        header = f"{'Phase':<12}{'HC (kg)':>15}{'CO (kg)':>15}{'NOx (kg)':>15}{'nvPM (g)':>15}"
+        separator = "-" * len(header)
+
+        lines.append('\n')
+        lines.append(separator)
+        lines.append("                         RÉSUMÉ DES ÉMISSIONS")
+        lines.append(separator)
+        lines.append("\n")
+
+        lines.append(header)
+        lines.append(separator)
+
+        # Itération sur toutes les phases pour arriver au total
+        for name, HC, CO, NOx, nvPM in phases:
+            # Pour le total de la mission, on met un séparateur
+            if name == "Mission" or name == "Reserves":
+                lines.append(separator)
+
+
+            lines.append(
+                f"{name:<12}{HC:>15.1f}{CO:>15.1f}{NOx:>15.1f}{nvPM*1000:>15.1f}"
+            )
+
+            # On remet un séparateur pour la mission et on ne compte pas sa distance parcourue
+            if name == "Mission" or name == "Reserves":
+                lines.append(separator)
+            else:
+                totalHC += HC
+                totalCO += CO
+                totalNOx += NOx
+                totalnvPM += nvPM
+
+        lines.append(
+            f"{'TOTAL':<12}{totalHC:>15.1f}{totalCO:>15.1f}{totalNOx:>15.1f}{totalnvPM*1000:>15.1f}"
+        )
+
+        # On renvoie la string formatée
+        print("\n".join(lines))
 
     def extend(self):
         '''

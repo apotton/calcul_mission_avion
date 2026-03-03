@@ -149,8 +149,9 @@ class OngletAutres(ctk.CTkScrollableFrame):
         addField(app, f_hold, "Temps Holding", "Time_holding_min", "30", "min", row=1, col=1)
         addField(app, f_hold, "Contingency", "Contingency", "5", "%", row=2, col=1)
         addField(app, f_hold, "Vitesse Vent Vw", "Vw_kt", "0", "kt", row=3, col=1)
-        addField(app, f_hold, "DISA Croisière", "DISA_Cruise", "0", "K", row=4, col=1)
-        addField(app, f_hold, "DISA Sous Crois.", "DISA_sub_Cruise", "0", "K", row=5, col=1)
+        addField(app, f_hold, "Humidité relative au sol", "RH0", "70", "%", row=4, col=1)
+        addField(app, f_hold, "DISA Croisière", "DISA_Cruise", "0", "K", row=5, col=1)
+        addField(app, f_hold, "DISA Sous Crois.", "DISA_sub_Cruise", "0", "K", row=6, col=1)
 
         # Grille face-à-face pour les coefficients
         f_coeff = ctk.CTkFrame(tab)
@@ -164,13 +165,13 @@ class OngletAutres(ctk.CTkScrollableFrame):
         addField(app, f_coeff, "cCx (Traînée)", "cCx", "1", "", row=1, col=4)
         # Moteur montée
         addField(app, f_coeff, "cFF Climb", "cFF_climb", "1", "", row=2, col=1)
-        addField(app, f_coeff, "cFN Climb", "cFN_climb", "1", "", row=2, col=4)
+        addField(app, f_coeff, "cF Climb", "cF_climb", "1", "", row=2, col=4)
         # Monteur croisière
         addField(app, f_coeff, "cFF Cruise", "cFF_cruise", "1", "", row=3, col=1)
-        addField(app, f_coeff, "cFN Cruise", "cFN_cruise", "1", "", row=3, col=4)
+        addField(app, f_coeff, "cF Cruise", "cF_cruise", "1", "", row=3, col=4)
         # Moteur descente
         addField(app, f_coeff, "cFF Descent", "cFF_descent", "1", "", row=4, col=1)
-        addField(app, f_coeff, "cFN Descent", "cFN_descent", "1", "", row=4, col=4)
+        addField(app, f_coeff, "cF Descent", "cF_descent", "1", "", row=4, col=4)
 
 class OngletOptions(ctk.CTkFrame):
     def __init__(self, master, app):

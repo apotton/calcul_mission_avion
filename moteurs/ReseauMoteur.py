@@ -153,7 +153,7 @@ class ReseauMoteur(Moteur):
             sfc_lbf = ReseauMoteur.interp2d_linear(fn_lbf_vector,
                                                    mach_vector,
                                                    sfc_matrix,
-                                                   self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * self.Inputs.cFN_cruise,
+                                                   self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * self.Inputs.cF_cruise,
                                                    self.Avion.Aero.getMach())
             
             sfc_results.append(sfc_lbf)
@@ -182,7 +182,7 @@ class ReseauMoteur(Moteur):
                                                 self.DonneesMoteur.Fn_MCL_table,
                                                 self.Avion.Aero.getMach(), h_ft)
 
-        self.F_t = (2*float(resultat)* Constantes.g * Constantes.conv_lb_kg) * self.Inputs.cFN_climb  # Conversion lbf -> N et pour 2 moteurs
+        self.F_t = (2*float(resultat)* Constantes.g * Constantes.conv_lb_kg) * self.Inputs.cF_climb  # Conversion lbf -> N et pour 2 moteurs
 
 
     def calculateSFCClimb(self): 
@@ -207,7 +207,7 @@ class ReseauMoteur(Moteur):
                                                        self.DonneesMoteur.Fn_FI_table,
                                                        self.Avion.Aero.getMach(), h_ft)
         
-        self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g * self.Inputs.cFN_descent
+        self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g * self.Inputs.cF_descent
 
     def calculateSFCDescent(self):
         # Altitude
@@ -240,7 +240,7 @@ class ReseauMoteur(Moteur):
         SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.fn_lbf_crl_holding * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
                                                self.DonneesMoteur.mach_table_crl_holding,
                                                self.DonneesMoteur.sfc_crl_holding,
-                                               self.F_t / 2 * self.Inputs.cFN_cruise, self.Avion.Aero.getMach())
+                                               self.F_t / 2 * self.Inputs.cF_cruise, self.Avion.Aero.getMach())
     
         self.SFC_t = (float(SFC_lbf) / 3600.0 / Constantes.g) * self.Inputs.cFF_cruise  # Conversion lb/(lbf*h) -> kg/(N*s)
         self.FF_t = self.SFC_t * self.F_t
@@ -298,7 +298,7 @@ class ReseauMoteur(Moteur):
             interp_func = self.interpolateurs[h_ref]
             
             # On interpole pour tous les couples (Mach, Fn) d'un coup
-            query_points = np.vstack((self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * self.Inputs.cFN_cruise,
+            query_points = np.vstack((self.F_t / 2 / Constantes.conv_lb_kg / Constantes.g * self.Inputs.cF_cruise,
                                       self.Avion.Aero.getMach())).T
 
             sfc_lbf = interp_func(query_points)
@@ -315,3 +315,18 @@ class ReseauMoteur(Moteur):
         # Conversion finale (lbf/lbf/h -> kg/N/s)
         self.SFC_t = (sfc_lbf_final / 3600.0 / Constantes.g) * self.Inputs.cFF_cruise
         self.FF_t = self.SFC_t * self.F_t
+
+    def getfuel_flow_ref(self):
+        return self.DonneesMoteur.fuel_flow_ref
+    
+    def getEI_HC_ref(self):
+        return self.DonneesMoteur.EI_HC_ref
+    
+    def getEI_CO_ref(self):
+        return self.DonneesMoteur.EI_CO_ref
+    
+    def getEI_NOx_ref(self):
+        return self.DonneesMoteur.EI_NOx_ref
+    
+    def getEI_nvPM_Mass(self):
+        return self.DonneesMoteur.EI_nvPM_Mass

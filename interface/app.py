@@ -314,6 +314,8 @@ class App(ctk.CTk):
             if key == "F": return arr / 1000, "kN"
             if key in ["SAR", "SGR"]: return arr / Constantes.conv_NM_m , "NM/kg"
             if key == "ECCF": return arr * Constantes.conv_NM_m, "kg/NM"
+            if key in ["eHC", "eCO", "eNOx"]: return arr * 1000, "g/s"
+            if key == "envPM": return arr * 1000 * 1000, "mg/s"
             # Grandeurs qui restent en unités SI
             unites = {"m": "kg", "FB": "kg", "rho": "kg/m³", "FF": "kg/s", "Mach": "Mach"}
             return arr, unites.get(key, "-")

@@ -1,3 +1,4 @@
+# from enregistrement.Enregistrement import Enregistrement
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
 import numpy as np
@@ -25,6 +26,8 @@ class Atmosphere:
         self.DISA_sub_Cruise = Inputs.DISA_sub_Cruise
         self.DISA_Cruise = Inputs.DISA_Cruise
         self.hCruise = Inputs.hCruise_ft * Constantes.conv_ft_m
+        self.RH0 = Inputs.RH0 / 100
+        # self.w = [] # Humidité spécifique (kg eau / kg air sec)
 
     def CalculateRhoPT(self, h, DISA_dC = 0.) :
         '''
@@ -70,6 +73,19 @@ class Atmosphere:
         self.rho_t = rho
         self.P_t = p
         self.T_t = T
+
+    def calculateHumidity(self, Enregistrement):
+        ''' A appeler en fin de programme '''
+        T_K = Enregistrement.data["T"]
+        h_m = Enregistrement.data["h"]
+        P_Pa = Enregistrement.data["P"]
+
+        # Calcul de la pression saturante (formule de Murphy & Koop)
+        es_Pa = np.exp(9.550426 - 5723.265/T_K + 3.53068 * np.log(T_K) - 0.00728332*T_K )
+
+        RH_h = self.RH0 * np.exp(-h_m/2000) # Décroissance exponentielle d'échelle 2km
+        e_Pa = RH_h * es_Pa
+        return 0.622 * e_Pa / (P_Pa - e_Pa) # w: kg eau / kg air sec
 
     def setRho(self, Rho: float):
         '''

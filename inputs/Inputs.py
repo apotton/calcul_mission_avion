@@ -42,7 +42,7 @@ class Inputs:
         # CROISIERE
         # =====================
         # Type de croisière
-        self.cruiseType = "Mach_SAR" # "Alt_Mach", "Alt_SAR", "Mach_SAR" ou "CI"
+        self.cruiseType = "Alt_Mach" # "Alt_Mach", "Alt_SAR", "Mach_SAR" ou "CI"
 
         # Croisière Alt Mach (et toutes les autres)
         self.hCruise_ft = 38000       # ft
@@ -89,6 +89,7 @@ class Inputs:
         self.Vw_kt = 0                # kt
         self.DISA_Cruise = 0          # K
         self.DISA_sub_Cruise = 0      # K
+        self.RH0 = 70                 # Humidité relative au niveau du sol (%)
 
         # =====================
         # Coefficients de déformation du réseau moteur
@@ -98,9 +99,9 @@ class Inputs:
         self.cFF_climb      = 1     # Coefficient sur le fuel flow (montée)
         self.cFF_cruise     = 1     # Coefficient sur le fuel flow (croisière)
         self.cFF_descent    = 1     # Coefficient sur le fuel flow (descente)
-        self.cFN_climb      = 1     # Coefficient sur la poussée totale (montée)
-        self.cFN_cruise     = 1     # Coefficient sur la poussée totale (croisière: n'affecte pas la poussée mais la leecture de la SFC)
-        self.cFN_descent    = 1     # Coefficient sur la poussée totale (descente)
+        self.cF_climb      = 1      # Coefficient sur la poussée totale (montée)
+        self.cF_cruise     = 1      # Coefficient sur la poussée totale (croisière: n'affecte pas la poussée mais la leecture de la SFC)
+        self.cF_descent    = 1      # Coefficient sur la poussée totale (descente)
         
         # =====================
         # Input des calculs Point Performance

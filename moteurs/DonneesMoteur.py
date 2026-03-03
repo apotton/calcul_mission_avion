@@ -16,7 +16,12 @@ class DonneesMoteur:
                  cruise_data,
                  mach_table_crl_holding,
                  fn_lbf_crl_holding,
-                 sfc_crl_holding):
+                 sfc_crl_holding,
+                 fuel_flow_ref,
+                 EI_HC_ref,
+                 EI_CO_ref,
+                 EI_NOx_ref,
+                 EI_nvPM_Mass):
         
         self.mach_table = mach_table
         self.alt_table_ft = alt_table_ft
@@ -29,5 +34,10 @@ class DonneesMoteur:
         self.mach_table_crl_holding = mach_table_crl_holding
         self.fn_lbf_crl_holding = fn_lbf_crl_holding
         self.sfc_crl_holding = sfc_crl_holding
+        self.fuel_flow_ref = fuel_flow_ref
+        self.EI_HC_ref = EI_HC_ref
+        self.EI_CO_ref = EI_CO_ref
+        self.EI_NOx_ref = EI_NOx_ref
+        self.EI_nvPM_Mass = EI_nvPM_Mass
 
 
