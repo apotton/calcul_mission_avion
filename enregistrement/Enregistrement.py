@@ -383,4 +383,42 @@ class Enregistrement:
             # Écriture de toutes les lignes de données d'un seul coup
             writer.writerows(lignes_transposees)
 
+    def loadCSV(self, chemin_csv):
+        '''
+        Remplit l'attribut enregistrement de la classe avec les données issues du CSV.
+
+        :param chemin_csv: Chemin complet du fichier resultats_vol.csv
+        '''
+        self.reset()
+        
+        with open(chemin_csv, "r", encoding="utf-8") as f:
+            reader = csv.reader(f, delimiter=';')
             
+            # On charge toutes les lignes en mémoire
+            lignes = list(reader)
+            
+            if len(lignes) >= 2:
+                # Extraction des en-têtes (clés) et des unités
+                noms_variables = lignes[0]
+                donnees_lignes = lignes[2:] # Tout le reste correspond aux données
+                
+                if donnees_lignes:
+                    # Transposition : on bascule les lignes en colonnes
+                    # zip(*donnees_lignes) prend toutes les lignes et regroupe les éléments par colonne
+                    colonnes = list(zip(*donnees_lignes))
+                    
+                    # Traitement colonne par colonne
+                    for i, key in enumerate(noms_variables):
+                        if key in self.data:
+                            # On récupère la colonne brute (une liste de chaînes de caractères)
+                            colonne_brute = colonnes[i]
+                            
+                            # Conversion : on remplace "" par np.nan, puis on convertit en float32
+                            vals = np.array(
+                                [np.nan if val == "" else val for val in colonne_brute], 
+                                dtype=np.float32
+                            )
+                            
+                            l = len(vals)
+                            self.data[key][:l] = vals
+                            self.counter = max(self.counter, l)

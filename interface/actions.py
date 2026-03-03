@@ -431,7 +431,7 @@ def importerMission(app):
     # Lecture du csv des résultats
     chemin_csv = dossier / "resultats_vol.csv"
     if (chemin_csv).exists():
-        app.chargerFichierResultats(chemin_csv)
+        app.Enregistrement.loadCSV(chemin_csv)
         
         # Réinitialisation du menu Batch
         app.batch_root_dir = None
@@ -439,6 +439,8 @@ def importerMission(app):
         app.cb_batch.configure(values=["Mission unique"])
         app.cb_batch.set("Mission unique")
         messagebox.showinfo("Succès", "Mission importée et graphiques disponibles.")
+
+        app.tracerGraphique()
 
 def importerBatch(app):
     '''
