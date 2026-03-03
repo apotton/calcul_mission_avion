@@ -82,7 +82,7 @@ class Enregistrement:
             # Atmosphere
             "P" : "Pa",
             "T" : "K",
-            "rho" : "kg/m³",
+            "rho" : "kg/m^3",
 
             # Paramètres économiques croisière
             "SGR" : "m/kg",
