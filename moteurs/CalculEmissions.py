@@ -68,7 +68,7 @@ def get_interpolated_EI(FFf_array, FF_ref, EI_ref):
     return np.array(EI_out, dtype=np.float32)
 
 
-def correct_EI_for_flight(EI_HC_ref, EI_CO_ref, EI_NOx_ref, Tamb, Pamb, humidity=0.0):
+def correct_EI_for_flight(EI_HC_ref, EI_CO_ref, EI_NOx_ref, Tamb, Pamb, humidity):
     """
     Applique les corrections d'altitude de la méthode BFFM2 aux indices d'émission.
     
@@ -115,7 +115,8 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     :param Enregistrement: Instance de la classe Enregistrement    
     '''
     # Calcul de l'humidité relative
-    w = Atmosphere.calculateHumidity(Enregistrement)
+    Atmosphere.calculateHumidity(Enregistrement)
+    w = Atmosphere.w
 
     # Recalage Fuel Flow au sol (méthode BFFM2)
     FFf = calculateFFf(Enregistrement.data["FF"],
@@ -150,7 +151,6 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     mask_climb = (phase == 0)
     Enregistrement.mission_data["eHC_climb"] = np.trapezoid(Enregistrement.data["eHC"][mask_climb], t[mask_climb])
     Enregistrement.mission_data["eCO_climb"] = np.trapezoid(Enregistrement.data["eCO"][mask_climb], t[mask_climb])
-    print(f"CO montée: {Enregistrement.mission_data["eCO_climb"]}")
     Enregistrement.mission_data["eNOx_climb"] = np.trapezoid(Enregistrement.data["eNOx"][mask_climb], t[mask_climb])
     Enregistrement.mission_data["envPM_climb"] = np.trapezoid(Enregistrement.data["envPM"][mask_climb], t[mask_climb])
 
@@ -158,7 +158,6 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     mask_cruise = (phase == 1)
     Enregistrement.mission_data["eHC_cruise"] = np.trapezoid(Enregistrement.data["eHC"][mask_cruise], t[mask_cruise])
     Enregistrement.mission_data["eCO_cruise"] = np.trapezoid(Enregistrement.data["eCO"][mask_cruise], t[mask_cruise])
-    print(f"CO cruise: {Enregistrement.mission_data["eCO_cruise"]}")
     Enregistrement.mission_data["eNOx_cruise"] = np.trapezoid(Enregistrement.data["eNOx"][mask_cruise], t[mask_cruise])
     Enregistrement.mission_data["envPM_cruise"] = np.trapezoid(Enregistrement.data["envPM"][mask_cruise], t[mask_cruise])
 

@@ -260,6 +260,9 @@ class Enregistrement:
 
         :param Avion: Instance de la classe avion
         '''
+        # On coupe les arrays
+        self.cut()
+        
         # Masses mission
         self.mission_data["FB_mission"] = Avion.Masse.getFuelMission()
         self.mission_data["FB_climb"] = Avion.Masse.getFuelClimb()
@@ -287,12 +290,13 @@ class Enregistrement:
         self.mission_data["t_holding"] = Avion.get_t_holding()
 
         # Emissions
-        self.cut()
         getAllEmissions(Avion, Atmosphere, self)
 
         self.printValues()
         self.printEmissions()
-        # print(valeurs_mises_en_forme)
+
+        # Contrails
+        Atmosphere.determineContrails(self)
         
     def printValues(self):
         # Dictionnaire des grandeurs à afficher
@@ -347,11 +351,9 @@ class Enregistrement:
         header = f"{'Phase':<12}{'Distance (NM)':>15}{'Temps (min)':>15}{'Fuel Burn (kg)':>18}"
         separator = "-" * len(header)
 
-        lines.append('\n')
         lines.append(separator)
         lines.append("                   RÉSUMÉ DE LA MISSION")
         lines.append(separator)
-        lines.append("\n")
 
         lines.append(header)
         lines.append(separator)
@@ -389,6 +391,7 @@ class Enregistrement:
         )
 
         # On renvoie la string formatée
+        lines.append("")
         print("\n".join(lines))
 
     def printEmissions(self):
@@ -443,14 +446,12 @@ class Enregistrement:
         totalnvPM = 0.0
 
         lines = []
-        header = f"{'Phase':<12}{'HC (kg)':>15}{'CO (kg)':>15}{'NOx (kg)':>15}{'nvPM (g)':>15}"
+        header = f"{'Phase':<12}{'HC (kg)':>10}{'CO (kg)':>10}{'NOx (kg)':>10}{'nvPM (g)':>10}"
         separator = "-" * len(header)
 
-        lines.append('\n')
         lines.append(separator)
-        lines.append("                         RÉSUMÉ DES ÉMISSIONS")
+        lines.append("                RÉSUMÉ DES ÉMISSIONS")
         lines.append(separator)
-        lines.append("\n")
 
         lines.append(header)
         lines.append(separator)
@@ -463,7 +464,7 @@ class Enregistrement:
 
 
             lines.append(
-                f"{name:<12}{HC:>15.1f}{CO:>15.1f}{NOx:>15.1f}{nvPM*1000:>15.1f}"
+                f"{name:<12}{HC:>10.1f}{CO:>10.1f}{NOx:>10.1f}{nvPM*1000:>10.1f}"
             )
 
             # On remet un séparateur pour la mission et on ne compte pas sa distance parcourue
@@ -476,7 +477,7 @@ class Enregistrement:
                 totalnvPM += nvPM
 
         lines.append(
-            f"{'TOTAL':<12}{totalHC:>15.1f}{totalCO:>15.1f}{totalNOx:>15.1f}{totalnvPM*1000:>15.1f}"
+            f"{'TOTAL':<12}{totalHC:>10.1f}{totalCO:>10.1f}{totalNOx:>10.1f}{totalnvPM*1000:>10.1f}"
         )
 
         # On renvoie la string formatée

@@ -72,10 +72,8 @@ class Mission:
         print(f"Temps de calcul complet: {temps_total:.4f} secondes")
         print("")
 
+        # Dernier enregistrement
         Enregistrement.saveFinal(Avion, Atmosphere)
-
-        # Fin de l'enregistrement
-        Enregistrement.cut()
 
     @staticmethod
     def checkMission(Avion: Avion, Inputs: Inputs, precision):
