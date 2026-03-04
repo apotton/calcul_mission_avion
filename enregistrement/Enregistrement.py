@@ -413,7 +413,7 @@ class Enregistrement:
             self.mission_data["eHC_descent"], 
             self.mission_data["eCO_descent"], 
             self.mission_data["eNOx_descent"],
-            self.mission_data["envPM_cruise"]),
+            self.mission_data["envPM_descent"]),
 
             ("Mission", 
             self.mission_data["eHC_climb"] + self.mission_data["eHC_cruise"] + self.mission_data["eHC_descent"], 
