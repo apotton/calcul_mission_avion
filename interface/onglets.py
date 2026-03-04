@@ -149,9 +149,9 @@ class OngletAutres(ctk.CTkScrollableFrame):
         addField(app, f_hold, "Temps Holding", "Time_holding_min", "30", "min", row=1, col=1)
         addField(app, f_hold, "Contingency", "Contingency", "5", "%", row=2, col=1)
         addField(app, f_hold, "Vitesse Vent Vw", "Vw_kt", "0", "kt", row=3, col=1)
-        addField(app, f_hold, "Humidité relative de l'air", "RH", "0", "%", row=4, col=1)
-        addField(app, f_hold, "DISA Croisière", "DISA_Cruise", "0", "K", row=5, col=1)
-        addField(app, f_hold, "DISA Sous Crois.", "DISA_sub_Cruise", "0", "K", row=6, col=1)
+        # addField(app, f_hold, "Humidité relative de l'air", "RH", "0", "%", row=4, col=1)
+        addField(app, f_hold, "DISA Croisière", "DISA_Cruise", "0", "K", row=4, col=1)
+        addField(app, f_hold, "DISA Sous Crois.", "DISA_sub_Cruise", "0", "K", row=5, col=1)
 
         # Grille face-à-face pour les coefficients
         f_coeff = ctk.CTkFrame(tab)

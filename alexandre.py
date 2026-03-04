@@ -106,7 +106,7 @@ Saving.cut()
 # Calcul de Point Performance
 # PointPerformance.Performance(A320, test_atmos)
 
-test_atmos.calculateHumidity(Saving)
+# A320.saveCSVAvion("C:\\Users\\alexa\\Downloads\\A réencoder\\avion.csv")
 
 # plt.figure()
 # plt.plot(Saving.data["T"])

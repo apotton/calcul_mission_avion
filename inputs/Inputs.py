@@ -89,7 +89,6 @@ class Inputs:
         self.Vw_kt = 0                # kt
         self.DISA_Cruise = 0          # K
         self.DISA_sub_Cruise = 0      # K
-        self.RH = 0                  # Humidité relative de l'air (%)
 
         # =====================
         # Coefficients de déformation du réseau moteur

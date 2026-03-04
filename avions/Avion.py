@@ -181,79 +181,192 @@ class Avion:
     
     def getName(self):
         return self.Name
+
+    def setName(self, Name):
+        self.Name = Name
     
     def getMaxTakeoffWeight(self):
         return self.MaxTakeoffWeight
+
+    def setMaxTakeoffWeight(self, MaxTakeoffWeight):
+        self.MaxTakeoffWeight = MaxTakeoffWeight
     
     def getEmptyWeight(self):
         return self.EmptyWeight
+
+    def setEmptyWeight(self, EmptyWeight):
+        self.EmptyWeight = EmptyWeight
     
     def getMaxFuelWeight(self):
         return self.MaxFuelWeight
+
+    def setMaxFuelWeight(self, MaxFuelWeight):
+        self.MaxFuelWeight = MaxFuelWeight
     
     def getMaxPLWeight(self):
         return self.MaxPLWeight
+
+    def setMaxPLWeight(self, MaxPLWeight):
+        self.MaxPLWeight = MaxPLWeight
     
     def getSref(self):
         return self.Sref
+
+    def setSref(self, Sref):
+        self.Sref = Sref
     
     def getPhi25deg(self):
         return self.Phi25deg
+
+    def setPhi25deg(self, Phi25deg):
+        self.Phi25deg = Phi25deg
     
     def getTtoCref(self):
         return self.TtoCref
+
+    def setTtoCref(self, TtoCref):
+        self.TtoCref = TtoCref
     
     def getLref(self):
         return self.Lref
+
+    def setLref(self, Lref):
+        self.Lref = Lref
     
     def getAspectRatio(self):
         return self.AspectRatio
+
+    def setAspectRatio(self, AspectRatio):
+        self.AspectRatio = AspectRatio
     
     def getTaperRatio(self):
         return self.TaperRatio
+
+    def setTaperRatio(self, TaperRatio):
+        self.TaperRatio = TaperRatio
     
     def getCamber(self):
         return self.Camber
+
+    def setCamber(self, Camber):
+        self.Camber = Camber
     
     def getMaxThicknessPosition(self):
         return self.MaxThicknessPosition
+
+    def setMaxThicknessPosition(self, MaxThicknessPosition):
+        self.MaxThicknessPosition = MaxThicknessPosition
     
     def getDFuselage(self):
         return self.DFuselage
+
+    def setDFuselage(self, DFuselage):
+        self.DFuselage = DFuselage
     
     def getEnvergure(self):
         return self.Envergure
+
+    def setEnvergure(self, Envergure):
+        self.Envergure = Envergure
     
     def getKVMO(self):
         return self.KVMO
+
+    def setKVMO(self, KVMO):
+        self.KVMO = KVMO
     
     def getMMO(self):
         return self.MMO
+
+    def setMMO(self, MMO):
+        self.MMO = MMO
     
     def getPressurisationCeilingFt(self):
         return self.PressurisationCeilingFt
+
+    def setPressurisationCeilingFt(self, PressurisationCeilingFt):
+        self.PressurisationCeilingFt = PressurisationCeilingFt
     
     def getCx0Cruise(self):
         return self.Cx0Cruise
+
+    def setCx0Cruise(self, Cx0Cruise):
+        self.Cx0Cruise = Cx0Cruise
     
     def getCx0Climb(self):
         return self.Cx0Climb
+
+    def setCx0Climb(self, Cx0Climb):
+        self.Cx0Climb = Cx0Climb
     
     def getCx0Descent(self):
         return self.Cx0Descent
+
+    def setCx0Descent(self, Cx0Descent):
+        self.Cx0Descent = Cx0Descent
     
     def getOswaldClimb(self):
         return self.OswaldClimb
+
+    def setOswaldClimb(self, OswaldClimb):
+        self.OswaldClimb = OswaldClimb
     
     def getOswaldCruise(self):
         return self.OswaldCruise
+
+    def setOswaldCruise(self, OswaldCruise):
+        self.OswaldCruise = OswaldCruise
     
     def getOswaldDescent(self):
         return self.OswaldDescent
+
+    def setOswaldDescent(self, OswaldDescent):
+        self.OswaldDescent = OswaldDescent
     
     def get_t(self):
         ''' Renvoie le temps interne de l'avion. '''
         return self.t
+    
+    def saveCSVAvion(self, filename: str):
+        '''
+        Enregistre les paramètres de l'avion dans un fichier CSV (réimportable ensuite).
+        
+        :param filename: Nom du fichier CSV de sortie
+        '''
+        param_a_sauvegarder = {
+            "Name": self.Name,
+            "MaxTakeoffWeight": self.MaxTakeoffWeight,
+            "EmptyWeight": self.EmptyWeight,
+            "MaxFuelWeight": self.MaxFuelWeight,
+            "MaxPLWeight": self.MaxPLWeight,
+            "Sref": self.Sref,
+            "Phi25deg": self.Phi25deg,
+            "TtoCref": self.TtoCref,
+            "Lref": self.Lref,
+            "AspectRatio": self.AspectRatio,
+            "TaperRatio": self.TaperRatio,
+            "Camber": self.Camber,
+            "MaxThicknessPosition": self.MaxThicknessPosition,
+            "DFuselage": self.DFuselage,
+            "Envergure": self.Envergure,
+            "KVMO": self.KVMO,
+            "MMO": self.MMO,
+            "PressurisationCeilingFt": self.PressurisationCeilingFt,
+            "Cx0Cruise": self.Cx0Cruise,
+            "Cx0Climb": self.Cx0Climb,
+            "Cx0Descent": self.Cx0Descent,
+            "OswaldClimb": self.OswaldClimb,
+            "OswaldCruise": self.OswaldCruise,
+            "OswaldDescent": self.OswaldDescent
+        }
+        with open(filename, mode='w', encoding='utf-8') as f:
+            writer = csv.writer(f, delimiter=';')
+            for key, value in param_a_sauvegarder.items():
+                try:
+                    value = float(value)
+                except:
+                    pass
+                writer.writerow([key, value])
 
     # Montée
     def set_t_climb(self, t_climb):

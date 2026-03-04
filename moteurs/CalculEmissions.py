@@ -16,7 +16,7 @@ def calculateFFf(FF, Tamb, Pamb, Mach):
     """
     
     # Constantes de l'atmosphère standard au niveau de la mer (ISA)
-    T_SLS = 273.15  # Kelvin
+    T_SLS = 288.15  # Kelvin
     P_SLS = 101325.0  # Pascals
     
     # Calcul des ratios thermodynamiques
@@ -82,7 +82,7 @@ def correct_EI_for_flight(EI_HC_ref, EI_CO_ref, EI_NOx_ref, Tamb, Pamb, humidity
     :return: Les indices d'émission réels en vol (g/kg)
     """
     
-    T_SLS = 273.15
+    T_SLS = 288.15
     P_SLS = 101325.0
     
     # Ratios thermodynamiques

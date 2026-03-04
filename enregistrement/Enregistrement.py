@@ -296,7 +296,7 @@ class Enregistrement:
         self.printEmissions()
 
         # Contrails
-        Atmosphere.determineContrails(self)
+        # Atmosphere.determineContrails(self)
         
     def printValues(self):
         # Dictionnaire des grandeurs à afficher

@@ -26,7 +26,6 @@ class Atmosphere:
         self.DISA_sub_Cruise = Inputs.DISA_sub_Cruise
         self.DISA_Cruise = Inputs.DISA_Cruise
         self.hCruise = Inputs.hCruise_ft * Constantes.conv_ft_m
-        self.RH = Inputs.RH / 100
         self.w = [] # Humidité spécifique (kg eau / kg air sec)
         self.e_Pa = [] # Pression partielle de vapeur d'eau
 
@@ -83,7 +82,8 @@ class Atmosphere:
         '''
         # Calcul de la pression saturante (formule de Murphy & Koop)
         es_Pa = self.calculateLiquidMurphyKoop(Enregistrement.data["T"])
-        self.e_Pa = self.RH * es_Pa # Pression partielle vapeur
+        RH_h = 0.6 * np.exp(-Enregistrement.data["h"] / 2000) # Modèle simplifié d'humidité relative
+        self.e_Pa = RH_h * es_Pa # Pression partielle vapeur
         self.w = 0.622 * self.e_Pa / (Enregistrement.data["P"] - self.e_Pa) # kg eau / kg air sec
 
     @staticmethod

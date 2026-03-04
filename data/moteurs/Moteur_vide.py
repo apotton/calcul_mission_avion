@@ -123,14 +123,38 @@ def load():
     # SFC en lb/(lbf*h)
     sfc_crl_holding = 0
 
+    # ==============================================================================
+    # DONNÉES D'ÉMISSIONS DE POLLUANTS
+    # ==============================================================================
+
+    # Source: https://www.easa.europa.eu/en/domains/environment/icao-aircraft-engine-emissions-databank
+    # Les tableaux doivent être de la même forme: [X_idle, X_app, X_co, X_to] (ordre croissant de puissance moteur)
+
+    # Niveaux de poussée approximatifs: 7%, 30%, 85%, 100%
+    # fuel_flow_ref = [FF_idle, FF_app, FF_co, FF_to] # En kg/s
+    fuel_flow_ref = 0 # kg/s
+    # Emissions d'hydrocarbures non brulés
+    EI_HC_ref     = 0 # g/kg
+    # Emissions de monoxyde de carbone
+    EI_CO_ref     = 0 # g/kg
+    # Emissions d'oxydes d'azote
+    EI_NOx_ref    = 0 # g/kg
+    # Emissions de non-volatile particulate matter (attention à ne pas mettre en mg/kg)
+    EI_nvPM_Mass  = 0 # g/kg
+
     return DonneesMoteur(mach_table,
-                 alt_table_ft,
-                 Fn_MCL_table,
-                 Fn_FI_table,
-                 SFC_MCL_table,
-                 FF_FI_table,
-                 mach_table_crl,
-                 cruise_data,
-                 mach_table_crl_holding,
-                 fn_lbf_crl_holding,
-                 sfc_crl_holding)
+                         alt_table_ft,
+                         Fn_MCL_table,
+                         Fn_FI_table,
+                         SFC_MCL_table,
+                         FF_FI_table,
+                         mach_table_crl,
+                         cruise_data,
+                         mach_table_crl_holding,
+                         fn_lbf_crl_holding,
+                         sfc_crl_holding,
+                         fuel_flow_ref,
+                         EI_HC_ref,
+                         EI_CO_ref,
+                         EI_NOx_ref,
+                         EI_nvPM_Mass)
