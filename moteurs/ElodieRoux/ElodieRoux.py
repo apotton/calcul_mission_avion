@@ -5,12 +5,13 @@ from constantes.Constantes import Constantes
 
 class ElodieRoux(Moteur):
 
-    OPR = 32.6
-    BPR = 5.7
-    F0  = 120_000.
-    T4  = 1500.
-    dT4_climb = -50.
-    dT4_cruise = -90.
+    OPR = 32.6 # Overall pressure ratio
+    BPR = 5.7 # Bypass ration
+    F0  = 120_000. # Poussée max au décollage
+    T4  = 1500. # Température en sortie de combustion
+    dT4_climb = -50. # Température en montée
+    dT4_cruise = -90. # Température en croisière
+    h_opt = 10_668. # Altitude optimale de design moteur
 
     aFMs = [1.79e-12, 4.29e-13, -5.24e-14, -4.51e-14, -4.57e-12]
     aGMs = [1.17e-8, -8.80e-8, -5.25e-9, -3.19e-9, 5.52e-8]
