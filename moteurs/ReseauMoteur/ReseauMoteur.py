@@ -2,7 +2,7 @@ from importlib.util import spec_from_file_location, module_from_spec
 from constantes.Constantes import Constantes
 from moteurs.Moteur import Moteur
 from inputs.Inputs import Inputs
-import moteurs.DonneesMoteur as DonneesMoteur
+# from DonneesMoteur import DonneesMoteur
 from pathlib import Path
 import numpy as np
 
@@ -207,7 +207,7 @@ class ReseauMoteur(Moteur):
                                                        self.DonneesMoteur.Fn_FI_table,
                                                        self.Avion.Aero.getMach(), h_ft)
         
-        self.F_t = float(F_N_Descent_lbf) / 3600. / Constantes.g * self.Inputs.cF_descent
+        self.F_t = 2*float(F_N_Descent_lbf) / 3600. / Constantes.g * self.Inputs.cF_descent
 
     def calculateSFCDescent(self):
         # Altitude
@@ -221,10 +221,10 @@ class ReseauMoteur(Moteur):
         
         # Conversion en kg/s, division par la poussée
         self.FF_t = float(FuelFlow_lbh) * Constantes.conv_lb_kg / 3600. * 2
-        self.SFC_t = self.FF_t / self.F_t
+        # self.SFC_t = self.FF_t / self.F_t
         # La division à poussée faible peut introduire des erreurs
-        if (abs(self.SFC_t) > 1e-4):
-            self.SFC_t = 0
+        # if (abs(self.SFC_t) > 1e-4):
+        self.SFC_t = 0
 
 
     ### HOLDING ###

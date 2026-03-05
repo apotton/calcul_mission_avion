@@ -5,7 +5,7 @@ from constantes.Constantes import Constantes
 import numpy as np
 
 from moteurs.ReseauMoteur import ReseauMoteur
-from moteurs.ElodieRoux import ElodieRoux
+from moteurs.ElodieRoux.ElodieRoux import ElodieRoux
 
 
 

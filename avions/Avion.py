@@ -1,4 +1,4 @@
-from moteurs.ReseauMoteur import ReseauMoteur
+from moteurs.ReseauMoteur.ReseauMoteur import ReseauMoteur
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
 from .Masse import Masse

@@ -1,7 +1,8 @@
 class Constantes:
         
     # --- Constantes Atmosphère ---
-    rho0_kgm3   = 1.225    # Masse volumique (kg/m^3)
+    rho0   = 1.225    # Masse volumique (kg/m^3)
+    rho11  = 0.364    # Masse volumique à 11000m
     p0_Pa       = 101325   # Pression (Pa)
     T0_K        = 288.15   # Température (K)
 
@@ -47,19 +48,4 @@ class Constantes:
     # Coefficients Surface
     coef_SFC1 = 7.4e-13            # 0.000000000000117760232145255000
     coef_SFC  = 0.663573705252024  # 0.000000000000000000000000000000
-
-
-    const_SFCmin         = 0.998  # 1.001241429
-    coef_alt_SFCmin      = 0      # -0.003092577
-    coef_mach_SFCmin     = 0      # -0.015688604
-    coef_alt_mach_SFCmin = 0      # 0.015770772
-
-    const_Fi             = 0.85   # 1.040417117
-    coef_alt_Fi          = 0      # 0.002494591
-    coef_mach_Fi         = 0      # -0.099775754
-    coef_alt_mach_Fi1    = 0      # 2.369599459
-    coef_alt_mach_Fi2    = 0      # -2.385063906
-
-    coef_fpr_SFCmin      = 0      # 0.001739837
-    coef_fpr_Fi          = 0      # 0.048060427
 
