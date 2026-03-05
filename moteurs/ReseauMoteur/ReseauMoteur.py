@@ -108,14 +108,6 @@ class ReseauMoteur(Moteur):
         )
 
     
-    def calculateFCruise(self):
-        # Altitude (conversion)
-        # Calcul par équilibre des forces
-        Cz = self.Avion.Aero.getCz()
-        Cx = self.Avion.Aero.getCx()
-        finesse = Cz / Cx
-        self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
-    
     def calculateSFCCruise(self):
         # Altitude
         h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
@@ -229,13 +221,6 @@ class ReseauMoteur(Moteur):
 
     ### HOLDING ###
 
-    def calculateFHolding(self):
-        # Calcul par équilibre des forces
-        Cz = self.Avion.Aero.getCz()
-        Cx = self.Avion.Aero.getCx()
-        finesse = Cz / Cx
-        self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
-
     def calculateSFCHolding(self):
         SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.fn_lbf_crl_holding * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
                                                self.DonneesMoteur.mach_table_crl_holding,
@@ -247,14 +232,6 @@ class ReseauMoteur(Moteur):
 
 
     ### Diversion ###
-
-    def calculateFCruiseDiversion(self):
-        # Calcul par équilibre des forces
-        Cz = self.Avion.Aero.getCz()
-        Cx = self.Avion.Aero.getCx()
-        finesse = Cz / Cx
-        self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
-
     def calculateSFCCruiseDiversion(self):
         # Même calcul qu'en croisière
         self.calculateSFCCruise()

@@ -63,10 +63,9 @@ class ElodieRoux(Moteur):
         Mach_s = self.aMs * self.T4 + self.bMs * self.BPR + self.cMs * (self.OPR - 30) + self.dMs * dT4 + self.eMs
         F_m = self.aFm * self.T4 + self.bFm * self.BPR + self.cFm * (self.OPR - 30) + self.dFm * dT4 + self.eFm
 
-
-        if (h > 11000):
-            Mach_s += F_M_s*(h-11000)**2 + G_M_s*(h-11000)
-            F_m += F_F_m*(h-11000)**2 + G_F_m*(h-11000)
+        # Vectorisation
+        Mach_s += (F_M_s*(h-11000)**2 + G_M_s*(h-11000)) * (h > 11000)
+        F_m += (F_F_m*(h-11000)**2 + G_F_m*(h-11000)) * (h > 11000)
 
         alpha = (1-F_m) / Mach_s**2
         QM = alpha * (M - Mach_s)**2 + F_m
@@ -75,16 +74,25 @@ class ElodieRoux(Moteur):
         k = 1 + 1.2e-3 * dT4
         n = 0.98 + 8e-4 * dT4
 
-        if h <= 11000:
-            QH = k * (rho/Constantes.rho0)**n * (1 - 0.04*np.sin(np.pi*h/11000))
-        else:
-            QH = k * (Constantes.rho11/Constantes.rho0)**n * rho / Constantes.rho11
+        # Encore une vectorisation
+        QH = (k * (rho/Constantes.rho0)**n * (1 - 0.04*np.sin(np.pi*h/11000))) * (h <= 11000) \
+            + ( k * (Constantes.rho11/Constantes.rho0)**n * rho / Constantes.rho11) * (h > 11000)
         
         # Résidus
         QR = -4.51e-3 * self.BPR + 2.19e-5 * self.T4 - 3.09e-4 * (self.OPR - 30) + 0.945
 
         # Résultat final
         return self.F0 * QM * QH * QR
-
-    def calculateFClimb(self):
+    
+    def calculateSFC(self, Atmosphere: Atmosphere):
         pass
+
+    def calculateFClimb(self, Atmosphere: Atmosphere):
+        self.F_t = self.calculateFmax(Atmosphere, self.dT4_climb) * 2 * self.Inputs.cF_climb
+
+    def calculateFDescent(self):
+        self.F_t = 0
+
+    def calculateSFCDescent(self):
+        self.SFC_t = 0
+        self.FF_t = 0

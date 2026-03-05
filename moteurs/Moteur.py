@@ -63,9 +63,12 @@ class Moteur:
 
     def calculateFCruise(self):
         '''
-        Calcule la force de poussée du moteur pendant la croisière (N).
+        Calcule la force de poussée du moteur pendant la croisière, par équilibre des forces (N).
         '''
-        pass  # Méthode à implémenter dans les classes filles
+        Cz = self.Avion.Aero.getCz()
+        Cx = self.Avion.Aero.getCx()
+        finesse = Cz / Cx
+        self.F_t = self.Avion.Masse.getCurrentWeight() / finesse
 
     def calculateFDescent(self):
         '''
@@ -75,15 +78,17 @@ class Moteur:
 
     def calculateFHolding(self):
         '''
-        Calcule la force de poussée du moteur pendant la phase de holding (N).
+        Calcule la force de poussée du moteur pendant la phase de holding par équilibre des forces (N).
         '''
-        pass  # Méthode à implémenter dans les classes filles
+        # Calcul par équilibre des forces
+        self.calculateFCruise()
 
     def calculateFCruiseDiversion(self):
         '''
         Calcule la force de poussée du moteur pendant la croisière de la diversion (N).
         '''
-        pass  # Méthode à implémenter dans les classes filles
+        # Calcul par équilibre des forces
+        self.calculateFCruise()
 
     ## SFC ##
 
