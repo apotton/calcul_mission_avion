@@ -118,9 +118,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.calculateFClimb()
+            Avion.Moteur.calculateFClimb(Atmosphere)
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCClimb()
+            Avion.Moteur.calculateSFCClimb(Atmosphere)
 
             # Check puissance suffisante
             assert F_N >= Rx, "Moteur trop peu puissant en montée"
@@ -193,9 +193,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée moteur
-            Avion.Moteur.calculateFClimb()
+            Avion.Moteur.calculateFClimb(Atmosphere)
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCClimb()
+            Avion.Moteur.calculateSFCClimb(Atmosphere)
 
             # Check puissance suffisante
             assert F_N >= Rx, "Moteur trop peu puissant en montée"
@@ -283,9 +283,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.calculateFClimb()
+            Avion.Moteur.calculateFClimb(Atmosphere)
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCClimb()
+            Avion.Moteur.calculateSFCClimb(Atmosphere)
 
             # Check puissance suffisante
             assert F_N >= Rx, "Moteur trop peu puissant en montée"
@@ -355,9 +355,9 @@ class Montee:
             Rx = Avion.Masse.getCurrentWeight() / finesse
 
             # Poussée
-            Avion.Moteur.calculateFClimb()
+            Avion.Moteur.calculateFClimb(Atmosphere)
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCClimb()
+            Avion.Moteur.calculateSFCClimb(Atmosphere)
 
             # Check puissance suffisante
             assert F_N >= Rx, "Moteur trop peu puissant en montée"

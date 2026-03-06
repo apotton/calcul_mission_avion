@@ -83,8 +83,8 @@ class Diversion:
                 Avion.Aero.calculateCx(Atmosphere)
 
             # Moteur
-            Avion.Moteur.calculateFCruise()
-            Avion.Moteur.calculateSFCCruise()
+            Avion.Moteur.calculateFCruiseDiversion(Atmosphere)
+            Avion.Moteur.calculateSFCCruiseDiversion(Atmosphere)
 
             # Intégration
             Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps

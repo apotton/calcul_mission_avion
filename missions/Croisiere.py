@@ -98,9 +98,9 @@ class Croisiere:
         Rx_up = Avion.Masse.getCurrentWeight() / finesse_up
 
         # Poussée moteur
-        Avion.Moteur.calculateFClimb()
+        Avion.Moteur.calculateFClimb(Atmosphere)
         F_N_up = Avion.Moteur.getF()
-        Avion.Moteur.calculateSFCCruise()
+        Avion.Moteur.calculateSFCCruise(Atmosphere)
         
         #Calcul du coût économique ECCF et SGR
         Avion.Aero.calculateECCF() 
@@ -164,8 +164,8 @@ class Croisiere:
             Avion.Aero.calculateCx(Atmosphere)
 
         # Calculs vectorisés moteur
-        Avion.Moteur.calculateFCruise() # Equilibre
-        Avion.Moteur.calculateSFC_Vectorized() # Verion vectorisée: plus lente pour des floats simples
+        Avion.Moteur.calculateFCruise(Atmosphere) # Equilibre
+        Avion.Moteur.calculateSFC_Vectorized(Atmosphere) # Verion vectorisée: plus lente pour des floats simples
 
         if (Inputs.cruiseType == "Alt_SAR"):
             # SAR pour toute la grille
@@ -247,8 +247,8 @@ class Croisiere:
                 Avion.Aero.calculateCx(Atmosphere)
 
             # Poussée moteur
-            Avion.Moteur.calculateFCruise()
-            Avion.Moteur.calculateSFCCruise()
+            Avion.Moteur.calculateFCruise(Atmosphere)
+            Avion.Moteur.calculateSFCCruise(Atmosphere)
 
             # Mise à jour avion (pas de changement d'altitude)
             Avion.Add_dl(Vx * dt)
@@ -311,8 +311,8 @@ class Croisiere:
                 Avion.Aero.calculateCx(Atmosphere)
 
             # Poussée moteur
-            Avion.Moteur.calculateFCruise()
-            Avion.Moteur.calculateSFCCruise()
+            Avion.Moteur.calculateFCruise(Atmosphere)
+            Avion.Moteur.calculateSFCCruise(Atmosphere)
 
             # Condition de montée iso-Mach (on ne monte pas si on est très avancé dans la mission)
             if (Avion.getl() < Inputs.cruiseClimbStop*Inputs.rangeMission_NM*Constantes.conv_NM_m/100 \
@@ -387,8 +387,8 @@ class Croisiere:
                 Avion.Aero.calculateCx(Atmosphere)
 
             # Moteur
-            Avion.Moteur.calculateFCruise()
-            Avion.Moteur.calculateSFCCruise()
+            Avion.Moteur.calculateFCruise(Atmosphere)
+            Avion.Moteur.calculateSFCCruise(Atmosphere)
 
             # Intégration
             Vx = Avion.Aero.getTAS() + Inputs.Vw_kt * Constantes.conv_kt_mps
@@ -471,8 +471,8 @@ class Croisiere:
                 else:
                     Avion.Aero.calculateCx(Atmosphere)
 
-                Avion.Moteur.calculateFCruise()
-                Avion.Moteur.calculateSFCCruise()
+                Avion.Moteur.calculateFCruise(Atmosphere)
+                Avion.Moteur.calculateSFCCruise(Atmosphere)
 
                 # Intégration
                 Avion.Add_dl(Vx * dt)

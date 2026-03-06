@@ -84,15 +84,64 @@ class ElodieRoux(Moteur):
         # Résultat final
         return self.F0 * QM * QH * QR
     
-    def calculateSFC(self, Atmosphere: Atmosphere):
-        pass
+    def calculateSFC(self, Atmosphere: Atmosphere, dT4):
+        h = self.Avion.geth()
+        h_sub_11 = (h <= 11000)
+        h_sup_11 = (h >  11000)
+
+        Fmax = self.calculateFmax(Atmosphere, dT4)
+
+        a1 = (-7.44e-13*h + 6.54e-7) * h_sub_11 + ( 6.45e-7) * h_sup_11
+        a2 = (-3.32e-10*h + 8.54e-6) * h_sub_11 + ( 4.89e-6) * h_sup_11
+        b1 = (-3.47e-11*h - 6.58e-7) * h_sub_11 + (-1.04e-6) * h_sup_11
+        b2 = ( 4.23e-10*h + 1.32e-5) * h_sub_11 + ( 1.79e-5) * h_sup_11
+        c  = -1.05e-7
+
+        M = self.Avion.Aero.getMach()
+        T = Atmosphere.getT_t()
+
+
+        SFC_Fmax = (a1 * self.BPR + a2) * M + (b1 * self.BPR + b2) * np.sqrt(T/Constantes.T0_K) \
+                 + (7.4e-13*(self.OPR - 30) * h + c) * (self.OPR - 30)
+        
+        dh = h - self.h_opt
+
+        Fi_red = -9.6e-5*dh + 0.85
+        SFCmin_red = 0.998 * (dh < -89) + (0.995 - 3.385e-5*dh) * (dh >= 89)
+        a = (1 - SFCmin_red) / (1 - Fi_red)**2
+
+        # self.SFC_t = ((a * self.F_t / 2 / Fmax + Fi_red)**2 + SFCmin_red) * SFC_Fmax
+        # if (self.SFC_t > 1e-4).any():
+        #     self.SFC_t = 0
+        # self.FF_t = self.F_t * self.SFC_t
+
+        n = 3.51e-2*self.BPR - 1.27e-5*h + 0.31
+        k = 1
+        self.SFC_t = k * np.sqrt(T/Constantes.T0_K) * M**n
+        self.FF_t = self.F_t * self.SFC_t * 0
+
+
 
     def calculateFClimb(self, Atmosphere: Atmosphere):
         self.F_t = self.calculateFmax(Atmosphere, self.dT4_climb) * 2 * self.Inputs.cF_climb
 
-    def calculateFDescent(self):
+
+    def calculateSFCClimb(self, Atmosphere: Atmosphere):
+        self.calculateSFC(Atmosphere, dT4=self.dT4_climb)
+
+    def calculateSFCCruise(self, Atmosphere: Atmosphere):
+        self.calculateSFC(Atmosphere, dT4=self.dT4_cruise)
+
+    def calculateSFCCruiseDiversion(self, Atmosphere: Atmosphere):
+        self.calculateSFCCruise(Atmosphere)
+
+    def calculateSFCHolding(self, Atmosphere: Atmosphere):
+        self.calculateSFCCruise(Atmosphere)
+
+
+    def calculateFDescent(self, Atmosphere: Atmosphere):
         self.F_t = 0
 
-    def calculateSFCDescent(self):
+    def calculateSFCDescent(self, Atmosphere: Atmosphere):
         self.SFC_t = 0
         self.FF_t = 0

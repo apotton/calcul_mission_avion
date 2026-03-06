@@ -6,7 +6,7 @@ from atmosphere.Atmosphere import Atmosphere
 from moteurs.ElodieRoux.ElodieRoux import ElodieRoux
 from inputs.Inputs import Inputs
 
-a = 5; b = 13
+a = 5e-2; b = 13
 
 print(f"a:{a} b:{b}")
 

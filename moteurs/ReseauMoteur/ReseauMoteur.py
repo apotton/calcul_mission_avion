@@ -108,7 +108,7 @@ class ReseauMoteur(Moteur):
         )
 
     
-    def calculateSFCCruise(self):
+    def calculateSFCCruise(self, Atmosphere):
         # Altitude
         h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
 
@@ -165,7 +165,7 @@ class ReseauMoteur(Moteur):
 
     #### MONTÉE ####
 
-    def calculateFClimb(self):
+    def calculateFClimb(self, Atmosphere):
         # Altitude
         h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
 
@@ -177,7 +177,7 @@ class ReseauMoteur(Moteur):
         self.F_t = (2*float(resultat)* Constantes.g * Constantes.conv_lb_kg) * self.Inputs.cF_climb  # Conversion lbf -> N et pour 2 moteurs
 
 
-    def calculateSFCClimb(self): 
+    def calculateSFCClimb(self, Atmosphere): 
         # Altitude
         h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
 
@@ -191,7 +191,7 @@ class ReseauMoteur(Moteur):
     
     #### DESENTE ####
 
-    def calculateFDescent(self):
+    def calculateFDescent(self, Atmosphere):
         h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
 
         F_N_Descent_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
@@ -201,7 +201,7 @@ class ReseauMoteur(Moteur):
         
         self.F_t = 2*float(F_N_Descent_lbf) / 3600. / Constantes.g * self.Inputs.cF_descent
 
-    def calculateSFCDescent(self):
+    def calculateSFCDescent(self, Atmosphere):
         # Altitude
         h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
         
@@ -221,7 +221,7 @@ class ReseauMoteur(Moteur):
 
     ### HOLDING ###
 
-    def calculateSFCHolding(self):
+    def calculateSFCHolding(self, Atmosphere):
         SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.fn_lbf_crl_holding * (Constantes.g * Constantes.conv_lb_kg), # poussée en N
                                                self.DonneesMoteur.mach_table_crl_holding,
                                                self.DonneesMoteur.sfc_crl_holding,
@@ -232,19 +232,17 @@ class ReseauMoteur(Moteur):
 
 
     ### Diversion ###
-    def calculateSFCCruiseDiversion(self):
+    def calculateSFCCruiseDiversion(self, Atmosphere):
         # Même calcul qu'en croisière
-        self.calculateSFCCruise()
+        self.calculateSFCCruise(Atmosphere)
 
 
     # ====================
     # calcul vectorisé de la SFC pour la croisière Alt SAR
     # ====================
 
-    def calculateSFC_Vectorized(self):
-        """
-        Version vectorisée du calcul de SFC (en croisière).
-        """
+    def calculateSFC_Vectorized(self, Atmosphere):
+        # Redéfinition du calcul vectorisé
         h_ft = self.Avion.geth() / Constantes.conv_ft_m
         
         # Altitude de référence
@@ -293,17 +291,3 @@ class ReseauMoteur(Moteur):
         self.SFC_t = (sfc_lbf_final / 3600.0 / Constantes.g) * self.Inputs.cFF_cruise
         self.FF_t = self.SFC_t * self.F_t
 
-    def getfuel_flow_ref(self):
-        return self.DonneesMoteur.fuel_flow_ref
-    
-    def getEI_HC_ref(self):
-        return self.DonneesMoteur.EI_HC_ref
-    
-    def getEI_CO_ref(self):
-        return self.DonneesMoteur.EI_CO_ref
-    
-    def getEI_NOx_ref(self):
-        return self.DonneesMoteur.EI_NOx_ref
-    
-    def getEI_nvPM_Mass(self):
-        return self.DonneesMoteur.EI_nvPM_Mass

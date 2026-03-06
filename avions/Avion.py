@@ -1,3 +1,4 @@
+from moteurs.ElodieRoux.ElodieRoux import ElodieRoux
 from moteurs.ReseauMoteur.ReseauMoteur import ReseauMoteur
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
@@ -97,7 +98,8 @@ class Avion:
         self.Inputs = Inputs
         self.Masse = Masse(self)
         self.Aero = Aero(self)
-        self.Moteur = ReseauMoteur(self, engine_path)
+        # self.Moteur = ReseauMoteur(self, engine_path)
+        self.Moteur = ElodieRoux(self)
 
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()

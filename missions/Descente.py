@@ -132,9 +132,9 @@ class Descente:
             finesse = Cz / Cx
 
             # Poussée moteur et SFC
-            Avion.Moteur.calculateFDescent()
+            Avion.Moteur.calculateFDescent(Atmosphere)
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCDescent()
+            Avion.Moteur.calculateSFCDescent(Atmosphere)
 
             # Résistance horizontale
             Rx = Avion.Masse.getCurrentWeight() / finesse
@@ -202,9 +202,9 @@ class Descente:
             finesse = Cz / Cx
 
             # Poussée moteur (idle en descente)
-            Avion.Moteur.calculateFDescent()
+            Avion.Moteur.calculateFDescent(Atmosphere)
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCDescent()
+            Avion.Moteur.calculateSFCDescent(Atmosphere)
 
             # Résistance
             Rx = Avion.Masse.getCurrentWeight() / finesse
@@ -276,9 +276,9 @@ class Descente:
             Rx = Avion.Masse.getCurrentWeight() / finesse  # cohérent avec finesse
 
             # Poussée moteur (idle / freinage)
-            Avion.Moteur.calculateFDescent()
+            Avion.Moteur.calculateFDescent(Atmosphere)
             F_N = Avion.Moteur.getF()
-            Avion.Moteur.calculateSFCDescent()
+            Avion.Moteur.calculateSFCDescent(Atmosphere)
 
             # Dynamique longitudinale simplifiée
             ax = (F_N - Rx) / Avion.Masse.getCurrentMass()

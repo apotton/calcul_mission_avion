@@ -80,8 +80,8 @@ class PointPerformance():
         R_X = Avion.Masse.getCurrentWeight() / finesse # N
 
         # Poussée / SFC / FF max (N, kg/N/h, kg/h)
-        Avion.Moteur.calculateFClimb()
-        Avion.Moteur.calculateSFCClimb()
+        Avion.Moteur.calculateFClimb(Atmosphere)
+        Avion.Moteur.calculateSFCClimb(Atmosphere)
         F_N_max = Avion.Moteur.getF()
         F_F_max = Avion.Moteur.getFF()  * 3600
         SFC_max = Avion.Moteur.getSFC() * 3600
@@ -89,12 +89,24 @@ class PointPerformance():
         ROC = pente * (TAS * Constantes.conv_kt_mps)
 
         # Poussée / SFC / FF équilibre
-        Avion.Moteur.calculateFCruise()
-        Avion.Moteur.calculateSFCCruise()
+        Avion.Moteur.calculateFCruise(Atmosphere)
+        Avion.Moteur.calculateSFCCruise(Atmosphere)
         F_N_eq = Avion.Moteur.getF()
         F_F_eq = Avion.Moteur.getFF()  * 3600
         SFC_eq = Avion.Moteur.getSFC() * 3600
-        SAR = TAS / F_F_eq 
+        Avion.Aero.calculateSAR()
+        Avion.Aero.calculateSGR()
+        SAR = Avion.Aero.getSAR() / Constantes.conv_NM_m
+        SGR = Avion.Aero.getSGR() / Constantes.conv_NM_m
+
+        # Poussée / FF / pente idle
+        Avion.Moteur.calculateFDescent(Atmosphere)
+        Avion.Moteur.calculateSFCDescent(Atmosphere)
+        F_N_IF = Avion.Moteur.getF()
+        F_F_IF = Avion.Moteur.getFF()  * 3600
+        SFC_IF = Avion.Moteur.getSFC() * 3600
+        pente_IF = np.asin((F_N_IF - R_X) / Avion.Masse.getCurrentWeight())
+        ROC_IF = pente_IF * (TAS * Constantes.conv_kt_mps)
 
         # Structuration des résultats pour l'affichage
         donnees_perf = {
@@ -134,7 +146,15 @@ class PointPerformance():
                 ("Poussée équilibre", F_N_eq, "N"),
                 ("Fuel Flow", F_F_eq, "kg/h"),
                 ("SFC", SFC_eq, "kg/N/h"),
-                ("Specific Air Range (SAR)", SAR, "nm/kg")
+                ("Specific Air Range (SAR)", SAR, "NM/kg"),
+                ("Specific Ground Range (SAR)", SGR, "NM/kg")
+            ],
+            "Performances Idle (moteur ralenti)": [
+                ("Poussée idle", F_N_IF, "N"),
+                ("Fuel Flow", F_F_IF, "kg/h"),
+                ("SFC", SFC_IF, "kg/N/h"),
+                ("Pente de descente", pente_IF * 180/np.pi, "°"),
+                ("Rate of Climb (ROC)", ROC_IF / Constantes.conv_kt_mps * 60, "ft/m")
             ]
         }
 

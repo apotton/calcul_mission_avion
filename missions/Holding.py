@@ -118,8 +118,8 @@ class Holding:
                 Avion.Aero.calculateCx(Atmosphere)
 
             # Poussée moteur
-            Avion.Moteur.calculateFHolding()
-            Avion.Moteur.calculateSFCHolding()
+            Avion.Moteur.calculateFHolding(Atmosphere)
+            Avion.Moteur.calculateSFCHolding(Atmosphere)
             
             # Masses
             Avion.Masse.burnFuel(dt)
