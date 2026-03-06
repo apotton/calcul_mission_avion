@@ -1,51 +1,48 @@
-import numpy as np
-from scipy.interpolate import interp1d
+from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
 from avions.Avion import Avion
 
+from scipy.interpolate import interp1d
+import numpy as np
+
 def calculateFFf(FF, Tamb, Pamb, Mach):
     """
-    Calcule le Fuel Flow équivalent au niveau de la mer (Wff) selon la méthode BFFM2.
+    Calcule le Fuel Flow équivalent au niveau de la mer (FFf) selon la méthode BFFM2.
     
-    :param FF: Array NumPy des débits de carburant réels en vol (kg/s)
-    :param Tamb: Array NumPy des températures ambiantes statiques (Kelvin)
-    :param Pamb: Array NumPy des pressions ambiantes statiques (Pascals)
-    :param Mach: Array NumPy des nombres de Mach
+    :param FF: Array des débits de carburant réels en vol (kg/s)
+    :param Tamb: Array des températures ambiantes statiques (Kelvin)
+    :param Pamb: Array des pressions ambiantes statiques (Pascals)
+    :param Mach: Array des nombres de Mach
     
     :return FFf: Array NumPy des débits de carburant équivalents SLS (kg/s)
     """
-    
-    # Constantes de l'atmosphère standard au niveau de la mer (ISA)
-    T_SLS = 288.15  # Kelvin
-    P_SLS = 101325.0  # Pascals
-    
     # Calcul des ratios thermodynamiques
-    theta_amb = Tamb / T_SLS
-    delta_amb = Pamb / P_SLS
+    theta_amb = Tamb / Constantes.T0_K
+    delta_amb = Pamb / Constantes.p0_Pa
     
-    # Calcul vectorisé du Wff (Application de l'équation BFFM2)
+    # Calcul vectorisé du Wff (BFFM2)
     return FF * ( (theta_amb**3.8) / delta_amb ) * np.exp(0.2 * Mach**2)
 
 
-def get_interpolated_EI(FFf_array, FF_ref, EI_ref):
+def get_interpolated_EI(FFf, FF_ref, EI_ref):
     """
     Fonction vectorisée pour interpoler les indices d'émission (EI) 
     en échelle log-log, avec gestion des zéros et extrapolation.
     
-    :param FFf_array Array NumPy des Fuel Flows équivalents (sol) de la mission (kg/s)
+    :param FFf: Array des Fuel Flows équivalents (sol) de la mission (kg/s)
     :param FF_ref: Liste ou array des 4 Fuel Flows de référence (sol) ICAO (kg/s)
     :param EI_ref: Liste ou array des 4 EI de référence (sol) ICAO correspondants (g/kg)
+
     :return EI_out: Les émissions interpolées pour la poussée au sol FFf_array (g/kg)
     """
     
     # Conversion en arrays NumPy pour la vectorisation
-    Wff = np.asarray(FFf_array)
+    Wff = np.asarray(FFf)
     FF_ref = np.asarray(FF_ref)
     EI = np.asarray(EI_ref)
     
-    # Gestion du piège log(0) pour les HC et CO
+    # Gestion de log(0) pour les HC et CO
     # On remplace les valeurs <= 0 par une valeur infinitésimale (ex: 1e-5)
-    # Cela permet au logarithme de fonctionner sans fausser le bilan de masse final.
     EI_safe = np.where(EI <= 0, 1e-5, EI)
     
     # Passage en espace logarithmique
@@ -62,10 +59,10 @@ def get_interpolated_EI(FFf_array, FF_ref, EI_ref):
     log_EI_out = interp_func(log_Wff)
     EI_out = np.exp(log_EI_out)
     
-    # Optionnel : Si l'EI calculé est très proche de zéro (suite à notre 1e-5), on le force à 0
-    EI_out = np.where(EI_out < 1e-4, 0.0, EI_out)
+    # Si l'EI calculé est très proche de zéro (suite à notre 1e-5), on le force à 0
+    # EI_out = np.where(EI_out < 1e-4, 0.0, EI_out)
     
-    return np.array(EI_out, dtype=np.float32)
+    return EI_out
 
 
 def correct_EI_for_flight(EI_HC_ref, EI_CO_ref, EI_NOx_ref, Tamb, Pamb, humidity):
@@ -74,7 +71,7 @@ def correct_EI_for_flight(EI_HC_ref, EI_CO_ref, EI_NOx_ref, Tamb, Pamb, humidity
     
     :param EI_HC_ref: Array des EI HC interpolés au sol (g/kg)
     :param EI_CO_ref: Array des EI CO interpolés au sol (g/kg)
-    :param EI_NOx_ref: Arrays des EI NOx interpolés au sol (g/kg)
+    :param EI_NOx_ref: Array des EI NOx interpolés au sol (g/kg)
     :param Tamb: Array des températures ambiantes (Kelvin)
     :param Pamb: Array des pressions ambiantes (Pascals)
     :param humidity: Array de l'humidité spécifique (kg eau / kg air sec).
@@ -82,15 +79,11 @@ def correct_EI_for_flight(EI_HC_ref, EI_CO_ref, EI_NOx_ref, Tamb, Pamb, humidity
     :return: Les indices d'émission réels en vol (g/kg)
     """
     
-    T_SLS = 288.15
-    P_SLS = 101325.0
-    
     # Ratios thermodynamiques
-    theta = np.asarray(Tamb) / T_SLS
-    delta = np.asarray(Pamb) / P_SLS
+    theta = np.asarray(Tamb) / Constantes.T0_K
+    delta = np.asarray(Pamb) / Constantes.p0_Pa
     
     # Facteur de correction de base (commun à tous les polluants)
-    # On calcule (theta^3.3 / delta^1.02) une seule fois pour optimiser
     thermo_factor = (theta**3.3) / (delta**1.02)
     
     # Application aux HC et CO
@@ -143,7 +136,7 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     Enregistrement.data["eNOx"] = FF * EI_Nox_vol / 1000
     Enregistrement.data["envPM"] = FF * EI_nvPM_vol / 1000
 
-    # Calcul (intégration) des émissions totales
+    ## Calcul (intégration) des émissions totales
     phase = Enregistrement.data["phase"]
     t = Enregistrement.data["t"]
 

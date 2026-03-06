@@ -38,9 +38,9 @@ class Mission:
             FB_mission = Avion.Masse.getFuelMission()
 
             # Mission principale (montée, croisière, descente)
-            Montee.Monter(Avion, Atmosphere, Enregistrement, Inputs, Inputs.dtClimb)
-            Croisiere.Croisiere(Avion, Atmosphere, Enregistrement, Inputs, Inputs.dtCruise)
-            Descente.Descendre(Avion, Atmosphere, Enregistrement, Inputs, Inputs.dtDescent)
+            Montee.Monter(Avion, Atmosphere, Enregistrement, Inputs)
+            Croisiere.Croisiere(Avion, Atmosphere, Enregistrement, Inputs)
+            Descente.Descendre(Avion, Atmosphere, Enregistrement, Inputs)
 
             # Diversion
             Diversion.Diversion(Avion, Atmosphere, Enregistrement, Inputs)

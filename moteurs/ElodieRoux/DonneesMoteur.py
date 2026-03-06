@@ -1,10 +1,6 @@
-'''
-Fichier qui définit les champs à l'intérieur des Données Moteur
-'''
-
 class DonneesMoteur:
     '''
-    Classe permettant d'accéder aux données d'un réseau moteur en entrée.
+    Classe permettant d'accéder aux données d'un moteur simulé par les formules d'Elodie Roux.
     '''
 
     def __init__(self, OPR, BPR, F0, T4,

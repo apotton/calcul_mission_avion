@@ -265,5 +265,5 @@ class OngletBatch(ctk.CTkFrame):
         ctk.CTkLabel(f_batch, text="Configuration du calcul en rafale (Batch)", font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, columnspan=3, pady=(10, 15))
 
         # Champs de l'onglet
-        addField(app, f_batch, "Payloads (espace séparés)", "batch_payloads", "0 10000 18000 20000", "kg", row=1, col=1, width=200)
+        addField(app, f_batch, "Payloads (espace séparés)", "batch_payloads", "0 10000 18000", "kg", row=1, col=1, width=200)
         addField(app, f_batch, "Ranges (espace séparés)", "batch_ranges", "500 1000 1500", "nm", row=2, col=1, width=200)

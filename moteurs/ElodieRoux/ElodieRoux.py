@@ -1,10 +1,14 @@
-from moteurs.Moteur import Moteur
 from atmosphere.Atmosphere import Atmosphere
-import numpy as np
 from constantes.Constantes import Constantes
 from moteurs.loadData import loadData
+from moteurs.Moteur import Moteur
+import numpy as np
 
 class ElodieRoux(Moteur):
+    '''
+    Simulation d'un moteur par des formules déterministes:
+    http://elodieroux.com/ReportFiles/ModelesMoteurVersionPublique.pdf
+    '''
     # Coefficients loi de Mach Fmax
     aFMs = [ 1.79e-12,  4.29e-13, -5.24e-14, -4.51e-14, -4.57e-12]
     aGMs = [ 1.17e-8,  -8.80e-8,  -5.25e-9,  -3.19e-9,   5.52e-8]
@@ -26,7 +30,7 @@ class ElodieRoux(Moteur):
         super().__init__(Avion)
         self.DonneesMoteur = loadData(path)
 
-        # Plus simple à définir comme ça
+        # Plus simple à importer ici
         self.OPR = self.DonneesMoteur.OPR
         self.BPR = self.DonneesMoteur.BPR
         self.F0  = self.DonneesMoteur.F0
@@ -36,7 +40,14 @@ class ElodieRoux(Moteur):
         self.dT4_cruise =  self.DonneesMoteur.dT4_cruise
 
     def calculateFmax(self, Atmosphere: Atmosphere, dT4):
-        h = self.Avion.geth()
+        '''
+        Détermine la poussée maximale atteingable par le moteur aux conditions actuelles de l'avion,
+        et par rapport à sa configuration propre.
+
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param dT4: Delta par rapport à la T4 définie par l'utilisateur (<0, K)
+        '''
+        h = self.Avion.get_h()
         M = self.Avion.Aero.getMach()
         rho = Atmosphere.getRho()
 
@@ -82,7 +93,12 @@ class ElodieRoux(Moteur):
         return self.F0 * QM * QH * QR
     
     def calculateSFCmax(self, Atmosphere: Atmosphere):
-        h = self.Avion.geth()
+        '''
+        Calcule la SFC du moteur à sa poussée maximale.
+
+        :param Atmosphere: Instance de la classe Atmosphere
+        '''
+        h = self.Avion.get_h()
         h_sub_11 = (h <= 11000)
         h_sup_11 = (h >  11000)
 
@@ -100,7 +116,13 @@ class ElodieRoux(Moteur):
              + ((7.4e-13)*(self.OPR - 30) * h + c) * (self.OPR - 30)
 
     def calculateSFC(self, Atmosphere: Atmosphere, dT4):
-        h = self.Avion.geth()
+        '''
+        Calcul complet de la SFC, pour une situation de poussée non maximale.
+
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param dT4: Delta de température avec la T4 définie par l'utilisateur (<0, K)
+        '''
+        h = self.Avion.get_h()
 
         # Poussée et consommation spécifique maximales
         Fmax = self.calculateFmax(Atmosphere, dT4)
@@ -124,14 +146,17 @@ class ElodieRoux(Moteur):
 
 
     def calculateFClimb(self, Atmosphere: Atmosphere):
+        # Utilisation de la poussée maximale avec le dT4 de montée
         self.F_t = self.calculateFmax(Atmosphere, self.dT4_climb) * 2 * self.Inputs.cF_climb
 
 
     def calculateSFCClimb(self, Atmosphere: Atmosphere):
+        # Utilisation de la SFC pour poussée maximale
         self.SFC_t = self.calculateSFCmax(Atmosphere)
         self.FF_t = self.F_t * self.SFC_t * self.Inputs.cFF_climb
 
     def calculateSFCCruise(self, Atmosphere: Atmosphere):
+        # Calcul de SFC avec une poussée partielle
         self.calculateSFC(Atmosphere, dT4=self.dT4_cruise)
         self.SFC_t *= self.Inputs.cFF_cruise
         self.FF_t *= self.Inputs.cFF_cruise
@@ -142,10 +167,10 @@ class ElodieRoux(Moteur):
     def calculateSFCHolding(self, Atmosphere: Atmosphere):
         self.calculateSFCCruise(Atmosphere)
 
-
     def calculateFDescent(self, Atmosphere: Atmosphere):
         self.F_t = 0 * self.Inputs.cF_descent
 
     def calculateSFCDescent(self, Atmosphere: Atmosphere):
+        # Les modèles Elodie Roux ne sont pas valables pour un moteur au ralenti
         self.SFC_t = 0
         self.FF_t = 0.16 * self.Inputs.cFF_descent # Moyenne empirique

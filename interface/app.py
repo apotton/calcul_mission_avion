@@ -1,18 +1,14 @@
 # Import autres éléments de l'interface
-from interface.utils import PrintRedirector
 from interface.actions import calculerMission, importerMission, calculerPP, \
                               calculerBatch, importerBatch   # importe les fonctions actions
 from interface.onglets import OngletMission, OngletAutres, OngletOptions, OngletPP, OngletBatch
 from interface.actions import importCSV, exportCSV
+from interface.utils import PrintRedirector
 
 # Code de calcul mission
 from enregistrement.Enregistrement import Enregistrement
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
-
-
-import csv
-import numpy as np
 
 # Import module tkinter (affiche une erreur en rouge dans la console si il n'est pas installé)
 from tkinter import messagebox
@@ -21,9 +17,9 @@ try:
 except:
     print("\033[31mModule customtkinter non trouvé: veuillez l'installer avec la commande 'pip install customtkinter'\033[0m")
     exit()
-
 from pathlib import Path
 import sys
+
 
 # Affichage Matplotlib
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
@@ -247,20 +243,20 @@ class App(ctk.CTk):
         # Position et apparence
         tab = self.right_tabview.tab("Graphiques")
         f_controls = ctk.CTkFrame(tab, fg_color="transparent")
-        f_controls.pack(fill="x", pady=5)
+        f_controls.pack(anchor="center")
         
         # Liste des données traçables (arrays dans Enregistrement.data)
         keys = list(self.Enregistrement.data.keys())
 
         # Choix de l'axe Y
         ctk.CTkLabel(f_controls, text="Axe Y :").pack(side="left", padx=10)
-        self.cb_y = ctk.CTkComboBox(f_controls, values=keys, width=120)
-        self.cb_y.set("h") 
+        self.cb_y = ctk.CTkComboBox(f_controls, values=keys, command=lambda choice: self.tracerGraphique(), width=120)
+        self.cb_y.set("h")
         self.cb_y.pack(side="left", padx=5)
         
         # Choix de l'axe X
         ctk.CTkLabel(f_controls, text="Axe X :").pack(side="left", padx=10)
-        self.cb_x = ctk.CTkComboBox(f_controls, values=keys, width=120)
+        self.cb_x = ctk.CTkComboBox(f_controls, values=keys, command=lambda choice: self.tracerGraphique(), width=120)
         self.cb_x.set("l") 
         self.cb_x.pack(side="left", padx=5)
 
@@ -272,8 +268,8 @@ class App(ctk.CTk):
         self.cb_batch.set("Mission unique")
         self.cb_batch.pack(side="left", padx=5)
 
-        # Bouton tracer
-        ctk.CTkButton(f_controls, text="Tracer", command=self.tracerGraphique, width=100).pack(side="left", padx=20)
+        # Bouton tracer (désactivé car les menus X et Y tracent déjà dès qu'ils sont modifiés)
+        # ctk.CTkButton(f_controls, text="Tracer", command=self.tracerGraphique, width=100).pack(side="left", padx=20)
 
         # Cases à cocher
         f_phases = ctk.CTkFrame(tab, fg_color="transparent")

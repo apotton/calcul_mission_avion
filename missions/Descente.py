@@ -7,7 +7,7 @@ import numpy as np
 
 class Descente:
     @staticmethod
-    def Descendre(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
+    def Descendre(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs):
         '''
         Réalise toute la descente depuis la fin de la croisière jusqu'à l'altitude finale.
 
@@ -18,27 +18,26 @@ class Descente:
         :param dt: Pas de temps (s)
         '''
         Avion.setPhase(2)
-        # Enregistrement.save(Avion, Atmosphere, 0)
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
-        l_init = Avion.getl()
+        l_init = Avion.get_l()
 
         # Première phase
-        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt)
+        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt=Inputs.dtDescent)
 
         # Seconde phase
         h_target = Inputs.hDecel_ft * Constantes.conv_ft_m
-        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
+        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt=Inputs.dtDescent)
 
         # Troisième phase
         CAS_target = Inputs.CASfinal_kt * Constantes.conv_kt_mps
-        Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
+        Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt=Inputs.dtDescent)
         
         # Quatrième et dernière phase
         h_target = Inputs.hFinal_ft * Constantes.conv_ft_m
-        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
+        Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt=Inputs.dtDescent)
 
-        Avion.set_l_descent(Avion.getl() - l_init)
+        Avion.set_l_descent(Avion.get_l() - l_init)
         Avion.set_t_descent(Avion.t - t_init)
         Avion.Masse.setFuelDescent(m_init - Avion.Masse.getCurrentMass())
         Avion.Masse.addFuelMission(m_init - Avion.Masse.getCurrentMass())
@@ -57,7 +56,7 @@ class Descente:
         '''
         # Reset de la distance de descente pour une estimation plus précise
         Avion.set_l_descent_diversion(0.)
-        l_init = Avion.getl()
+        l_init = Avion.get_l()
 
         # Première phase
         Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt)
@@ -68,19 +67,14 @@ class Descente:
 
         # Troisième phase
         CAS_target = Inputs.CASfinal_kt * Constantes.conv_kt_mps
-        # print(f"H avant: {Avion.geth()}")
         Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
-        # print(f"H actuelle: {Avion.geth()}")
 
         # Quatrième et dernière phase
         h_target = Inputs.hFinal_ft * Constantes.conv_ft_m
         Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
-        # print(f"H target: {h_target}")
-        # print(f"H finale: {Avion.geth()}")
 
-        Avion.set_l_descent_diversion(Avion.getl() - l_init)
+        Avion.set_l_descent_diversion(Avion.get_l() - l_init)
 
-    # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod
     def descenteIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
         '''
@@ -97,11 +91,11 @@ class Descente:
         CAS_t = Avion.Aero.getCAS()
 
         h_min = Inputs.hDecel_ft * Constantes.conv_ft_m
-        h_t = Avion.geth()
+        h_t = Avion.get_h()
 
         while (CAS_t < CAS_max) and (h_t > h_min):
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
+            Atmosphere.CalculateRhoPT(Avion.get_h())
 
             # Mach et TAS 
             Avion.Aero.convertMachToCAS(Atmosphere)
@@ -147,13 +141,13 @@ class Descente:
             # Mise à jour des positions
             Avion.Add_dh(Vz * dt)
 
-            if Avion.geth() < h_min:
+            if Avion.get_h() < h_min:
                 # Intersection du pas de temps
-                dt = (h_min - h_t) / (Avion.geth() - h_t) * dt
+                dt = (h_min - h_t) / (Avion.get_h() - h_t) * dt
                 # On se place à l'altitude visée
                 Avion.set_h(h_min)
             
-            h_t = Avion.geth()
+            h_t = Avion.get_h()
 
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
@@ -167,7 +161,7 @@ class Descente:
     @staticmethod
     def descenteIsoCAS(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, h_end, dt):
         '''
-        Phase 2 : Descente jusqu'à 10000ft à vitesse constante Max CAS
+        Descente jusqu'à h_end à vitesse constante Max CAS.
         
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
@@ -176,12 +170,12 @@ class Descente:
         :param h_end: Altitude finale de la phase de la descente (m)
         :param dt: Pas de temps (s)
         '''
-        h_t = Avion.geth()
+        h_t = Avion.get_h()
 
         while h_t > h_end:
 
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
+            Atmosphere.CalculateRhoPT(Avion.get_h())
 
             # Conversion CAS -> Mach
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -218,13 +212,13 @@ class Descente:
             # Mise à jour position
             Avion.Add_dh(Vz * dt)
 
-            if Avion.geth() < h_end:
+            if Avion.get_h() < h_end:
                 # Intersection du pas de temps
-                dt = (h_end - h_t) / (Avion.geth() - h_t) * dt
+                dt = (h_end - h_t) / (Avion.get_h() - h_t) * dt
                 # On se place à l'altitude visée
                 Avion.set_h(h_end)
             
-            h_t = Avion.geth()
+            h_t = Avion.get_h()
 
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
@@ -238,7 +232,7 @@ class Descente:
     @staticmethod
     def descentePalier(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, CAS_target, dt):
         '''
-        Phase 3 : Décélération en palier: l'altitude est fixée et l'avion décélère.
+        Décélération en palier: l'altitude est fixée et l'avion décélère.
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
@@ -251,7 +245,7 @@ class Descente:
         CAS_t = Avion.Aero.getCAS()
 
         # Conditions atmosphériques constantes
-        Atmosphere.CalculateRhoPT(Avion.geth())
+        Atmosphere.CalculateRhoPT(Avion.get_h())
 
         # Vitesses
         Avion.Aero.convertCASToMach(Atmosphere)

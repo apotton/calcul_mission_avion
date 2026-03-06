@@ -1,11 +1,12 @@
+from moteurs.CalculEmissions import getAllEmissions
 from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
-from avions.Avion import Avion
-import numpy as np
 from itertools import zip_longest
+from avions.Avion import Avion
+
+import numpy as np
 import csv
 
-from moteurs.CalculEmissions import getAllEmissions
 
 class Enregistrement:
     def __init__(self):
@@ -14,6 +15,7 @@ class Enregistrement:
         # Compteur (pour la taille à chaque changement)
         self.counter = 0
 
+        # Données tabulaires à chaque pas de temps
         self.data = {
             # Phase de la mission
             "phase": np.zeros(self.default_size, dtype = np.float32),
@@ -59,6 +61,7 @@ class Enregistrement:
             "envPM": np.zeros(self.default_size, dtype = np.float32),
         }
 
+        # Unités des données tabulaires
         self.units = {
             # Phase de la mission
             "phase" : "-",
@@ -107,7 +110,7 @@ class Enregistrement:
         # Données de convergence simu
         self.data_simu = {
             # Précision
-            "ecart_mission" : [],
+            "precision" : [],
 
             # Longueur descentes
             "l_descent" : [],
@@ -117,6 +120,7 @@ class Enregistrement:
             "FB_mission" : []
         }
 
+        # Données ponctuelles à remplir en fin de mission
         self.mission_data = {
             # Fuel burn
             "FB_mission": 0.0,
@@ -167,6 +171,7 @@ class Enregistrement:
             "envPM_holding": 0.0,
         }
 
+        # Données discontinues entre deux phases (essentiellement moteur)
         self.discontinuous_data = ["F", "FF", "SFC", "SGR", "SAR", "ECCF"]
 
     
@@ -201,8 +206,8 @@ class Enregistrement:
 
         self.data["t"][self.counter] = self.data["t"][self.counter - 1] + dt if self.counter > 1 else 0
 
-        self.data["h"][self.counter] = Avion.geth()
-        self.data["l"][self.counter] = Avion.getl()
+        self.data["h"][self.counter] = Avion.get_h()
+        self.data["l"][self.counter] = Avion.get_l()
 
         self.data["CAS"][self.counter] = Avion.Aero.getCAS()
         self.data["TAS"][self.counter] = Avion.Aero.getTAS()
@@ -225,7 +230,7 @@ class Enregistrement:
 
         self.data["phase"][self.counter] = Avion.getPhase()
 
-
+        # On ne calcule les paramètres économiques qu'en croisière
         if (Avion.getPhase() == 1):
             self.data["SGR"][self.counter] = Avion.Aero.getSGR()
             self.data["SAR"][self.counter] = Avion.Aero.getSAR()
@@ -241,24 +246,26 @@ class Enregistrement:
             self.extend()
 
 
-    def saveSimu(self, Avion: Avion, ecart_mission):
+    def saveSimu(self, Avion: Avion, precision):
         '''
         Enregistre les données de performance de la boucle (l'écart de précision,
         les longueurs de descente et la masse de fuel brulée pour la mission).
         
         :param Avion: Instance de la classe Avion
-        :param ecart_mission: Ecart relatif sur le fuel burn mission (%)
+        :param precision: Précision relative atteinte (%)
         '''
-        self.data_simu["ecart_mission"].append(ecart_mission)
+        self.data_simu["precision"].append(precision)
         self.data_simu["l_descent"].append(Avion.get_l_descent())
         self.data_simu["FB_mission"].append(Avion.Masse.getFuelMission())
         self.data_simu["l_descent_diversion"].append(Avion.get_l_descent_diversion())
 
     def saveFinal(self, Avion: Avion, Atmosphere: Atmosphere):
         '''
-        Enregistre les valeurs finales des caractéristiques de la mission (masses, distances...)
+        Enregistre et affiche les valeurs finales des caractéristiques de la mission 
+        (masses, distances, temps, émissions...);
 
-        :param Avion: Instance de la classe avion
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
         '''
         # On coupe les arrays
         self.cut()
@@ -300,6 +307,10 @@ class Enregistrement:
         # Atmosphere.determineContrails(self)
         
     def printValues(self):
+        '''
+        Affiche de manière formatée dans la console les temps, distances et fuel burns pour
+        toutes les phases de la mission.
+        '''
         # Dictionnaire des grandeurs à afficher
         phases = [
             ("Montée", 
@@ -396,6 +407,10 @@ class Enregistrement:
         print("\n".join(lines))
 
     def printEmissions(self):
+        '''
+        Affiche de manière mise en forme dans la console le bilan des émissions de 
+        l'avion pendant les principales phases de vol.
+        '''
         # Dictionnaire des grandeurs à afficher
         phases = [
             ("Montée", 
@@ -498,11 +513,8 @@ class Enregistrement:
         '''
         Enlève toutes les valeurs non atteintes après le counter.
         '''
-
         for key in self.data:
             self.data[key] = self.data[key][:self.counter]
-
-
 
     def reset(self):
         '''

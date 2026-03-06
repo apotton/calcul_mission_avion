@@ -9,58 +9,58 @@ import csv
 import os
 
 class Avion:
-    Name                    = ""     # Nom du modèle d'avion
-    MaxTakeoffWeight        = 0.     # MTOW (kg)
-    EmptyWeight             = 0.     # Masse à vide (kg)
-    MaxFuelWeight           = 0.     # Masse carburant maximale (kg)
-    MaxPLWeight             = 0.     # Masse Payload maximale (kg)
-    Sref                    = 0.     # Surface de référence (m^2)
-    Phi25deg                = 0.     # Angle de twist ou angle de calage (°)
-    TtoCref                 = 0.     # Rapport entre l'épaisseur et la corde du profil ()
-    Lref                    = 0.     # Longueur de référence (m)
-    AspectRatio             = 0.     # Allongement (Envergure^2/Surface alaire)
-    TaperRatio              = 0.     # Taux de flèche, rapport corde en bout d'aile sur corde à l'emplenture ()
-    Camber                  = 0.     # Cambrure du profil ()
-    MaxThicknessPosition    = 0.     # Position de l'épaisseur de profil maximale sur la corde ()
-    DFuselage               = 0.     # Diamètre du fuselage (m)
-    Envergure               = 0.     # Envergure de l'avion (m)
-    KVMO                    = 0.     # Vitesse maximale opérationnelle(kt)
-    MMO                     = 0.     # Mach maximal opérationnelle
-    PressurisationCeilingFt = 0.     # Altitude maximale atteignable avec une cabine pressurisée (ft)
-    Cx0Cruise               = 0.     # Cx0 en croisière ()
-    Cx0Climb                = 0.     # Cx0 en montée ()
-    Cx0Descent              = 0.     # Cx0 en descente ()
-    OswaldClimb             = 0.     # Coefficient d'Oswald en montée ()
-    OswaldCruise            = 0.     # Coefficient d'Oswald en croisière ()
-    OswaldDescent           = 0.     # Coefficient d'Oswald en descente ()
+    Name                    = ""    # Nom du modèle d'avion
+    MaxTakeoffWeight        = 0.    # MTOW (kg)
+    EmptyWeight             = 0.    # Masse à vide (kg)
+    MaxFuelWeight           = 0.    # Masse carburant maximale (kg)
+    MaxPLWeight             = 0.    # Masse Payload maximale (kg)
+    Sref                    = 0.    # Surface de référence (m^2)
+    Phi25deg                = 0.    # Angle de twist ou angle de calage (°)
+    TtoCref                 = 0.    # Rapport entre l'épaisseur et la corde du profil ()
+    Lref                    = 0.    # Longueur de référence (m)
+    AspectRatio             = 0.    # Allongement (Envergure^2/Surface alaire)
+    TaperRatio              = 0.    # Taux de flèche, rapport corde en bout d'aile sur corde à l'emplenture ()
+    Camber                  = 0.    # Cambrure du profil ()
+    MaxThicknessPosition    = 0.    # Position de l'épaisseur de profil maximale sur la corde ()
+    DFuselage               = 0.    # Diamètre du fuselage (m)
+    Envergure               = 0.    # Envergure de l'avion (m)
+    KVMO                    = 0.    # Vitesse maximale opérationnelle(kt)
+    MMO                     = 0.    # Mach maximal opérationnelle
+    PressurisationCeilingFt = 0.    # Altitude maximale atteignable avec une cabine pressurisée (ft)
+    Cx0Cruise               = 0.    # Cx0 en croisière ()
+    Cx0Climb                = 0.    # Cx0 en montée ()
+    Cx0Descent              = 0.    # Cx0 en descente ()
+    OswaldClimb             = 0.    # Coefficient d'Oswald en montée ()
+    OswaldCruise            = 0.    # Coefficient d'Oswald en croisière ()
+    OswaldDescent           = 0.    # Coefficient d'Oswald en descente ()
 
-    t                       = 0.     # Temps écoulé
-    h_t                     = 0.     # Altitude actuelle (m)
-    l_t                     = 0.     # Distance totale parcourue (m)    
-    phase                   = 0      # Phase de la mission (montée, croisière, descente, diversion)
+    t                       = 0.    # Temps écoulé
+    h_t                     = 0.    # Altitude actuelle (m)
+    l_t                     = 0.    # Distance totale parcourue (m)    
+    phase                   = 0     # Phase de la mission (montée, croisière, descente, diversion)
 
-    l_climb                 = 0.     # Distance nécessaire pour la montée (m)
-    l_cruise                = 0.     # Distance nécessaire pour la croisière (m)
-    l_descent               = 0.     # Distance nécessaire pour la descente (m)
-    l_descent_diversion     = 0.     # Distance de la descente en diversion (m)
-    l_diversion             = 0.     # Distance de la diversion (m)
-    l_holding               = 0.     # Distance de la holding
+    l_climb                 = 0.    # Distance nécessaire pour la montée (m)
+    l_cruise                = 0.    # Distance nécessaire pour la croisière (m)
+    l_descent               = 0.    # Distance nécessaire pour la descente (m)
+    l_descent_diversion     = 0.    # Distance de la descente en diversion (m)
+    l_diversion             = 0.    # Distance de la diversion (m)
+    l_holding               = 0.    # Distance de la holding
 
-    t_climb                 = 0.     # Temps nécessaire à la montée
-    t_cruise                = 0.     # Temps nécessaire à la croisière
-    t_descent               = 0.     # Temps nécessaire à la descente
-    t_diversion             = 0.     # Temps nécessaire à la diversion
-    t_holding               = 0.     # Temps nécessaire à la phase de holding
+    t_climb                 = 0.    # Temps nécessaire à la montée
+    t_cruise                = 0.    # Temps nécessaire à la croisière
+    t_descent               = 0.    # Temps nécessaire à la descente
+    t_diversion             = 0.    # Temps nécessaire à la diversion
+    t_holding               = 0.    # Temps nécessaire à la phase de holding
 
-    saveAvion               = {}     # Dictionnaire des variables avion
-    saveAero                = {}     # Dictionnaire des variables aéro
-    saveMoteur              = {}     # Dictionnaire des variables moteur
+    saveAvion               = {}    # Dictionnaire des variables avion
+    saveAero                = {}    # Dictionnaire des variables aéro
+    saveMoteur              = {}    # Dictionnaire des variables moteur
 
     def __init__(self, Inputs: Inputs):
         '''
-        Initialise un objet Avion en lisant les paramètres depuis un fichier CSV.
+        Initialise un objet Avion d'après les inputs utilisateur.
 
-        :param m_payload: Masse de la payload (kg)
+        :param Inputs: Instance de la classe Inputs.
         '''
         plane_path = Inputs.getAirplaneFile()
         engine_path = Inputs.getEngineFile()
@@ -90,18 +90,24 @@ class Avion:
                     # Attribution dynamique des attributs
                     setattr(self, cle, valeur)
 
+        self.Inputs = Inputs
+
         # Variables qu'il est plus pratique d'avoir ici (unités SI)
         self.Vw = Inputs.Vw_kt * Constantes.conv_kt_mps # Passage de kt à m/s
         self.CI = Inputs.CI_kg_min / 60 # Passage de kg/min à kg/s
 
         # Initialisation des sous-classes
-        self.Inputs = Inputs
         self.Masse = Masse(self)
         self.Aero = Aero(self)
+
+        # Initialisation du moteur
         if Inputs.engine_folder == "reseau_moteur":
             self.Moteur = ReseauMoteur(self, engine_path)
         elif Inputs.engine_folder == "elodie_roux":
            self.Moteur = ElodieRoux(self, engine_path)
+        else:
+            print("\033[33mDossier moteur non trouvé\033[0m")
+            exit()
 
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()
@@ -117,7 +123,8 @@ class Avion:
 
     def setupDescentes(self):
         '''
-        Initialise les paramètres pour la première estimation de descente à partir des Inputs (règle de 3: il faut ~3 nautiques pour descendre de 1000 pieds).
+        Initialise les paramètres pour la première estimation de descente à partir des Inputs
+        (règle de 3: il faut ~3 nautiques pour descendre de 1000 pieds).
         '''
         self.l_descent = 3 * self.Inputs.hCruise_ft / 1000 * Constantes.conv_NM_m
         self.l_descent_diversion = 3 * self.Inputs.cruiseDiversionAlt_ft / 1000 * Constantes.conv_NM_m
@@ -126,6 +133,21 @@ class Avion:
         return self.phase
 
     def setPhase(self, phase: int):
+        '''
+        Déclare la phase de vol de l'avion:
+
+        0 -> Montée
+
+        1 -> Croisière
+
+        2 -> Descente
+
+        3 -> Diversion
+
+        4 -> Holding
+        
+        :param phase: La phase à set (entier entre 0 et 4)
+        '''
         self.phase = phase
 
     def Add_dl(self, dl: float):
@@ -168,13 +190,13 @@ class Avion:
         '''
         self.h_t += dh
 
-    def geth(self):
+    def get_h(self):
         '''
         Renvoie l'altitude actuelle de l'avion (m).
         '''
         return self.h_t
     
-    def getl(self):
+    def get_l(self):
         '''
         Renvoie la distance parcourue par l'avion (m).
         '''

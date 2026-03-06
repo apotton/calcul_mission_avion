@@ -1,5 +1,4 @@
 from constantes.Constantes import Constantes
-from inputs.Inputs import Inputs
 
 class Masse:
     def __init__(self, Avion):

@@ -7,20 +7,20 @@ import numpy as np
 
 class Montee:
     @staticmethod
-    def Monter(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
+    def Monter(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs):
         '''
         Réalise toute la montée principale jusqu'à la croisière.
 
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
-        :param dt: Pas de temps (s)
+        :param Inputs: Instance de la classe Inputs
         '''
         Avion.setPhase(0)
         Avion.Masse.setFuelMission(0.)
         m_init = Avion.Masse.getCurrentMass()
         t_init = Avion.get_t()
-        l_init = Avion.getl()
+        l_init = Avion.get_l()
 
         # Initialisations
         Avion.set_h(Inputs.hInit_ft*Constantes.conv_ft_m)
@@ -30,13 +30,13 @@ class Montee:
         Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
         CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
-        Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
+        Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt=Inputs.dtClimb)
 
         h_target = Inputs.hCruise_ft * Constantes.conv_ft_m
 
         if Inputs.cruiseType == "Alt_SAR" or Inputs.cruiseType == "CI":
             from missions.Croisiere import Croisiere # Empêche une importation circulaire
-            h_init = Avion.geth()
+            h_init = Avion.get_h()
             Avion.set_h(h_target)
             Mach_target, _ = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
             Avion.set_h(h_init)
@@ -46,7 +46,7 @@ class Montee:
         Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Mach_target, Inputs.dtClimb)
         Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
-        Avion.set_l_climb(Avion.getl() - l_init)
+        Avion.set_l_climb(Avion.get_l() - l_init)
         Avion.set_t_climb(Avion.get_t() - t_init)
         Avion.Masse.setFuelClimb(m_init - Avion.Masse.getCurrentMass())
         Avion.Masse.addFuelMission(m_init - Avion.Masse.getCurrentMass())
@@ -59,6 +59,7 @@ class Montee:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param dt: Pas de temps (s)
         '''
         h_target = Inputs.hAccel_ft * Constantes.conv_ft_m
@@ -69,7 +70,7 @@ class Montee:
 
         # Obtention de la vitesse objectif
         from missions.Croisiere import Croisiere # Empêche une importation circulaire
-        h_init = Avion.geth()
+        h_init = Avion.get_h()
         Avion.set_h(h_target)
         Mach_target, CAS_target = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
         Avion.set_h(h_init)
@@ -89,14 +90,15 @@ class Montee:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param h_lim: Altitude de fin (en mètres)
         :param dt: pas de temps (s)
         '''
-        h_t = Avion.geth()
+        h_t = Avion.get_h()
 
         while h_t < h_lim:
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
+            Atmosphere.CalculateRhoPT(Avion.get_h())
 
             # Vitesses
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -135,13 +137,13 @@ class Montee:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
 
-            if Avion.geth() > h_lim:
+            if Avion.get_h() > h_lim:
                 # Intersection du pas de temps
-                dt = (h_lim - h_t) / (Avion.geth() - h_t) * dt
+                dt = (h_lim - h_t) / (Avion.get_h() - h_t) * dt
                 # On se place à l'altitude visée
                 Avion.set_h(h_lim)
             
-            h_t = Avion.geth()
+            h_t = Avion.get_h()
 
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
@@ -161,12 +163,12 @@ class Montee:
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
         :param Inputs: Instance de la classe Inputs
-        :param CAS_target: Vitesse CAS à atteindre
+        :param CAS_target: Vitesse CAS à atteindre (m/s)
         :param dt: Pas de temps (s)
         '''
 
         # Atmosphère (constante en palier)
-        Atmosphere.CalculateRhoPT(Avion.geth())
+        Atmosphere.CalculateRhoPT(Avion.get_h())
 
         # Vitesses
         Avion.Aero.convertCASToMach(Atmosphere)
@@ -240,12 +242,13 @@ class Montee:
         :param Avion: instance de la classe Avion
         :param Atmosphere: instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param h_lim: Altitude de fin de montée (m)
         :param Mach_lim: Mach de fin de montée
         :param dt: pas de temps (s)
         '''
         Mach_t = Avion.Aero.getMach()
-        h_t = Avion.geth()
+        h_t = Avion.get_h()
 
         # Tant que l'on a pas atteint le Mach limite ou l'altitude limite
         while Avion.Aero.getMach() < Mach_lim and h_t < h_lim:
@@ -303,13 +306,13 @@ class Montee:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
 
-            if Avion.geth() > h_lim:
+            if Avion.get_h() > h_lim:
                 # Intersection du pas de temps
-                dt = (h_lim - h_t) / (Avion.geth() - h_t) * dt
+                dt = (h_lim - h_t) / (Avion.get_h() - h_t) * dt
                 # On se place à l'altitude visée
                 Avion.set_h(h_lim)
             
-            h_t = Avion.geth()
+            h_t = Avion.get_h()
 
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
@@ -324,16 +327,17 @@ class Montee:
         :param Avion: Instance de la classe Avion
         :param Atmosphere: Instance de la classe Atmosphere
         :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
         :param h_lim: Altitude de fin de montée (m)
-        :param dt: pas de temps (s)
+        :param dt: Pas de temps (s)
         '''
-        h_t = Avion.geth()
+        h_t = Avion.get_h()
 
         # Tant que l'on n'a pas atteint l'altitude cible
         while h_t < h_lim:
 
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.geth())
+            Atmosphere.CalculateRhoPT(Avion.get_h())
 
             # Vitesse
             Avion.Aero.convertMachToTAS(Atmosphere)
@@ -372,13 +376,13 @@ class Montee:
             # Mise à jour avion
             Avion.Add_dh(Vz * dt)
 
-            if Avion.geth() > h_lim:
+            if Avion.get_h() > h_lim:
                 # Intersection du pas de temps
-                dt = (h_lim - h_t) / (Avion.geth() - h_t) * dt
+                dt = (h_lim - h_t) / (Avion.get_h() - h_t) * dt
                 # On se place à l'altitude visée
                 Avion.set_h(h_lim)
             
-            h_t = Avion.geth()
+            h_t = Avion.get_h()
 
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)

@@ -9,6 +9,13 @@ class PointPerformance():
 
     @staticmethod
     def setupAvion(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
+        '''
+        Place l'avion aux conditions demandées par l'utilisateur.
+
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Inputs: Instance de la classe Inputs
+        '''
         Avion.set_h(Inputs.altPP_ft * Constantes.conv_ft_m)
         Atmosphere.CalculateRhoPT(Inputs.altPP_ft * Constantes.conv_ft_m, Inputs.DISA_PP)
         Avion.Masse.setMass(Inputs.massPP)
@@ -45,7 +52,7 @@ class PointPerformance():
         PointPerformance.setupAvion(Avion, Atmosphere, Inputs)
         
         # Conditions atmosphérique
-        Atmosphere.CalculateRhoPT(Avion.geth(), Inputs.DISA_PP)
+        Atmosphere.CalculateRhoPT(Avion.get_h(), Inputs.DISA_PP)
         rho = Atmosphere.getRho()
         P = Atmosphere.getP()
         T = Atmosphere.getT()
@@ -114,7 +121,7 @@ class PointPerformance():
                 ("Masse totale", Avion.Masse.getCurrentMass(), "kg")
             ],
             "Conditions Atmosphériques": [
-                ("Altitude", Avion.geth() / Constantes.conv_ft_m , "ft"),
+                ("Altitude", Avion.get_h() / Constantes.conv_ft_m , "ft"),
                 ("Température", T - 273.15 , "°C"),
                 ("ΔISA", DISA, "°C"),
                 ("Pression", P, "Pa"),
@@ -166,11 +173,13 @@ class PointPerformance():
         """
         Prend en entrée un dictionnaire de catégories contenant des listes de tuples 
         (nom, valeur, unité) et retourne une unique chaîne de caractères formatée.
+
+        :param donnees: Dictionnaire à formater.
         """
         largeur = 65
         separateur = "=" * largeur
         
-        # Création d'une liste qui va contenir toutes nos lignes de texte
+        # Création d'une liste qui va contenir toutes les lignes de texte
         lignes_texte = []
         
         # En-tête

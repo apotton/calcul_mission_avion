@@ -4,6 +4,10 @@ Classe mère des différentes manières de faire un moteur
 from atmosphere.Atmosphere import Atmosphere
 
 class Moteur:
+    '''
+    Classe mère des différentes implémentations moteur. Elle contient les attributs
+    communs, ainsi que quelques méthodes communes (calcul de poussée par équilibre des forces).
+    '''
     DonneesMoteur = None
 
     def __init__(self, Avion):

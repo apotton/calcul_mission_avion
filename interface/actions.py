@@ -1,17 +1,13 @@
-import customtkinter as ctk # pip install customtkinter
 from missions.PointPerformance import PointPerformance
 from atmosphere.Atmosphere import Atmosphere
 from constantes.Constantes import Constantes
 from missions.Mission import Mission
 from avions.Avion import Avion
 
+import customtkinter as ctk # pip install customtkinter
 from tkinter import filedialog, messagebox
-
-from missions.Mission import Mission
-from avions.Avion import Avion
 from datetime import datetime
 from pathlib import Path
-import numpy as np
 import csv
 import os
 
@@ -82,9 +78,11 @@ def exportCSV(app):
     '''
 
     # Ouverture de l'interface système d'enregistrement
+    initDIR = Path.cwd() / "data" / "missions"
     chemin = filedialog.asksaveasfilename(
         defaultextension=".csv", 
-        filetypes=[("Fichiers CSV", "*.csv")]
+        filetypes=[("Fichiers CSV", "*.csv")],
+        initialdir=initDIR
     )
     if not chemin: 
         return
@@ -105,9 +103,11 @@ def importCSV(app, chemin = None):
     '''
 
     # Ouverture de l'interface système du choix de fichier
+    initDIR = Path.cwd() / "data" / "missions"
     if not (chemin):
         chemin = filedialog.askopenfilename(
-            filetypes=[("Fichiers CSV", "*.csv")]
+            filetypes=[("Fichiers CSV", "*.csv")],
+            initialdir=initDIR
         )
     if not chemin: 
         return
@@ -127,8 +127,9 @@ def importCSV(app, chemin = None):
                             app.vars[var_name].set(value)
         
         # Actualise les champs dynamiques de la croisière en fonction du nouveau choix
-        if hasattr(app, "update_cruise_fields"):
-            app.update_cruise_fields()
+        if hasattr(app, "onglet_mission"):
+            if hasattr(app.onglet_mission, "updateCruiseFields"):
+                app.onglet_mission.updateCruiseFields()
             
         app.redirector.write(f">> Configuration importée depuis {os.path.basename(chemin)}\n")
     except Exception as e:
@@ -469,12 +470,12 @@ def importerBatch(app):
     dossier = Path(dossier)
     
     # Affichage uniquement de la sortie texte
+    print("")
     if (dossier / "summary.txt").exists():
         # app.textbox_out.delete("1.0", "end")
         with open(dossier / "summary.txt", "r", encoding="utf-8") as f:
             app.textbox_out.insert("end", f.read())
         app.right_tabview.set("Console")
-
         # Menu déroulant batch
         app.batch_root_dir = dossier
         app.batch_missions_map = {}
@@ -500,5 +501,6 @@ def importerBatch(app):
         if noms_affiches:
             app.cb_batch.set(noms_affiches[0])
             app.loadBatchMission(noms_affiches[0])
+        print("")
     else:
         messagebox.showerror("Erreur", "Fichier summary.txt introuvable dans ce dossier.")

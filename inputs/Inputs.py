@@ -112,17 +112,21 @@ class Inputs:
     
 
     def validate(self):
+        '''
+        Fait tourner quelques checks de sanité des inputs.
+        '''
         if self.hFinal_ft > self.hDecel_ft:
-            print("Altitude finale supérieur à l'altitude de pallier en descente")
-
-        if self.hInit_ft > self.hAccel_ft:
-            print("Altitude initiale supérieur à l'altitude de pallier en montée")
-
-        if self.CASinit_kt > 250:
-            print("Vitesse de montée sous 10 000ft trop élevée (>250kt)")
-
-        if self.CASfinal_kt > 250:
-            print("Vitesse de descente sous 10 000ft trop élevée (>250kt)")
+            print("\033[31mAltitude finale supérieur à l'altitude de palier en descente\033[0m")
+        elif self.hInit_ft > self.hAccel_ft:
+            print("\033[31mAltitude initiale supérieur à l'altitude de palier en montée\033[0m")
+        elif self.CASinit_kt > 250:
+            print("\033[31mVitesse de montée initiale trop élevée (>250kt)\033[0m")
+        elif self.CASfinal_kt > 250:
+            print("\033[31mVitesse de descente initiale trop élevée (>250kt)\033[0m")
+        else:
+            return
+        
+        raise Exception("Erreur lors de la validation des inputs")
 
     def getAirplaneFile(self):
         ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe. '''

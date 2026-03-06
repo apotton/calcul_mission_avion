@@ -1,16 +1,17 @@
-from importlib.util import spec_from_file_location, module_from_spec
 from constantes.Constantes import Constantes
 from moteurs.Moteur import Moteur
-from inputs.Inputs import Inputs
-# from DonneesMoteur import DonneesMoteur
+
+from importlib.util import spec_from_file_location, module_from_spec
+from scipy.interpolate import RegularGridInterpolator
+from moteurs.loadData import loadData
 from pathlib import Path
 import numpy as np
-from moteurs.loadData import loadData
-
-from scipy.interpolate import RegularGridInterpolator
 
 
 class ReseauMoteur(Moteur):
+    '''
+    Simulation d'un moteur par des interpolation de grandes tables expérimentales.
+    '''
     def __init__(self, Avion, path):
         super().__init__(Avion)
         # Spécifique à cette classe :
@@ -111,7 +112,7 @@ class ReseauMoteur(Moteur):
     
     def calculateSFCCruise(self, Atmosphere):
         # Altitude
-        h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
+        h_ft = self.Avion.get_h() / Constantes.conv_ft_m  # Conversion m -> ft
 
         # Obtention de l'altitude la plus proche dans la base de données (cruise_data)        
         closest_h = min(self.available_alts, key=lambda x: abs(x - h_ft))
@@ -168,7 +169,7 @@ class ReseauMoteur(Moteur):
 
     def calculateFClimb(self, Atmosphere):
         # Altitude
-        h_ft = self.Avion.geth()/ Constantes.conv_ft_m  # Conversion m -> ft
+        h_ft = self.Avion.get_h()/ Constantes.conv_ft_m  # Conversion m -> ft
 
         resultat = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table, # mach climb ops
                                                 self.DonneesMoteur.alt_table_ft, # h climb ops
@@ -180,7 +181,7 @@ class ReseauMoteur(Moteur):
 
     def calculateSFCClimb(self, Atmosphere): 
         # Altitude
-        h_ft = self.Avion.geth() / Constantes.conv_ft_m  # Conversion m -> ft
+        h_ft = self.Avion.get_h() / Constantes.conv_ft_m  # Conversion m -> ft
 
         SFC_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
                                                self.DonneesMoteur.alt_table_ft,
@@ -193,7 +194,7 @@ class ReseauMoteur(Moteur):
     #### DESENTE ####
 
     def calculateFDescent(self, Atmosphere):
-        h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
+        h_ft = self.Avion.get_h() / Constantes.conv_ft_m # Conversion m -> ft
 
         F_N_Descent_lbf = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
                                                        self.DonneesMoteur.alt_table_ft,
@@ -204,7 +205,7 @@ class ReseauMoteur(Moteur):
 
     def calculateSFCDescent(self, Atmosphere):
         # Altitude
-        h_ft = self.Avion.geth() / Constantes.conv_ft_m # Conversion m -> ft
+        h_ft = self.Avion.get_h() / Constantes.conv_ft_m # Conversion m -> ft
         
         # Fuel flow en lb/h
         FuelFlow_lbh = ReseauMoteur.interp2d_linear(self.DonneesMoteur.mach_table,
@@ -244,7 +245,7 @@ class ReseauMoteur(Moteur):
 
     def calculateSFC_Vectorized(self, Atmosphere):
         # Redéfinition du calcul vectorisé
-        h_ft = self.Avion.geth() / Constantes.conv_ft_m
+        h_ft = self.Avion.get_h() / Constantes.conv_ft_m
         
         # Altitude de référence
         closest_h = min(self.available_alts, key=lambda x: abs(x - h_ft))

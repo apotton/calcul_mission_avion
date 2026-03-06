@@ -1,5 +1,5 @@
-import numpy as np
 from moteurs.ElodieRoux.DonneesMoteur import DonneesMoteur
+import numpy as np
 
 """
 Fichier de données moteur converti depuis MATLAB.
