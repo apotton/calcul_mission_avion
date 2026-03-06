@@ -116,9 +116,9 @@ class ElodieRoux(Moteur):
         # self.FF_t = self.F_t * self.SFC_t
 
         n = 3.51e-2*self.BPR - 1.27e-5*h + 0.31
-        k = 1
+        k = 2.24e-5
         self.SFC_t = k * np.sqrt(T/Constantes.T0_K) * M**n
-        self.FF_t = self.F_t * self.SFC_t * 0
+        self.FF_t = self.F_t * self.SFC_t
 
 
 
