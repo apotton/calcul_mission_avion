@@ -290,10 +290,10 @@ class Enregistrement:
         self.mission_data["t_holding"] = Avion.get_t_holding()
 
         # Emissions
-        # getAllEmissions(Avion, Atmosphere, self)
+        getAllEmissions(Avion, Atmosphere, self)
 
         self.printValues()
-        # self.printEmissions()
+        self.printEmissions()
 
         # Contrails
         # Atmosphere.determineContrails(self)
