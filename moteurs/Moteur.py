@@ -4,13 +4,14 @@ Classe mère des différentes manières de faire un moteur
 from atmosphere.Atmosphere import Atmosphere
 
 class Moteur:
+    DonneesMoteur = None
+
     def __init__(self, Avion):
         self.Avion = Avion
         self.Inputs = Avion.Inputs
         self.F_t = 0.          # Poussée actuelle (N)
         self.SFC_t = 0.        # SFC actuelle (kg/(N.s))
         self.FF_t = 0.         # Consommation de carburant actuelle (kg/s), calculé dans tous les méthodes de SFC
-        self.DonneesMoteur = {}
 
     # Setters
 
@@ -131,16 +132,16 @@ class Moteur:
         self.calculateSFCCruise(Atmosphere)
 
     def getfuel_flow_ref(self):
-        return self.DonneesMoteur.fuel_flow_ref
+        return self.DonneesMoteur.fuel_flow_ref # type: ignore
     
     def getEI_HC_ref(self):
-        return self.DonneesMoteur.EI_HC_ref
+        return self.DonneesMoteur.EI_HC_ref # type: ignore
     
     def getEI_CO_ref(self):
-        return self.DonneesMoteur.EI_CO_ref
+        return self.DonneesMoteur.EI_CO_ref # type: ignore
     
     def getEI_NOx_ref(self):
-        return self.DonneesMoteur.EI_NOx_ref
+        return self.DonneesMoteur.EI_NOx_ref # type: ignore
     
     def getEI_nvPM_Mass(self):
-        return self.DonneesMoteur.EI_nvPM_Mass
+        return self.DonneesMoteur.EI_nvPM_Mass # type: ignore

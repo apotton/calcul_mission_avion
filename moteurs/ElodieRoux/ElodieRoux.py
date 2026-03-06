@@ -2,41 +2,38 @@ from moteurs.Moteur import Moteur
 from atmosphere.Atmosphere import Atmosphere
 import numpy as np
 from constantes.Constantes import Constantes
+from moteurs.loadData import loadData
 
 class ElodieRoux(Moteur):
+    # Coefficients loi de Mach Fmax
+    aFMs = [ 1.79e-12,  4.29e-13, -5.24e-14, -4.51e-14, -4.57e-12]
+    aGMs = [ 1.17e-8,  -8.80e-8,  -5.25e-9,  -3.19e-9,   5.52e-8]
+    aFFm = [-5.37e-13, -1.26e-12,  1.29e-14,  2.39e-14,  2.35e-12]
+    aGFm = [-3.18e-9,   2.76e-8,   1.97e-9,   1.17e-9,  -2.26e-8]
 
-    OPR = 32.6 # Overall pressure ratio
-    BPR = 5.7 # Bypass ration
-    F0  = 120_000. # Poussée max au décollage
-    T4  = 1500. # Température en sortie de combustion
-    dT4_climb = -50. # Température en montée
-    dT4_cruise = -90. # Température en croisière
-    h_opt = 10_668. # Altitude optimale de design moteur
+    bFMs = [ 1.70e-12,  1.51e-12,  1.48e-9,  -7.59e-14, -1.07e-11]
+    bGMs = [-3.48e-9,  -8.41e-8,   2.56e-5,  -2.00e-8,  -7.17e-8]
+    bFFm = [-3.89e-13, -2.05e-12, -9.28e-10,  1.30e-13,  5.39e-12]
+    bGFm = [ 1.77e-9,   2.62e-8,  -8.87e-6,   6.66e-9,   4.43e-8]
 
-    aFMs = [1.79e-12, 4.29e-13, -5.24e-14, -4.51e-14, -4.57e-12]
-    aGMs = [1.17e-8, -8.80e-8, -5.25e-9, -3.19e-9, 5.52e-8]
-    aFFm = [-5.37e-13, -1.26e-12, 1.29e-14, 2.39e-14, 2.35e-12]
-    aGFm = [-3.18e-9, 2.76e-8, 1.97e-9, 1.17e-9, -2.26e-8]
+    aMs = -2.74e-4; aFm =  2.67e-4
+    bMs =  1.91e-2; bFm = -2.35e-2
+    cMs =  1.21e-3; cFm = -1.32e-3
+    dMs = -8.48e-4; dFm =  3.14e-4
+    eMs =  8.96e-1; eFm =  5.22e-1
 
-    bFMs = [1.70e-12, 1.51e-12, 1.48e-9, -7.59e-14, -1.07e-11]
-    bGMs = [-3.48e-9, -8.41e-8, 2.56e-5, -2.00e-8, -7.17e-8]
-    bFFm = [-3.89e-13, -2.05e-12, -9.28e-10, 1.30e-13, 5.39e-12]
-    bGFm = [1.77e-9, 2.62e-8, -8.87e-6, 6.66e-9, 4.43e-8]
-
-    aMs = -2.74e-4; aFm = 2.67e-4
-    bMs = 1.91e-2; bFm = -2.35e-2
-    cMs = 1.21e-3; cFm = -1.32e-3
-    dMs = -8.48e-4; dFm = 3.14e-4
-    eMs = 8.96e-1; eFm = 5.22e-1
-
-
-
-
-
-
-    def __init__(self, Avion):
+    def __init__(self, Avion, path):
         super().__init__(Avion)
-        # Pas de Donnees_moteur ici, peut-être d'autres constantes spécifiques
+        self.DonneesMoteur = loadData(path)
+
+        # Plus simple à définir comme ça
+        self.OPR = self.DonneesMoteur.OPR
+        self.BPR = self.DonneesMoteur.BPR
+        self.F0  = self.DonneesMoteur.F0
+        self.T4  = self.DonneesMoteur.T4
+        self.h_opt = self.DonneesMoteur.h_opt
+        self.dT4_climb =  self.DonneesMoteur.dT4_climb
+        self.dT4_cruise =  self.DonneesMoteur.dT4_cruise
 
     def calculateFmax(self, Atmosphere: Atmosphere, dT4):
         h = self.Avion.geth()
@@ -79,47 +76,51 @@ class ElodieRoux(Moteur):
             + ( k * (Constantes.rho11/Constantes.rho0)**n * rho / Constantes.rho11) * (h > 11000)
         
         # Résidus
-        QR = -4.51e-3 * self.BPR + 2.19e-5 * self.T4 - 3.09e-4 * (self.OPR - 30) + 0.945
+        QR = (-4.51e-3) * self.BPR + (2.19e-5) * self.T4 - (3.09e-4) * (self.OPR - 30) + (0.945)
 
         # Résultat final
         return self.F0 * QM * QH * QR
     
-    def calculateSFC(self, Atmosphere: Atmosphere, dT4):
+    def calculateSFCmax(self, Atmosphere: Atmosphere):
         h = self.Avion.geth()
         h_sub_11 = (h <= 11000)
         h_sup_11 = (h >  11000)
 
-        Fmax = self.calculateFmax(Atmosphere, dT4)
 
-        a1 = (-7.44e-13*h + 6.54e-7) * h_sub_11 + ( 6.45e-7) * h_sup_11
-        a2 = (-3.32e-10*h + 8.54e-6) * h_sub_11 + ( 4.89e-6) * h_sup_11
-        b1 = (-3.47e-11*h - 6.58e-7) * h_sub_11 + (-1.04e-6) * h_sup_11
-        b2 = ( 4.23e-10*h + 1.32e-5) * h_sub_11 + ( 1.79e-5) * h_sup_11
+        a1 = ((-7.44e-13)*h + 6.54e-7) * h_sub_11 + ( 6.45e-7) * h_sup_11
+        a2 = ((-3.32e-10)*h + 8.54e-6) * h_sub_11 + ( 4.89e-6) * h_sup_11
+        b1 = ((-3.47e-11)*h - 6.58e-7) * h_sub_11 + (-1.04e-6) * h_sup_11
+        b2 = (( 4.23e-10)*h + 1.32e-5) * h_sub_11 + ( 1.79e-5) * h_sup_11
         c  = -1.05e-7
 
         M = self.Avion.Aero.getMach()
         T = Atmosphere.getT_t()
 
+        return (a1 * self.BPR + a2) * M + (b1 * self.BPR + b2) * np.sqrt(T/Constantes.T0_K) \
+             + ((7.4e-13)*(self.OPR - 30) * h + c) * (self.OPR - 30)
 
-        SFC_Fmax = (a1 * self.BPR + a2) * M + (b1 * self.BPR + b2) * np.sqrt(T/Constantes.T0_K) \
-                 + (7.4e-13*(self.OPR - 30) * h + c) * (self.OPR - 30)
-        
+    def calculateSFC(self, Atmosphere: Atmosphere, dT4):
+        h = self.Avion.geth()
+
+        # Poussée et consommation spécifique maximales
+        Fmax = self.calculateFmax(Atmosphere, dT4)
+        SFC_Fmax = self.calculateSFCmax(Atmosphere)
+
+        # Variables nécessaires
         dh = h - self.h_opt
+        Fi_red = (-9.6e-5)*dh + 0.85
+        SFCmin_red = 0.998 * (dh < -89) + (0.995 - (3.385e-5)*dh) * (dh >= 89)
+        a = (1 - SFCmin_red) / ((1 - Fi_red)**2)
 
-        Fi_red = -9.6e-5*dh + 0.85
-        SFCmin_red = 0.998 * (dh < -89) + (0.995 - 3.385e-5*dh) * (dh >= 89)
-        a = (1 - SFCmin_red) / (1 - Fi_red)**2
-
-        # self.SFC_t = ((a * self.F_t / 2 / Fmax + Fi_red)**2 + SFCmin_red) * SFC_Fmax
-        # if (self.SFC_t > 1e-4).any():
-        #     self.SFC_t = 0
-        # self.FF_t = self.F_t * self.SFC_t
-
-        n = 3.51e-2*self.BPR - 1.27e-5*h + 0.31
-        k = 2.24e-5
-        self.SFC_t = k * np.sqrt(T/Constantes.T0_K) * M**n
+        # Modèle Elodie Roux
+        self.SFC_t = (a * (self.F_t / 2 / Fmax - Fi_red)**2 + SFCmin_red) * SFC_Fmax
         self.FF_t = self.F_t * self.SFC_t
 
+        # Modèle ESDU
+        # n = (3.51e-2)*self.BPR - (1.27e-5)*h + 0.31
+        # k = 2.24e-5
+        # self.SFC_t = k * np.sqrt(T/Constantes.T0_K) * M**n
+        # self.FF_t = self.F_t * self.SFC_t
 
 
     def calculateFClimb(self, Atmosphere: Atmosphere):
@@ -127,10 +128,13 @@ class ElodieRoux(Moteur):
 
 
     def calculateSFCClimb(self, Atmosphere: Atmosphere):
-        self.calculateSFC(Atmosphere, dT4=self.dT4_climb)
+        self.SFC_t = self.calculateSFCmax(Atmosphere)
+        self.FF_t = self.F_t * self.SFC_t * self.Inputs.cFF_climb
 
     def calculateSFCCruise(self, Atmosphere: Atmosphere):
         self.calculateSFC(Atmosphere, dT4=self.dT4_cruise)
+        self.SFC_t *= self.Inputs.cFF_cruise
+        self.FF_t *= self.Inputs.cFF_cruise
 
     def calculateSFCCruiseDiversion(self, Atmosphere: Atmosphere):
         self.calculateSFCCruise(Atmosphere)
@@ -140,8 +144,8 @@ class ElodieRoux(Moteur):
 
 
     def calculateFDescent(self, Atmosphere: Atmosphere):
-        self.F_t = 0
+        self.F_t = 0 * self.Inputs.cF_descent
 
     def calculateSFCDescent(self, Atmosphere: Atmosphere):
         self.SFC_t = 0
-        self.FF_t = 0
+        self.FF_t = 0.16 * self.Inputs.cFF_descent # Moyenne empirique

@@ -5,6 +5,7 @@ from inputs.Inputs import Inputs
 # from DonneesMoteur import DonneesMoteur
 from pathlib import Path
 import numpy as np
+from moteurs.loadData import loadData
 
 from scipy.interpolate import RegularGridInterpolator
 
@@ -13,7 +14,7 @@ class ReseauMoteur(Moteur):
     def __init__(self, Avion, path):
         super().__init__(Avion)
         # Spécifique à cette classe :
-        self.DonneesMoteur = self._charger_donnees(path)
+        self.DonneesMoteur = loadData(path)
 
         # liste des différentes altitudes disponibles dans le DonneesMoteur
         self.available_alts = list(self.DonneesMoteur.cruise_data.keys())

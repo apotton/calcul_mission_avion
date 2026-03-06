@@ -127,7 +127,7 @@ class App(ctk.CTk):
         # Sélection moteur
         ctk.CTkLabel(top_frame, text="Moteur :").grid(row=0, column=3, padx=15, pady=5, sticky="e")
         self.cb_moteur = ctk.CTkComboBox(top_frame, values=list(self.chemins_moteurs.keys()))
-        self.cb_moteur.set("") 
+        self.cb_moteur.set("")
         self.cb_moteur.grid(row=0, column=4, padx=5, pady=5, sticky="w")
 
     def buildActionButtons(self):
@@ -407,13 +407,32 @@ class App(ctk.CTk):
             except Exception: pass
 
         # Check de l'existence du dossier moteurs
-        if not (dossier_data / "moteurs").exists():
+        dossier_moteurs = dossier_data / "moteurs"
+        if not dossier_moteurs.exists():
             messagebox.showerror("Problème", "Dossier ./data/moteurs introuvable. Veuillez créer le répertoire à partir du dossier racine.")
             exit()
         
-        # Chargement du nom de fichier uniquement (sans extension)
+        # Chargement des noms de fichiers avec le suffixe approprié (ER ou RM)
         self.chemins_moteurs = {}
-        if (dossier_data / "moteurs").exists():
-            for f in (dossier_data / "moteurs").glob("*.py"):
+        
+        # 1. Sous-dossier Elodie Roux (ER)
+        dossier_er = dossier_moteurs / "elodie_roux"
+        if dossier_er.exists():
+            for f in dossier_er.glob("*.py"):
                 if f.name == "Moteur_vide.py": continue
-                self.chemins_moteurs[f.stem] = str(f)
+                # Ajout du (ER) pour l'affichage dans le menu déroulant
+                nom_affiche = f"{f.stem} (ER)"
+                self.chemins_moteurs[nom_affiche] = str(f)
+
+
+        # 2. Sous-dossier Réseau Moteur (RM)
+        dossier_rm = dossier_moteurs / "reseau_moteur"
+        if dossier_rm.exists():
+            for f in dossier_rm.glob("*.py"):
+                if f.name == "Moteur_vide.py": continue
+                # Ajout du (RM) pour l'affichage dans le menu déroulant
+                nom_affiche = f"{f.stem} (RM)"
+                self.chemins_moteurs[nom_affiche] = str(f)
+
+        # print(self.chemins_moteurs.keys())
+        # print(self.chemins_moteurs.values())

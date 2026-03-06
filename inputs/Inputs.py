@@ -6,13 +6,12 @@ class Inputs:
         # =====================
         # Fichiers des paramètres avions
         # =====================
-        self.csv_folder      = "avions"              # Dossier de stockage des fichiers csv
         self.nom_fichier_csv = "Airbus_A320.csv"     # Fichier csv des paramètres avions
 
         # =====================
         # Fichier des moteurs
         # =====================
-        self.py_folder      = "moteurs"
+        self.engine_folder  = "reseau_moteur"
         self.nom_fichier_py = "cfm56.py"
 
         # =====================
@@ -139,7 +138,8 @@ class Inputs:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
         data_folder = os.path.join(base_dir, "data") #Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
         py_folder = os.path.join(data_folder, "moteurs") #Ajoute le terme "csv_moteurs" au Directory précédent pour se rendre dans le Directory des fichiers csv de moteurs à lire
-        full_path = os.path.join(py_folder, self.nom_fichier_py) #Ajoute le nom du fichier csv au Directory afin de le compléter
+        engine_type = os.path.join(py_folder, self.engine_folder) #Ajoute "reseau_moteur" ou "elodie_roux" au Directory
+        full_path = os.path.join(engine_type, self.nom_fichier_py) #Ajoute le nom du fichier py au Directory afin de le compléter
         
         return full_path
     

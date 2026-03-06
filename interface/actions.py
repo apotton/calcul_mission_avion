@@ -26,6 +26,9 @@ def checkAvion(app):
     '''
     nom_avion = app.cb_avion.get()
     nom_moteur = app.cb_moteur.get()
+    # print("Nom moteur: " + nom_moteur)
+    # print("Chemin moteur: " + app.chemins_moteurs)
+    # Au moment de la sauvegarde ou du chargement de l'avion :
     
     # Vérification du choix utilisateur et de la présence des fichiers
     if nom_avion and nom_moteur:
@@ -41,6 +44,15 @@ def loadAvion(app):
     '''
     Charge l'avion en attribut de la classe (une fois avoir vérifié son existence et instancié la classe Inputs).
     '''
+    chemin_absolu_moteur = Path(app.chemins_moteurs[app.cb_moteur.get()])
+
+    # Tu peux extraire automatiquement les deux informations nécessaires :
+    nom_fichier_py = chemin_absolu_moteur.name       # Renvoie "cfm56.py"
+    engine_folder = chemin_absolu_moteur.parent.name # Renvoie "elodie_roux" ou "reseau_moteur"
+
+    app.Inputs.engine_folder = engine_folder
+    app.nom_fichier_py = nom_fichier_py
+
     app.Avion = Avion(app.Inputs)
     print(f">> Avion initialisé en mémoire.\n   - Modèle: {app.cb_avion.get()}\n   - Moteur: {app.cb_moteur.get()}\n")
 

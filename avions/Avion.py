@@ -98,8 +98,10 @@ class Avion:
         self.Inputs = Inputs
         self.Masse = Masse(self)
         self.Aero = Aero(self)
-        # self.Moteur = ReseauMoteur(self, engine_path)
-        self.Moteur = ElodieRoux(self)
+        if Inputs.engine_folder == "reseau_moteur":
+            self.Moteur = ReseauMoteur(self, engine_path)
+        elif Inputs.engine_folder == "elodie_roux":
+           self.Moteur = ElodieRoux(self, engine_path)
 
         # Initialisation des approximations des longueurs de descente
         self.setupDescentes()
