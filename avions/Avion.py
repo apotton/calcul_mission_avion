@@ -1,5 +1,5 @@
-from moteurs.ElodieRoux.ElodieRoux import ElodieRoux
 from moteurs.ReseauMoteur.ReseauMoteur import ReseauMoteur
+from moteurs.ElodieRoux.ElodieRoux import ElodieRoux
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
 from .Masse import Masse
@@ -409,12 +409,7 @@ class Avion:
     def get_l_descent(self):
         return self.l_descent
     
-    def setl_descent(self, l_descent: float):
-        '''
-        Définit la distance nécessaire pour la descente.
-
-        :param l_descent: Distance nécessaire pour la descente (m)
-        '''
+    def set_l_descent(self, l_descent):
         self.l_descent = l_descent
 
     # Diversion
@@ -430,13 +425,13 @@ class Avion:
     def get_l_diversion(self):
         return self.l_diversion
 
-    def getl_descent_diversion(self):
+    def get_l_descent_diversion(self):
         '''
         Retourne la valeur actuelle de la distance de la descente en diversion.
         '''
         return self.l_descent_diversion
     
-    def setl_descent_diversion(self, l_descent_diversion: float):
+    def set_l_descent_diversion(self, l_descent_diversion):
         '''
         Définit la distance nécessaire pour la descente en diversion.
         

@@ -1,4 +1,3 @@
-# from enregistrement.Enregistrement import Enregistrement
 from constantes.Constantes import Constantes
 from inputs.Inputs import Inputs
 import numpy as np
@@ -193,19 +192,19 @@ class Atmosphere:
         '''
         self.T_t = T 
 
-    def getRho_t(self):
+    def getRho(self):
         '''
         Renvoie la masse volumique de l'air précédemment calculée (kg/m^3)
         '''
         return self.rho_t
     
-    def getP_t(self):
+    def getP(self):
         '''
         Renvoie la pression statique de l'air précédemment calculée (Pa)
         '''
         return self.P_t
     
-    def getT_t(self):
+    def getT(self):
         '''
         Renvoie la température de l'air précédemment calculée (K)
         '''

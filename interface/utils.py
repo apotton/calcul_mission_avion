@@ -10,17 +10,13 @@ class PrintRedirector:
         self.silent_mode = False
         self.current_color_tag = None
         
-        # Configuration des couleurs ANSI (Tu peux ajuster les codes hexadécimaux)
+        # Configuration des couleurs ANSI
         self.colors = {
             '30': 'black',
             '31': '#E74C3C', # Rouge (Erreurs)
             '32': '#2ECC71', # Vert (Succès)
-            '33': '#F1C40F', # Jaune (Avertissements)
+            '33': "#F1840F", # Jaune (Avertissements)
             '34': '#3498DB', # Bleu (Infos)
-            '35': '#9B59B6', # Magenta
-            '36': '#1ABC9C', # Cyan
-            '37': 'white',   # Blanc
-            '90': 'gray',    # Gris foncé
         }
         
         # Création des tags dans la textbox de CustomTkinter

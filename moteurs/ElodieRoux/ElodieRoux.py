@@ -38,7 +38,7 @@ class ElodieRoux(Moteur):
     def calculateFmax(self, Atmosphere: Atmosphere, dT4):
         h = self.Avion.geth()
         M = self.Avion.Aero.getMach()
-        rho = Atmosphere.getRho_t()
+        rho = Atmosphere.getRho()
 
         # Loi de Mach
         F_M_s = ( self.aFMs[0] * (self.OPR - 30)**2 + self.aFMs[1] * (self.OPR - 30) + self.aFMs[2]
@@ -94,7 +94,7 @@ class ElodieRoux(Moteur):
         c  = -1.05e-7
 
         M = self.Avion.Aero.getMach()
-        T = Atmosphere.getT_t()
+        T = Atmosphere.getT()
 
         return (a1 * self.BPR + a2) * M + (b1 * self.BPR + b2) * np.sqrt(T/Constantes.T0_K) \
              + ((7.4e-13)*(self.OPR - 30) * h + c) * (self.OPR - 30)

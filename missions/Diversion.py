@@ -57,7 +57,7 @@ class Diversion:
         :param dt: pas de temps
         """
         l_t = Avion.getl()
-        l_target = l_end - Avion.getl_descent_diversion()
+        l_target = l_end - Avion.get_l_descent_diversion()
         
         while (l_t < l_target):
             Mach_opt, CAS_opt = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)

@@ -39,7 +39,7 @@ class App(ctk.CTk):
 
         # Apparence et propriétés de la fenêtre
         self.title("Calculateur de Mission")
-        self.geometry("1300x600")
+        self.geometry("1300x650")
         ctk.set_appearance_mode("System")  
         ctk.set_default_color_theme("blue")  
 
@@ -48,6 +48,16 @@ class App(ctk.CTk):
         
         # Dictionnaires de variables
         self.vars = {}
+
+        # Définition des phases pour les graphiques
+        self.phase_mapping = {
+            0: {"nom": "Montée", "couleur": "#27ae60"},     # Vert
+            1: {"nom": "Croisière", "couleur": "#2980b9"},  # Bleu
+            2: {"nom": "Descente", "couleur": "#e67e22"},   # Orange
+            3: {"nom": "Diversion", "couleur": "#8e44ad"},  # Violet
+            4: {"nom": "Holding", "couleur": "#c0392b"}     # Rouge
+        }
+        self.phase_vars = {} # Stockera l'état (coché ou non) de chaque phase
 
         # Clés à ne pas exporter globalement
         self.pp_keys    = ["SpeedType", "Speed", "altPP_ft", "massPP", "DISA_PP"]
@@ -240,7 +250,7 @@ class App(ctk.CTk):
         f_controls.pack(fill="x", pady=5)
         
         # Liste des données traçables (arrays dans Enregistrement.data)
-        keys = list(self.Enregistrement.data.keys()) # + list(self.Enregistrement.data_cruise.keys())
+        keys = list(self.Enregistrement.data.keys())
 
         # Choix de l'axe Y
         ctk.CTkLabel(f_controls, text="Axe Y :").pack(side="left", padx=10)
@@ -265,17 +275,44 @@ class App(ctk.CTk):
         # Bouton tracer
         ctk.CTkButton(f_controls, text="Tracer", command=self.tracerGraphique, width=100).pack(side="left", padx=20)
 
+        # Cases à cocher
+        f_phases = ctk.CTkFrame(tab, fg_color="transparent")
+        f_phases.pack(side="bottom", fill="x", pady=(10, 5))
+
+        # Sous-frame pour centrer les éléments
+        f_center = ctk.CTkFrame(f_phases, fg_color="transparent")
+        f_center.pack(anchor="center")
+        
+        for val_phase, infos in self.phase_mapping.items():
+            var = ctk.BooleanVar(value=True) # Coché par défaut
+            self.phase_vars[val_phase] = var
+            
+            # Création de la case aux couleurs de la phase
+            cb = ctk.CTkCheckBox(
+                f_center, 
+                text=infos["nom"], 
+                variable=var,
+                text_color=infos["couleur"],
+                fg_color=infos["couleur"],          
+                hover_color=infos["couleur"],       
+                border_color=infos["couleur"],      
+                command=self.tracerGraphique        
+            )
+            cb.pack(side="left", padx=10)
+
         # Paramètres de la figure matplotlib
         self.fig, self.ax = plt.subplots(figsize=(6, 4), dpi=100)
         self.fig.patch.set_facecolor('#f0f0f0') 
         
         # Gestion des outils matplotlib (loupe, déplacement...)
         self.canvas = FigureCanvasTkAgg(self.fig, master=tab)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True, pady=(10, 0))
         
+        # Barre d'outils Matplotlib
         self.toolbar = NavigationToolbar2Tk(self.canvas, tab)
         self.toolbar.update()
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        
+        # Pack du canvas en dernier (en "top") pour qu'il remplisse tout l'espace au centre
+        self.canvas.get_tk_widget().pack(side="top", fill="both", expand=True, pady=(10, 0))
 
     def tracerGraphique(self):
         '''
@@ -324,22 +361,19 @@ class App(ctk.CTk):
         data_x, unit_x = conv_aero(key_x, data_x_brut)
         data_y, unit_y = conv_aero(key_y, data_y_brut)
 
-        # Dictionnaire associant la valeur de la phase à un nom et une couleur bien lisible
-        phase_mapping = {
-            0: {"nom": "Montée", "couleur": "#27ae60"},     # Vert
-            1: {"nom": "Croisière", "couleur": "#2980b9"},  # Bleu
-            2: {"nom": "Descente", "couleur": "#e67e22"},   # Orange
-            3: {"nom": "Diversion", "couleur": "#8e44ad"},  # Violet
-            4: {"nom": "Holding", "couleur": "#c0392b"}     # Rouge
-        }
-
         # Nettoyage du graphique
         self.ax.clear()
 
         # Tracé segmenté par phase
         import numpy as np # Assure-toi que numpy est bien importé en haut de ton fichier
         
-        for val_phase, infos in phase_mapping.items():
+        # On utilise le mapping global défini dans l'__init__
+        for val_phase, infos in self.phase_mapping.items():
+            
+            # === NOUVEAU : On passe à la suite si la case n'est pas cochée ===
+            if val_phase in self.phase_vars and not self.phase_vars[val_phase].get():
+                continue
+            
             # Création d'un masque booléen (True là où la phase correspond)
             masque = (phases == val_phase)
             
@@ -351,13 +385,17 @@ class App(ctk.CTk):
                              label=infos["nom"])
 
         # Affichage des labels et des unités
-        self.ax.set_xlabel(f"{key_x} [{unit_x}]", fontweight='bold')
-        self.ax.set_ylabel(f"{key_y} [{unit_y}]", fontweight='bold')
+        self.ax.set_xlabel(f"{key_x} [{unit_x}]" if unit_x != "-" else key_x, fontweight='bold')
+        self.ax.set_ylabel(f"{key_y} [{unit_y}]" if unit_y != "-" else key_y, fontweight='bold')
         self.ax.set_title(f"{key_y} = f({key_x})")
         self.ax.grid(True, linestyle='--', alpha=0.7)
         
         # Ajout de la légende à l'endroit le moins encombrant ("best")
-        self.ax.legend(loc="best", framealpha=0.9)
+        # On ajoute un try/except car s'il n'y a aucune courbe tracée, la légende lève un warning
+        # try:
+        #     self.ax.legend(loc="best", framealpha=0.9)
+        # except:
+        #     pass
         
         self.fig.tight_layout()
         self.canvas.draw()
@@ -433,6 +471,3 @@ class App(ctk.CTk):
                 # Ajout du (RM) pour l'affichage dans le menu déroulant
                 nom_affiche = f"{f.stem} (RM)"
                 self.chemins_moteurs[nom_affiche] = str(f)
-
-        # print(self.chemins_moteurs.keys())
-        # print(self.chemins_moteurs.values())

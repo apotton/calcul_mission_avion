@@ -6,9 +6,6 @@ from missions.Montee import Montee
 from inputs.Inputs import Inputs
 from avions.Avion import Avion
 import numpy as np
-from scipy.interpolate import CubicSpline
-from scipy.optimize import minimize_scalar, root_scalar
-import matplotlib.pyplot as plt
 
 class Croisiere:
     @staticmethod

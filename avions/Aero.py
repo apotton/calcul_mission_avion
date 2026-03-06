@@ -1,6 +1,5 @@
 from constantes.Constantes import Constantes
 from atmosphere.Atmosphere import Atmosphere
-from inputs.Inputs import Inputs
 import numpy as np
 
 class Aero:
@@ -34,7 +33,7 @@ class Aero:
 
         :param atmosphere: Instance de la classe Atmosphere
         '''
-        self.Cz_t = (self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*atmosphere.getP_t()*self.Avion.getSref()*self.getMach()**2)) * self.Inputs.cCz
+        self.Cz_t = (self.Avion.Masse.getCurrentMass()*Constantes.g/(0.7*atmosphere.getP()*self.Avion.getSref()*self.getMach()**2)) * self.Inputs.cCz
     
 
     #Calcul du simplifié de Cx en fonction de la configuration du vol
@@ -73,9 +72,9 @@ class Aero:
         cos_phi_c = np.cos(phi_rad)**2
 
         # Calcul du nombre de Reynolds
-        Re = (47899*atmosphere.getP_t()*self.getMach()*
-              ((1+0.126*self.getMach()**2)*atmosphere.getT_t()+110.4)
-              /(atmosphere.getT_t()**2))/(1+0.126*self.getMach()**2)**(5/2)
+        Re = (47899*atmosphere.getP()*self.getMach()*
+              ((1+0.126*self.getMach()**2)*atmosphere.getT()+110.4)
+              /(atmosphere.getT()**2))/(1+0.126*self.getMach()**2)**(5/2)
         
         # Calcul du Cf
         Cf = 0.455/(1+0.126*self.getMach()**2)/(np.log10(Re*self.Avion.getLref()))**2.58
@@ -222,7 +221,7 @@ class Aero:
         p0 = Constantes.p0_Pa
 
         # Delta pression compressible
-        Delta_p = Atmosphere.getP_t() * (
+        Delta_p = Atmosphere.getP() * (
             ((gamma - 1) / 2 * self.Mach_t**2 + 1) ** (gamma / (gamma - 1)) - 1
         )
 
@@ -252,7 +251,7 @@ class Aero:
 
         self.Mach_t = np.sqrt(
             2 / (gamma - 1)
-            * ((1 + delta_p / Atmosphere.getP_t())**((gamma - 1) / gamma) - 1)
+            * ((1 + delta_p / Atmosphere.getP())**((gamma - 1) / gamma) - 1)
         )
 
     def convertTASToMach(self, Atmosphere: Atmosphere):
@@ -261,7 +260,7 @@ class Aero:
         
         :param Atmosphere: Instance de la classe Atmosphere
         '''
-        self.Mach_t = self.TAS_t / np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
+        self.Mach_t = self.TAS_t / np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT())
 
     def convertMachToTAS(self, Atmosphere: Atmosphere):
         '''
@@ -269,7 +268,7 @@ class Aero:
         
         :param Atmosphere: Instance de la classe Atmosphere
         '''
-        self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT_t())
+        self.TAS_t = self.Mach_t * np.sqrt(Constantes.gamma * Constantes.r * Atmosphere.getT())
 
     def setMach(self, Mach):
         '''

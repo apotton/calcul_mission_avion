@@ -38,7 +38,7 @@ class Descente:
         h_target = Inputs.hFinal_ft * Constantes.conv_ft_m
         Descente.descenteIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
-        Avion.setl_descent(Avion.getl() - l_init)
+        Avion.set_l_descent(Avion.getl() - l_init)
         Avion.set_t_descent(Avion.t - t_init)
         Avion.Masse.setFuelDescent(m_init - Avion.Masse.getCurrentMass())
         Avion.Masse.addFuelMission(m_init - Avion.Masse.getCurrentMass())
@@ -56,7 +56,7 @@ class Descente:
         :param dt: Pas de temps (dt)
         '''
         # Reset de la distance de descente pour une estimation plus précise
-        Avion.setl_descent_diversion(0.)
+        Avion.set_l_descent_diversion(0.)
         l_init = Avion.getl()
 
         # Première phase
@@ -78,7 +78,7 @@ class Descente:
         # print(f"H target: {h_target}")
         # print(f"H finale: {Avion.geth()}")
 
-        Avion.setl_descent_diversion(Avion.getl() - l_init)
+        Avion.set_l_descent_diversion(Avion.getl() - l_init)
 
     # Phase 1 : Ajustement vitesse à Max CAS avec possibilité de descente libre---
     @staticmethod

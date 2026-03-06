@@ -64,11 +64,12 @@ def saveSettings(app, chemin_csv):
         writer = csv.writer(f, delimiter=';')
         writer.writerow(["Attribut", "Valeur"])
 
-        # Nom de fichier avion et moteur
-        nom_fichier_avion = Path(app.chemins_avions[app.cb_avion.get()]).name
-        nom_fichier_moteur = Path(app.chemins_moteurs[app.cb_moteur.get()]).name
-        writer.writerow(["nom_fichier_csv", nom_fichier_avion])
-        writer.writerow(["nom_fichier_py", nom_fichier_moteur])
+        # Nom de fichier avion et moteur (non inclus car présent dans l'output console
+        # et que les fichiers ne seront pas forcément là si l'utilisateur veut rejouer la mission)
+        # nom_fichier_avion = Path(app.chemins_avions[app.cb_avion.get()]).name
+        # nom_fichier_moteur = Path(app.chemins_moteurs[app.cb_moteur.get()]).name
+        # writer.writerow(["nom_fichier_csv", nom_fichier_avion])
+        # writer.writerow(["nom_fichier_py", nom_fichier_moteur])
 
         # Itération sur toutes les cases (uniquement mission, pas Point Performance ou Batch)
         for var_name, tk_var in app.vars.items():

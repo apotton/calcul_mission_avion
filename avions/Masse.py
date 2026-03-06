@@ -54,11 +54,11 @@ class Masse:
         self.m_fuel_remaining_t -= dm   # Soustraction du fuel consommé au fuel restant
         self.m_burned_total_t   += dm   # Ajout du fuel consommé au fuel brulé
 
-    def setMass(self, masse_kg):
+    def setMass(self, mass):
         '''
-        Définit la masse de l'avion en le remplissant d'essence, puis en ajoutant de la payload.
+        Définit la masse de l'avion en mettant tout dans la payload.
         
-        :param masse_kg: Masse à set.
+        :param masse_kg: Masse à set (kg).
         '''
         # Remise à zéro
         self.m_payload = 0
@@ -70,34 +70,8 @@ class Masse:
         self.m_fuel_remaining_t = 0
         self.m_burned_total_t = 0
 
-        # Si la masse est trop petite
-        if masse_kg < self.Avion.getEmptyWeight():
-            print("Masse plus faible que la masse à vide: calcul effectué à masse vide.")
-            return
-        
-        masse = masse_kg - self.Avion.getEmptyWeight()
-
-        # Si la masse restante est plus petite que le max fuel
-        if masse < self.Avion.getMaxFuelWeight():
-            self.m_fuel_mission = masse
-            self.m_fuel_remaining_t = masse
-            return
-        
-        self.m_fuel_mission = self.Avion.getMaxFuelWeight()
-        self.m_fuel_remaining_t = self.Avion.getMaxFuelWeight()
-
-        masse = masse - self.Avion.getMaxFuelWeight()
-
-        # Si la masse restante est plus petite que la max payload
-        if masse <= self.Avion.getMaxPLWeight():
-            self.m_payload = masse
-            return
-        
-        # Sinon la masse voulue est trop lourde
-        self.m_payload = self.Avion.getMaxPLWeight()
-        print("Masse voulue trop lourde, calcul effectué à max payload + max fuel.")
-
-
+        # Masse totale
+        self.m_payload = mass - self.Avion.getEmptyWeight()
 
     def getCurrentMass(self):
         '''

@@ -27,15 +27,15 @@ class Inputs:
         # =====================
         # MISSION
         # =====================
-        self.mPayload = 1000   # kg
+        self.mPayload        = 1000  # kg
         self.rangeMission_NM = 1500  # NM
 
         # =====================
         # MONTEE
         # =====================
-        self.hInit_ft   = 1500.0         # ft
-        self.hAccel_ft  = 10000.0        # ft
-        self.CASinit_kt = 250.0          # kt
+        self.hInit_ft   = 1500.0   # ft
+        self.hAccel_ft  = 10000.0  # ft
+        self.CASinit_kt = 250.0    # kt
 
         # =====================
         # CROISIERE
@@ -62,9 +62,9 @@ class Inputs:
         # =====================
         # DESCENTE
         # =====================
-        self.CASfinal_kt = 250.0  # kt
-        self.hDecel_ft = 10000.0 # ft, altitude finale de maxCAS
-        self.hFinal_ft = 1500.0 # ft, altitude finale mission
+        self.CASfinal_kt = 250.0    # kt
+        self.hDecel_ft = 10000.0    # ft, altitude finale de maxCAS
+        self.hFinal_ft = 1500.0     # ft, altitude finale mission
 
         # =====================
         # Critère de diversion
@@ -97,9 +97,9 @@ class Inputs:
         self.cFF_climb      = 1     # Coefficient sur le fuel flow (montée)
         self.cFF_cruise     = 1     # Coefficient sur le fuel flow (croisière)
         self.cFF_descent    = 1     # Coefficient sur le fuel flow (descente)
-        self.cF_climb      = 1      # Coefficient sur la poussée totale (montée)
-        self.cF_cruise     = 1      # Coefficient sur la poussée totale (croisière: n'affecte pas la poussée mais la leecture de la SFC)
-        self.cF_descent    = 1      # Coefficient sur la poussée totale (descente)
+        self.cF_climb       = 1     # Coefficient sur la poussée totale (montée)
+        self.cF_cruise      = 1     # Coefficient sur la poussée totale (croisière: n'affecte pas la poussée mais la leecture de la SFC)
+        self.cF_descent     = 1     # Coefficient sur la poussée totale (descente)
         
         # =====================
         # Input des calculs Point Performance
@@ -126,24 +126,27 @@ class Inputs:
 
     def getAirplaneFile(self):
         ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe. '''
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
-        data_folder = os.path.join(base_dir, "data") #Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
-        csv_folder = os.path.join(data_folder, "avions") #Ajoute le terme "csv_avions" au Directory précédent pour se rendre dans le Directory des fichiers csv à lire
-        full_path = os.path.join(csv_folder, self.nom_fichier_csv) #Ajoute le nom du fichier csv au Directory afin de le compléter
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
+        data_folder = os.path.join(base_dir, "data")                            # Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
+        csv_folder = os.path.join(data_folder, "avions")                        # Ajoute le terme "csv_avions" au Directory précédent pour se rendre dans le Directory des fichiers csv à lire
+        full_path = os.path.join(csv_folder, self.nom_fichier_csv)              # Ajoute le nom du fichier csv au Directory afin de le compléter
         
         return full_path
     
     def getEngineFile(self):
         ''' Retourne le chemin complet du fichier csv de l'avion à partir du nom du fichier et du dossier défini dans les variables de classe. '''
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
-        data_folder = os.path.join(base_dir, "data") #Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
-        py_folder = os.path.join(data_folder, "moteurs") #Ajoute le terme "csv_moteurs" au Directory précédent pour se rendre dans le Directory des fichiers csv de moteurs à lire
-        engine_type = os.path.join(py_folder, self.engine_folder) #Ajoute "reseau_moteur" ou "elodie_roux" au Directory
-        full_path = os.path.join(engine_type, self.nom_fichier_py) #Ajoute le nom du fichier py au Directory afin de le compléter
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))      # Remonte de deux crans à partir du fichier actuel pour arriver à la racine du projet
+        data_folder = os.path.join(base_dir, "data")                                # Ajoute le terme "data" au Directory précédent pour se rendre dans le Directory data
+        py_folder = os.path.join(data_folder, "moteurs")                            # Ajoute le terme "csv_moteurs" au Directory précédent pour se rendre dans le Directory des fichiers csv de moteurs à lire
+        engine_type = os.path.join(py_folder, self.engine_folder)                   # Ajoute "reseau_moteur" ou "elodie_roux" au Directory
+        full_path = os.path.join(engine_type, self.nom_fichier_py)                  # Ajoute le nom du fichier py au Directory afin de le compléter
         
         return full_path
     
     def loadCSVFile(self, csv_path):
+        '''
+        Lit un fichier CSV (exporté par l'interface graphique), et remplit ses attributs avec le contenu.
+        '''
 
          # Si fichier non trouvé
         if not os.path.isfile(csv_path):
@@ -166,7 +169,7 @@ class Inputs:
                         valeur = float(valeur)
                     except ValueError:
                         valeur = str(valeur)
-                        # Gestion de AeroSimplified
+                        # Gestion des booléens
                         if valeur == "True":
                             valeur = True
                         elif valeur == "False":

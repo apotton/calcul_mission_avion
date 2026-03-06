@@ -46,9 +46,9 @@ class PointPerformance():
         
         # Conditions atmosphérique
         Atmosphere.CalculateRhoPT(Avion.geth(), Inputs.DISA_PP)
-        rho = Atmosphere.getRho_t()
-        P = Atmosphere.getP_t()
-        T = Atmosphere.getT_t()
+        rho = Atmosphere.getRho()
+        P = Atmosphere.getP()
+        T = Atmosphere.getT()
         DISA = Inputs.DISA_PP
 
         # Vitesses (en kt)

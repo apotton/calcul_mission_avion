@@ -219,9 +219,9 @@ class Enregistrement:
         self.data["FB"][self.counter] = Avion.Masse.getFuelBurned()
         self.data["m"][self.counter] = Avion.Masse.getCurrentMass()
 
-        self.data["P"][self.counter] = Atmosphere.getP_t()
-        self.data["T"][self.counter] = Atmosphere.getT_t()
-        self.data["rho"][self.counter] = Atmosphere.getRho_t()
+        self.data["P"][self.counter] = Atmosphere.getP()
+        self.data["T"][self.counter] = Atmosphere.getT()
+        self.data["rho"][self.counter] = Atmosphere.getRho()
 
         self.data["phase"][self.counter] = Avion.getPhase()
 
@@ -252,7 +252,7 @@ class Enregistrement:
         self.data_simu["ecart_mission"].append(ecart_mission)
         self.data_simu["l_descent"].append(Avion.get_l_descent())
         self.data_simu["FB_mission"].append(Avion.Masse.getFuelMission())
-        self.data_simu["l_descent_diversion"].append(Avion.getl_descent_diversion())
+        self.data_simu["l_descent_diversion"].append(Avion.get_l_descent_diversion())
 
     def saveFinal(self, Avion: Avion, Atmosphere: Atmosphere):
         '''
@@ -291,7 +291,8 @@ class Enregistrement:
 
         # Emissions
         getAllEmissions(Avion, Atmosphere, self)
-
+        
+        # Affichage des valeurs dans la console de manière formatée
         self.printValues()
         self.printEmissions()
 
@@ -534,7 +535,7 @@ class Enregistrement:
             writer.writerow(noms_variables)
             writer.writerow(ligne_unites)
             
-            # 3. Extraction des données pour chaque colonne
+            # Extraction des données pour chaque colonne
             colonnes_donnees = [
                 ["" if np.isnan(val) else val for val in self.data[clef].tolist()] 
                 for clef in noms_variables
