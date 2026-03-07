@@ -73,6 +73,10 @@ class Atmosphere:
         self.P_t = p
         self.T_t = T
 
+    @staticmethod
+    def RelativeHumidity(h):
+        return 0.6 * np.exp(-h / 2000) # Modèle simplifié d'humidité relative
+
     def calculateHumidity(self, Enregistrement):
         '''
         Détermine les pressions partielles, saturantes et l'humidité spécifique de l'air.
@@ -81,7 +85,7 @@ class Atmosphere:
         '''
         # Calcul de la pression saturante (formule de Murphy & Koop)
         es_Pa = self.calculateLiquidMurphyKoop(Enregistrement.data["T"])
-        RH_h = 0.6 * np.exp(-Enregistrement.data["h"] / 2000) # Modèle simplifié d'humidité relative
+        RH_h = self.RelativeHumidity(Enregistrement.data["h"])
         self.e_Pa = RH_h * es_Pa # Pression partielle vapeur
         self.w = 0.622 * self.e_Pa / (Enregistrement.data["P"] - self.e_Pa) # kg eau / kg air sec
 

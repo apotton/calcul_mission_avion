@@ -25,19 +25,20 @@ class Holding:
         t_init = Avion.get_t()
         l_init = Avion.get_l()
         
-        # La vitesse souhaitée est celle qui maximise la finesse
-        Atmosphere.calculateRhoPT(Avion.get_h())
-        _, CAS_target = Holding.calculateTargetSpeed(Avion, Atmosphere, Inputs)
+        if Inputs.Time_holding_min != 0:
+            # La vitesse souhaitée est celle qui maximise la finesse
+            Atmosphere.calculateRhoPT(Avion.get_h())
+            _, CAS_target = Holding.calculateTargetSpeed(Avion, Atmosphere, Inputs)
 
-        if (Avion.Aero.getCAS() < CAS_target):
-            # Accélération en palier
-            Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
-        elif (Avion.Aero.getCAS() > CAS_target):
-            # Décélération palier avec moteur en idle 
-            Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
+            if (Avion.Aero.getCAS() < CAS_target):
+                # Accélération en palier
+                Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
+            elif (Avion.Aero.getCAS() > CAS_target):
+                # Décélération palier avec moteur en idle 
+                Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt = Inputs.dtClimb)
 
-        #  Vol en palier
-        Holding.holdPalier(Avion, Atmosphere, Enregistrement, Inputs, t_init, dt = Inputs.dtCruise)
+            #  Vol en palier
+            Holding.holdPalier(Avion, Atmosphere, Enregistrement, Inputs, t_init, dt = Inputs.dtCruise)
 
         Avion.set_l_holding(Avion.get_l() - l_init)
         Avion.set_t_holding(Avion.get_t() - t_init)

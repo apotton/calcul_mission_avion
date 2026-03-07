@@ -24,17 +24,18 @@ class Diversion:
         t_init = Avion.get_t()
         l_init = Avion.get_l()
 
-        # Enregistrement de la distance actuelle pour mesurer la longueur de la diversion
-        l_end = Avion.get_l() + Inputs.rangeDiversion_NM * Constantes.conv_NM_m
+        if Inputs.rangeDiversion_NM != 0:
+            # Enregistrement de la distance actuelle pour mesurer la longueur de la diversion
+            l_end = Avion.get_l() + Inputs.rangeDiversion_NM * Constantes.conv_NM_m
 
-        # Montée de diversion
-        Montee.monterDiversion(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtClimb)
-        
-        # Croisière diversion
-        Diversion.cruiseAltSAR(Avion, Atmosphere, Enregistrement, Inputs, l_end, dt = Inputs.dtCruise)
+            # Montée de diversion
+            Montee.monterDiversion(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtClimb)
+            
+            # Croisière diversion
+            Diversion.cruiseAltSAR(Avion, Atmosphere, Enregistrement, Inputs, l_end, dt = Inputs.dtCruise)
 
-        # Descente de diversion
-        Descente.descendreDiversion(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtDescent)
+            # Descente de diversion
+            Descente.descendreDiversion(Avion, Atmosphere, Enregistrement, Inputs, dt = Inputs.dtDescent)
 
         # Fin de la diversion
         Avion.set_l_diversion(Avion.get_l() - l_init)
