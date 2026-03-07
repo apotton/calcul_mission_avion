@@ -28,7 +28,7 @@ class Atmosphere:
         self.w = [] # Humidité spécifique (kg eau / kg air sec)
         self.e_Pa = [] # Pression partielle de vapeur d'eau
 
-    def CalculateRhoPT(self, h, DISA_dC = 0.) :
+    def calculateRhoPT(self, h, DISA_dC = 0.) :
         '''
         Calcule les conditions atmosphériques (rho, P, T) en unités SI d'un avion, en prenant en compte l'écart avec l'atmosphère standard.
         

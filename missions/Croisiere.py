@@ -71,7 +71,7 @@ class Croisiere:
         Avion.Add_dh(delta_h)
 
         # Atmosphère
-        Atmosphere.CalculateRhoPT(Avion.get_h())
+        Atmosphere.calculateRhoPT(Avion.get_h())
 
         # TAS (Mach constant avant montée iso-Mach)
         Avion.Aero.convertMachToTAS(Atmosphere)
@@ -139,7 +139,7 @@ class Croisiere:
         Mach_grid = np.arange(0.2, 0.82, 0.0001)
 
         # Atmosphere
-        Atmosphere.CalculateRhoPT(Avion.get_h())
+        Atmosphere.calculateRhoPT(Avion.get_h())
 
         ## CALCUL VECTORISÉ DU SAR (les attributs de Avion deviennent des arrays)
         
@@ -198,7 +198,7 @@ class Croisiere:
 
         # Remise à zéro
         Avion.loadSave()
-        Atmosphere.CalculateRhoPT(Avion.get_h())
+        Atmosphere.calculateRhoPT(Avion.get_h())
 
         return Mach_opt, CAS_opt
 
@@ -219,7 +219,7 @@ class Croisiere:
         :param dt: Pas de temps (s)
         """
         # Atmosphère
-        Atmosphere.CalculateRhoPT(Avion.get_h())
+        Atmosphere.calculateRhoPT(Avion.get_h())
         l_t = Avion.get_l()
         l_target = l_end - Avion.get_l_descent()
 
@@ -288,7 +288,7 @@ class Croisiere:
         # Tant que l'on n'a pas parcouru assez de distance
         while (l_t < l_target):
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.get_h())
+            Atmosphere.calculateRhoPT(Avion.get_h())
 
             # Vitesse
             Avion.Aero.convertMachToTAS(Atmosphere)
@@ -445,7 +445,7 @@ class Croisiere:
 
             # Application du Mach optimal
             Avion.Aero.setMach(Mach_opt)
-            Atmosphere.CalculateRhoPT(Avion.get_h())
+            Atmosphere.calculateRhoPT(Avion.get_h())
             Avion.Aero.convertMachToTAS(Atmosphere)
             Avion.Aero.convertMachToCAS(Atmosphere)
             

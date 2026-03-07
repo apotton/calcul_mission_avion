@@ -414,6 +414,9 @@ def calculerBatch(app):
     if noms_affiches:
         app.cb_batch.set(noms_affiches[-1])
 
+
+    app.tracerGraphique()
+
     # Affichage final
     print("\n=== RÉSULTATS BATCH ===")
     print(summary_text)

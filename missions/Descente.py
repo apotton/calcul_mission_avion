@@ -95,7 +95,7 @@ class Descente:
 
         while (CAS_t < CAS_max) and (h_t > h_min):
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.get_h())
+            Atmosphere.calculateRhoPT(Avion.get_h())
 
             # Mach et TAS 
             Avion.Aero.convertMachToCAS(Atmosphere)
@@ -175,7 +175,7 @@ class Descente:
         while h_t > h_end:
 
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.get_h())
+            Atmosphere.calculateRhoPT(Avion.get_h())
 
             # Conversion CAS -> Mach
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -245,7 +245,7 @@ class Descente:
         CAS_t = Avion.Aero.getCAS()
 
         # Conditions atmosphériques constantes
-        Atmosphere.CalculateRhoPT(Avion.get_h())
+        Atmosphere.calculateRhoPT(Avion.get_h())
 
         # Vitesses
         Avion.Aero.convertCASToMach(Atmosphere)

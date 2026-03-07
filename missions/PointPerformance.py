@@ -17,7 +17,7 @@ class PointPerformance():
         :param Inputs: Instance de la classe Inputs
         '''
         Avion.set_h(Inputs.altPP_ft * Constantes.conv_ft_m)
-        Atmosphere.CalculateRhoPT(Inputs.altPP_ft * Constantes.conv_ft_m, Inputs.DISA_PP)
+        Atmosphere.calculateRhoPT(Inputs.altPP_ft * Constantes.conv_ft_m, Inputs.DISA_PP)
         Avion.Masse.setMass(Inputs.massPP)
 
         # Set des vitesses
@@ -52,7 +52,7 @@ class PointPerformance():
         PointPerformance.setupAvion(Avion, Atmosphere, Inputs)
         
         # Conditions atmosphérique
-        Atmosphere.CalculateRhoPT(Avion.get_h(), Inputs.DISA_PP)
+        Atmosphere.calculateRhoPT(Avion.get_h(), Inputs.DISA_PP)
         rho = Atmosphere.getRho()
         P = Atmosphere.getP()
         T = Atmosphere.getT()

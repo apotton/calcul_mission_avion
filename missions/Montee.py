@@ -98,7 +98,7 @@ class Montee:
 
         while h_t < h_lim:
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.get_h())
+            Atmosphere.calculateRhoPT(Avion.get_h())
 
             # Vitesses
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -168,7 +168,7 @@ class Montee:
         '''
 
         # Atmosphère (constante en palier)
-        Atmosphere.CalculateRhoPT(Avion.get_h())
+        Atmosphere.calculateRhoPT(Avion.get_h())
 
         # Vitesses
         Avion.Aero.convertCASToMach(Atmosphere)
@@ -253,7 +253,7 @@ class Montee:
         # Tant que l'on a pas atteint le Mach limite ou l'altitude limite
         while Avion.Aero.getMach() < Mach_lim and h_t < h_lim:
             # Atmosphère
-            Atmosphere.CalculateRhoPT(h_t)
+            Atmosphere.calculateRhoPT(h_t)
 
             # Vitesses
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -337,7 +337,7 @@ class Montee:
         while h_t < h_lim:
 
             # Atmosphère
-            Atmosphere.CalculateRhoPT(Avion.get_h())
+            Atmosphere.calculateRhoPT(Avion.get_h())
 
             # Vitesse
             Avion.Aero.convertMachToTAS(Atmosphere)
