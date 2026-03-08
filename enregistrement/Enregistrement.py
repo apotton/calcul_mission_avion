@@ -411,89 +411,100 @@ class Enregistrement:
         Affiche de manière mise en forme dans la console le bilan des émissions de 
         l'avion pendant les principales phases de vol.
         '''
+        coeff = 3.159 / 1000 # tonne de CO2 brulé par kg de carburant
+
         # Dictionnaire des grandeurs à afficher
         phases = [
             ("Montée", 
+            self.mission_data["FB_climb"] * coeff,
             self.mission_data["eHC_climb"], 
             self.mission_data["eCO_climb"], 
             self.mission_data["eNOx_climb"],
             self.mission_data["envPM_climb"]),
 
             ("Croisière", 
+            self.mission_data["FB_cruise"] * coeff,
             self.mission_data["eHC_cruise"], 
             self.mission_data["eCO_cruise"], 
             self.mission_data["eNOx_cruise"],
             self.mission_data["envPM_cruise"]),
 
             ("Descente", 
+            self.mission_data["FB_descent"] * coeff,
             self.mission_data["eHC_descent"], 
             self.mission_data["eCO_descent"], 
             self.mission_data["eNOx_descent"],
             self.mission_data["envPM_descent"]),
 
             ("Mission", 
+            (self.mission_data["FB_climb"] + self.mission_data["FB_cruise"] + self.mission_data["FB_descent"]) * coeff,
             self.mission_data["eHC_climb"] + self.mission_data["eHC_cruise"] + self.mission_data["eHC_descent"], 
             self.mission_data["eCO_climb"] + self.mission_data["eCO_cruise"] + self.mission_data["eCO_descent"], 
             self.mission_data["eNOx_climb"] + self.mission_data["eNOx_cruise"] + self.mission_data["eNOx_descent"], 
             self.mission_data["envPM_climb"] + self.mission_data["envPM_cruise"] + self.mission_data["envPM_descent"]),
 
             ("Diversion", 
+            self.mission_data["FB_diversion"] * coeff,
             self.mission_data["eHC_diversion"],
             self.mission_data["eCO_diversion"], 
             self.mission_data["eNOx_diversion"],
             self.mission_data["envPM_diversion"]),
 
             ("Holding", 
+            self.mission_data["FB_holding"] * coeff,
             self.mission_data["eHC_holding"],
             self.mission_data["eCO_holding"], 
             self.mission_data["eNOx_holding"],
             self.mission_data["envPM_holding"]),
 
             ("Reserves",
+            (self.mission_data["FB_diversion"] + self.mission_data["FB_holding"]) * coeff,
              self.mission_data["eHC_diversion"] + self.mission_data["eHC_holding"],
              self.mission_data["eCO_diversion"] + self.mission_data["eCO_holding"],
              self.mission_data["eNOx_diversion"] + self.mission_data["eNOx_holding"],
              self.mission_data["envPM_diversion"] + self.mission_data["envPM_holding"])
         ]
-
+        
+        totalCO2 = 0.0
         totalHC = 0.0
         totalCO = 0.0
         totalNOx = 0.0
         totalnvPM = 0.0
 
         lines = []
-        header = f"{'Phase':<12}{'HC (kg)':>10}{'CO (kg)':>10}{'NOx (kg)':>10}{'nvPM (g)':>10}"
+        header = f"{'Phase':<12}{'CO₂ (t)':>10}{'HC (kg)':>10}{'CO (kg)':>10}{'NOx (kg)':>10}{'nvPM (g)':>10}"
         separator = "-" * len(header)
 
         lines.append(separator)
-        lines.append("                RÉSUMÉ DES ÉMISSIONS")
+        lines.append("                     RÉSUMÉ DES ÉMISSIONS")
         lines.append(separator)
 
         lines.append(header)
         lines.append(separator)
 
         # Itération sur toutes les phases pour arriver au total
-        for name, HC, CO, NOx, nvPM in phases:
+        for name, CO2, HC, CO, NOx, nvPM in phases:
             # Pour le total de la mission, on met un séparateur
             if name == "Mission" or name == "Reserves":
                 lines.append(separator)
 
 
             lines.append(
-                f"{name:<12}{HC:>10.1f}{CO:>10.1f}{NOx:>10.1f}{nvPM*1000:>10.1f}"
+                f"{name:<12}{CO2:>10.1f}{HC:>10.1f}{CO:>10.1f}{NOx:>10.1f}{nvPM*1000:>10.1f}"
             )
 
             # On remet un séparateur pour la mission et on ne compte pas sa distance parcourue
             if name == "Mission" or name == "Reserves":
                 lines.append(separator)
             else:
+                totalCO2 += CO2
                 totalHC += HC
                 totalCO += CO
                 totalNOx += NOx
                 totalnvPM += nvPM
 
         lines.append(
-            f"{'TOTAL':<12}{totalHC:>10.1f}{totalCO:>10.1f}{totalNOx:>10.1f}{totalnvPM*1000:>10.1f}"
+            f"{'TOTAL':<12}{totalCO2:>10.1f}{totalHC:>10.1f}{totalCO:>10.1f}{totalNOx:>10.1f}{totalnvPM*1000:>10.1f}"
         )
 
         # On renvoie la string formatée
