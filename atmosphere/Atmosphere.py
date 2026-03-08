@@ -9,9 +9,12 @@ class Atmosphere:
     p0_Pa = 101325.0        # Pression de référence au niveau de la mer (Pa)
     Th_Kparm = -0.0065      # Gradient thermique troposphérique standard (K/m)
     r = 287.05287           # Constante spécifique des gaz pour l'air (J/(kg*K))
-    
-    # Constantes de Conversion
-    conv_fttom = 0.3048     # Facteur de conversion : 1 pied = 0.3048 mètre
+
+    # Constantes dans le calcul ISA
+    T_11_ISA = T0_K + Th_Kparm * 11000 
+    exponent_p = -Constantes.g / (r * Th_Kparm)
+    p_11 = p0_Pa * (1 + Th_Kparm / T0_K * 11000) ** (-Constantes.g / (r * Th_Kparm))
+
 
     def __init__(self, Inputs: Inputs):
         '''
@@ -22,9 +25,11 @@ class Atmosphere:
         self.rho_t = 1.225  # Densité standard au niveau de la mer (kg/m^3)
         self.P_t = 101325.0 # Pression standard au niveau de la mer (Pa)
         self.T_t = 288.15   # Température standard au niveau de la mer (K)
+
         self.DISA_sub_Cruise = Inputs.DISA_sub_Cruise
         self.DISA_Cruise = Inputs.DISA_Cruise
         self.hCruise = Inputs.hCruise_ft * Constantes.conv_ft_m
+
         self.w = [] # Humidité spécifique (kg eau / kg air sec)
         self.e_Pa = [] # Pression partielle de vapeur d'eau
 
@@ -36,42 +41,32 @@ class Atmosphere:
         :param h_m: Altitude de l'avion (m)
         :param DISA_dC: Différence de température avec l'atmosphère standard, utilisée pour le point performance (°C)
         '''
+        # Calcul du dISA
         if h < self.hCruise:
             DISA = self.DISA_sub_Cruise + DISA_dC
         else:
             DISA = self.DISA_Cruise + DISA_dC
 
-            
+        # Calculs de température et pression
         if h <= 11000:
             # Troposphère (Altitude à gradient constant : h <= 11000 m)
-            
             # Température (T = T0 + T_h*h + DISA)
-            T = self.T0_K + self.Th_Kparm * h + DISA
+            T_ISA = self.T0_K + self.Th_Kparm * h
+            self.T_t = T_ISA + DISA
             
             # Pression (Formule de pression pour gradient constant)
-            exponent_p = -Constantes.g / (self.r * self.Th_Kparm)
-            p = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * h) ** exponent_p 
-            
-            
+            self.P_t = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * h) ** self.exponent_p             
         else:
             # Stratosphère Isotherme (Altitude au-dessus de 11000 m)
-            # Calcul des conditions de transition à 11 km (sans DISA)
-            T_11_ISA_0 = self.T0_K + self.Th_Kparm * 11000 
-            p_11 = self.p0_Pa * (1 + self.Th_Kparm / self.T0_K * 11000) ** (-Constantes.g / (self.r * self.Th_Kparm))
-            
             # Calcul des conditions actuelles (T est constante au-dessus de 11 km, corrigée par DISA)
-            T = T_11_ISA_0 + DISA
+            self.T_t = self.T_11_ISA + DISA
             
             # Pression (Formule de pression pour couche isotherme)
-            exponent_p_strato = -Constantes.g / (self.r * T_11_ISA_0) * (h - 11000)
-            p = p_11 * np.exp(exponent_p_strato)
-            
+            exponent_p_strato = -Constantes.g / (self.r * self.T_11_ISA) * (h - 11000)
+            self.P_t = self.p_11 * np.exp(exponent_p_strato)
+        
         # Densité (Loi des gaz parfaits)
-        rho = p / (self.r * T)
-
-        self.rho_t = rho
-        self.P_t = p
-        self.T_t = T
+        self.rho_t = self.P_t / (self.r * self.T_t)
 
     @staticmethod
     def RelativeHumidity(h):
@@ -213,4 +208,3 @@ class Atmosphere:
         Renvoie la température de l'air précédemment calculée (K)
         '''
         return self.T_t
-    

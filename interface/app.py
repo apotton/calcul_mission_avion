@@ -110,6 +110,11 @@ class App(ctk.CTk):
         # Initialisation dynamique
         self.onTabChange() # Définit le bouton principal au lancement
 
+        # Chargement de la configuration par défaut
+        chemin_default = Path.cwd() / "data" / "missions" / "default.csv"
+        if Path.exists(chemin_default):
+            importCSV(self, chemin_default)
+
     # ==========================
     # MÉTHODES DE CONSTRUCTION
     # ==========================
