@@ -63,7 +63,8 @@ class OngletMission(ctk.CTkScrollableFrame):
         addField(app, f_climb, "Altitude Initiale", "hInit_ft", "1500.0", "ft", row=1, col=1)
         addField(app, f_climb, "Altitude Accel.", "hAccel_ft", "10000.0", "ft", row=2, col=1)
         addField(app, f_climb, "CAS initiale", "CASinit_kt", "250.0", "kt", row=3, col=1)
-        # addField(app, f_climb, "Mach Climb", "Mach_climb", "0.78", "", row=4, col=1)
+        addField(app, f_climb, "CAS haute", "CAShighClimb_kt", "280.0", "kt", row=4, col=1)
+        addField(app, f_climb, "Mach haut", "MachhighClimb", "0.78", "-", row=5, col=1)
 
         # Croisière (Dynamique)
         self.f_cruise = ctk.CTkFrame(tab)
@@ -87,6 +88,8 @@ class OngletMission(ctk.CTkScrollableFrame):
         addField(app, f_desc, "CAS finale", "CASfinal_kt", "250.0", "kt", row=1, col=1)
         addField(app, f_desc, "Altitude Decel.", "hDecel_ft", "10000.0", "ft", row=2, col=1)
         addField(app, f_desc, "Altitude Finale", "hFinal_ft", "1500.0", "ft", row=3, col=1)
+        addField(app, f_desc, "CAS haut", "CAShighDescent_kt", "280", "kt", row=4, col=1)
+        addField(app, f_desc, "Mach haut", "MachhighDescent", "0.78", "-", row=5, col=1)
         self.updateCruiseFields()
 
     def updateCruiseFields(self, _=None):

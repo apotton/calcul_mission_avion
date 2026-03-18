@@ -29,20 +29,11 @@ class Montee:
         h_target = Inputs.hAccel_ft * Constantes.conv_ft_m
         Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
-        CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
+        CAS_target = Inputs.CAShighClimb_kt * Constantes.conv_kt_mps
         Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt=Inputs.dtClimb)
 
         h_target = Inputs.hCruise_ft * Constantes.conv_ft_m
-
-        if Inputs.cruiseType == "Alt_SAR" or Inputs.cruiseType == "CI":
-            from missions.Croisiere import Croisiere # Empêche une importation circulaire
-            h_init = Avion.get_h()
-            Avion.set_h(h_target)
-            Mach_target, _ = Croisiere.calculateSpeedTarget(Avion, Atmosphere, Inputs)
-            Avion.set_h(h_init)
-        else:
-            Mach_target = Inputs.MachCruise
-
+        Mach_target = Inputs.MachhighClimb
         Montee.climbIsoCAS(Avion, Atmosphere, Enregistrement, Inputs, h_target, Mach_target, Inputs.dtClimb)
         Montee.climbIsoMach(Avion, Atmosphere, Enregistrement, Inputs, h_target, Inputs.dtClimb)
 
@@ -65,7 +56,7 @@ class Montee:
         h_target = Inputs.hAccel_ft * Constantes.conv_ft_m
         Montee.climbLowAltitude(Avion, Atmosphere, Enregistrement, Inputs, h_target, dt)
 
-        CAS_target = Avion.getKVMO() * Constantes.conv_kt_mps
+        CAS_target = Inputs.CAShighClimb_kt * Constantes.conv_kt_mps
         h_target = Inputs.cruiseDiversionAlt_ft * Constantes.conv_ft_m
 
         # Obtention de la vitesse objectif

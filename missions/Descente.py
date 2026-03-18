@@ -23,7 +23,8 @@ class Descente:
         l_init = Avion.get_l()
 
         # Première phase
-        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt=Inputs.dtDescent)
+        CAS_target = Inputs.CAShighDescent_kt * Constantes.conv_kt_mps
+        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt=Inputs.dtDescent)
 
         # Seconde phase
         h_target = Inputs.hDecel_ft * Constantes.conv_ft_m
@@ -59,7 +60,8 @@ class Descente:
         l_init = Avion.get_l()
 
         # Première phase
-        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, dt)
+        CAS_target = Inputs.CAShighDescent_kt * Constantes.conv_kt_mps
+        Descente.descenteIsoMach(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt)
 
         # Deuxième phase
         h_target = Inputs.hDecel_ft * Constantes.conv_ft_m
@@ -76,7 +78,7 @@ class Descente:
         Avion.set_l_descent_diversion(Avion.get_l() - l_init)
 
     @staticmethod
-    def descenteIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, dt):
+    def descenteIsoMach(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs, CAS_target, dt):
         '''
         Laisse l'avion initier une descente libre pour atteindre la vitesse maximale autorisée en CAS (Vmax_CAS) avant de passer à la phase 2.
 
@@ -86,14 +88,12 @@ class Descente:
         :param Inputs: Instance de la classe Inputs
         :param dt: Pas de temps (s)
         '''
-        # CAS max en m/s
-        CAS_max = Avion.getKVMO() * Constantes.conv_kt_mps
         CAS_t = Avion.Aero.getCAS()
 
         h_min = Inputs.hDecel_ft * Constantes.conv_ft_m
         h_t = Avion.get_h()
 
-        while (CAS_t < CAS_max) and (h_t > h_min):
+        while (CAS_t < CAS_target) and (h_t > h_min):
             # Atmosphère
             Atmosphere.calculateRhoPT(Avion.get_h())
 
@@ -101,12 +101,12 @@ class Descente:
             Avion.Aero.convertMachToCAS(Atmosphere)
             Avion.Aero.convertMachToTAS(Atmosphere)
 
-            if Avion.Aero.getCAS() > CAS_max:
+            if Avion.Aero.getCAS() > CAS_target:
                 # Intersection du pas de temps
-                dt = (CAS_max - CAS_t) / (Avion.Aero.getCAS() - CAS_t) * dt
+                dt = (CAS_target - CAS_t) / (Avion.Aero.getCAS() - CAS_t) * dt
 
                 # Set du CAS visé
-                Avion.Aero.setCAS(CAS_max)
+                Avion.Aero.setCAS(CAS_target)
                 Avion.Aero.convertCASToMach(Atmosphere)
                 Avion.Aero.convertMachToTAS(Atmosphere)
 

@@ -35,6 +35,11 @@ class Croisiere:
             print("Croisière " + Inputs.cruiseType + " inexistante.")
             exit()
 
+        # On ralentit à la vitesse de descente
+        if (Avion.Aero.getMach() - Inputs.MachhighDescent) > 0.01:
+            Croisiere.getToMachDescent(Avion, Atmosphere, Enregistrement, Inputs)
+            Avion.Aero.setMach(Inputs.MachhighDescent)
+
         Avion.set_l_cruise(Avion.get_l() - l_init)
         Avion.set_t_cruise(Avion.get_t() - t_init)
         Avion.Masse.setFuelCruise(m_init - Avion.Masse.getCurrentMass())
@@ -122,6 +127,54 @@ class Croisiere:
                 return (ECCF_up < ECCF_init)
             
         return False
+    
+    @staticmethod
+    def getToMachCruise(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs):
+        '''
+        Fait monter l'avion au Mach de croisière si il n'y est pas déjà.
+
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
+        '''
+        # Sauvegarde de l'avion
+        Avion.save()
+
+        # On se place à Mach cruise pour définir la CAS Target
+        Avion.Aero.setMach(Inputs.MachCruise)
+        Avion.Aero.convertMachToCAS(Atmosphere)
+        CAS_target = Avion.Aero.getCAS()
+
+        # On remet l'avion à là où il était au départ
+        Avion.loadSave()
+
+        # On monte en palier jusqu'à la vitesse voulue
+        Montee.climbPalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt=Inputs.dtClimb)
+
+    @staticmethod
+    def getToMachDescent(Avion: Avion, Atmosphere: Atmosphere, Enregistrement: Enregistrement, Inputs: Inputs):
+        '''
+        Fait ralentir l'avion au Mach de descente si il n'y est pas déjà.
+
+        :param Avion: Instance de la classe Avion
+        :param Atmosphere: Instance de la classe Atmosphere
+        :param Enregistrement: Instance de la classe Enregistrement
+        :param Inputs: Instance de la classe Inputs
+        '''
+        # Sauvegarde de l'avion
+        Avion.save()
+
+        # On se place à Mach cruise pour définir la CAS Target
+        Avion.Aero.setMach(Inputs.MachhighDescent)
+        Avion.Aero.convertMachToCAS(Atmosphere)
+        CAS_target = Avion.Aero.getCAS()
+
+        # On remet l'avion à là où il était au départ
+        Avion.loadSave()
+
+        # On descend en palier jusqu'à la vitesse voulue
+        Descente.descentePalier(Avion, Atmosphere, Enregistrement, Inputs, CAS_target, dt=Inputs.dtClimb)
 
     @staticmethod
     def calculateSpeedTarget(Avion: Avion, Atmosphere: Atmosphere, Inputs: Inputs):
@@ -223,6 +276,10 @@ class Croisiere:
         l_t = Avion.get_l()
         l_target = l_end - Avion.get_l_descent()
 
+        if abs(Avion.Aero.getMach() - Inputs.MachCruise) > 0.01:
+            Croisiere.getToMachCruise(Avion, Atmosphere, Enregistrement, Inputs)
+            Avion.Aero.setMach(Inputs.MachCruise)
+
         # Tant que l'on n'a pas parcouru assez de distance
         while (l_t < l_target):
 
@@ -284,6 +341,10 @@ class Croisiere:
         """
         l_t = Avion.get_l()
         l_target = l_end - Avion.get_l_descent()
+
+        if abs(Avion.Aero.getMach() - Inputs.MachCruise) > 0.01:
+            Croisiere.getToMachCruise(Avion, Atmosphere, Enregistrement, Inputs)
+            Avion.Aero.setMach(Inputs.MachCruise)
 
         # Tant que l'on n'a pas parcouru assez de distance
         while (l_t < l_target):

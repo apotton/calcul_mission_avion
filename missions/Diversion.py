@@ -105,3 +105,8 @@ class Diversion:
             # Enregistrement au pas de temps
             Enregistrement.save(Avion, Atmosphere, dt)
 
+        # On ralentit jusqu'à la vitesse de descente
+        if (Avion.Aero.getMach() - Inputs.MachhighDescent) > 0.01:
+            Croisiere.getToMachDescent(Avion, Atmosphere, Enregistrement, Inputs)
+            Avion.Aero.setMach(Inputs.MachhighDescent)
+

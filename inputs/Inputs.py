@@ -36,6 +36,8 @@ class Inputs:
         self.hInit_ft   = 1500.0   # ft
         self.hAccel_ft  = 10000.0  # ft
         self.CASinit_kt = 250.0    # kt
+        self.CAShighClimb_kt = 280.0    # kt
+        self.MachhighClimb   = 0.78
 
         # =====================
         # CROISIERE
@@ -65,6 +67,8 @@ class Inputs:
         self.CASfinal_kt = 250.0    # kt
         self.hDecel_ft = 10000.0    # ft, altitude finale de maxCAS
         self.hFinal_ft = 1500.0     # ft, altitude finale mission
+        self.CAShighDescent_kt = 280 # kt
+        self.MachhighDescent = 0.78 # -
 
         # =====================
         # Critère de diversion
