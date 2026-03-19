@@ -122,8 +122,9 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     EI_CO_sol = get_interpolated_EI(FFf, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_CO_ref())
     EI_NOx_sol = get_interpolated_EI(FFf, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_NOx_ref())
 
-    Enregistrement.data["EI_HC_sol"] = EI_HC_sol
-    Enregistrement.data["EI_CO_sol"] = EI_CO_sol
+    Enregistrement.data["FF_sol"]     = FFf
+    Enregistrement.data["EI_HC_sol"]  = EI_HC_sol
+    Enregistrement.data["EI_CO_sol"]  = EI_CO_sol
     Enregistrement.data["EI_NOx_sol"] = EI_NOx_sol
 
     # Calcul des émissions en vol, en g/kg

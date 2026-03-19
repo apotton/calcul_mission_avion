@@ -55,6 +55,7 @@ class Enregistrement:
             "ECCF": np.zeros(self.default_size, dtype = np.float32),
 
             # Emissions niveau sol
+            "FF_sol"     : np.zeros(self.default_size, dtype=np.float32),
             "EI_HC_sol"  : np.zeros(self.default_size, dtype=np.float32),
             "EI_CO_sol"  : np.zeros(self.default_size, dtype=np.float32),
             "EI_NOx_sol" : np.zeros(self.default_size, dtype=np.float32),
@@ -105,9 +106,10 @@ class Enregistrement:
             "ECCF": "kg/m",
 
             # Emissions niveau sol
-            "EI_HC_sol" :  "kg/s",
-            "EI_CO_sol" :  "kg/s",
-            "EI_NOx_sol" : "kg/s",
+            "FF_sol"     : "kg/s",
+            "EI_HC_sol"  : "g/kg",
+            "EI_CO_sol"  : "g/kg",
+            "EI_NOx_sol" : "g/kg",
 
             # Emissions polluantes
             "eHC"  : "kg/s",

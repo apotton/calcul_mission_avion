@@ -18,6 +18,7 @@ except:
     print("\033[31mModule customtkinter non trouvé: veuillez l'installer avec la commande 'pip install customtkinter'\033[0m")
     exit()
 from pathlib import Path
+import numpy as np
 import sys
 
 
@@ -353,9 +354,9 @@ class App(ctk.CTk):
             if key in ["SAR", "SGR"]: return arr / Constantes.conv_NM_m , "NM/kg"
             if key == "ECCF": return arr * Constantes.conv_NM_m, "kg/NM"
             if key in ["eHC", "eCO", "eNOx"]: return arr * 1000, "g/s"
-            if key == "envPM": return arr * 1000 * 1000, "mg/s"
+            if key in ["EI_HC_sol", "EI_CO_sol", "EI_NOx_sol"]: return arr, "g/kg"
             # Grandeurs qui restent en unités SI
-            unites = {"m": "kg", "FB": "kg", "rho": "kg/m³", "FF": "kg/s", "Mach": "Mach"}
+            unites = {"m": "kg", "FB": "kg", "rho": "kg/m³", "FF": "kg/s", "FF_sol": "kg/m³", "Mach": "-"}
             return arr, unites.get(key, "-")
 
         # Extraction des unités et valeurs
@@ -365,9 +366,7 @@ class App(ctk.CTk):
         # Nettoyage du graphique
         self.ax.clear()
 
-        # Tracé segmenté par phase
-        import numpy as np # Assure-toi que numpy est bien importé en haut de ton fichier
-        
+        # Tracé segmenté par phase        
         # On utilise le mapping global défini dans l'__init__
         for val_phase, infos in self.phase_mapping.items():
             
@@ -390,13 +389,6 @@ class App(ctk.CTk):
         self.ax.set_ylabel(f"{key_y} [{unit_y}]" if unit_y != "-" else key_y, fontweight='bold')
         self.ax.set_title(f"{key_y} = f({key_x})")
         self.ax.grid(True, linestyle='--', alpha=0.7)
-        
-        # Ajout de la légende à l'endroit le moins encombrant ("best")
-        # On ajoute un try/except car s'il n'y a aucune courbe tracée, la légende lève un warning
-        # try:
-        #     self.ax.legend(loc="best", framealpha=0.9)
-        # except:
-        #     pass
         
         self.fig.tight_layout()
         self.canvas.draw()
