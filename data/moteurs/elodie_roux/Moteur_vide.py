@@ -38,13 +38,10 @@ def load():
     EI_CO_ref     = 0 # g/kg
     # Emissions d'oxydes d'azote
     EI_NOx_ref    = 0 # g/kg
-    # Emissions de non-volatile particulate matter (attention à ne pas mettre en mg/kg)
-    EI_nvPM_Mass  = 0 # g/kg
 
     return DonneesMoteur(OPR, BPR, F0, T4, 
                          dT4_climb, dT4_cruise, h_opt,
                          fuel_flow_ref,
                          EI_HC_ref,
                          EI_CO_ref,
-                         EI_NOx_ref,
-                         EI_nvPM_Mass)
+                         EI_NOx_ref)

@@ -367,7 +367,6 @@ def load():
     EI_HC_ref     = np.array([2.3090, 0.0611, 0.0244, 0.0289], dtype=np.float32) # g/kg
     EI_CO_ref     = np.array([34.017, 3.5900, 0.1944, 0.2778], dtype=np.float32) # g/kg
     EI_NOx_ref    = np.array([4.1622, 8.7222, 17.140, 21.808], dtype=np.float32) # g/kg
-    EI_nvPM_Mass  = np.array([0.791,  1.543,  42.275, 61.413], dtype=np.float32)/1000 # g/kg
 
     return DonneesMoteur(mach_table,
                          alt_table_ft,
@@ -383,8 +382,7 @@ def load():
                          fuel_flow_ref,
                          EI_HC_ref,
                          EI_CO_ref,
-                         EI_NOx_ref,
-                         EI_nvPM_Mass)
+                         EI_NOx_ref)
 
 
 

@@ -54,11 +54,15 @@ class Enregistrement:
             "SAR" : np.zeros(self.default_size, dtype = np.float32),
             "ECCF": np.zeros(self.default_size, dtype = np.float32),
 
+            # Emissions niveau sol
+            "EI_HC_sol"  : np.zeros(self.default_size, dtype=np.float32),
+            "EI_CO_sol"  : np.zeros(self.default_size, dtype=np.float32),
+            "EI_NOx_sol" : np.zeros(self.default_size, dtype=np.float32),
+
             # Emissions polluantes
             "eHC"  : np.zeros(self.default_size, dtype = np.float32),
             "eCO"  : np.zeros(self.default_size, dtype = np.float32),
             "eNOx" : np.zeros(self.default_size, dtype = np.float32),
-            "envPM": np.zeros(self.default_size, dtype = np.float32),
         }
 
         # Unités des données tabulaires
@@ -100,11 +104,15 @@ class Enregistrement:
             "SAR" : "m/kg",
             "ECCF": "kg/m",
 
+            # Emissions niveau sol
+            "EI_HC_sol" :  "kg/s",
+            "EI_CO_sol" :  "kg/s",
+            "EI_NOx_sol" : "kg/s",
+
             # Emissions polluantes
             "eHC"  : "kg/s",
             "eCO"  : "kg/s",
             "eNOx" : "kg/s",
-            "envPM": "kg/s",
         }
 
         # Données de convergence simu
@@ -148,27 +156,22 @@ class Enregistrement:
             "eHC_climb": 0.0,
             "eCO_climb": 0.0,
             "eNOx_climb": 0.0,
-            "envPM_climb": 0.0,
             # Croisière
             "eHC_cruise": 0.0,
             "eCO_cruise": 0.0,
             "eNOx_cruise": 0.0,
-            "envPM_cruise": 0.0,
             # Descente
             "eHC_descent": 0.0,
             "eCO_descent": 0.0,
             "eNOx_descent": 0.0,
-            "envPM_descent": 0.0,
             # Diversion
             "eHC_diversion": 0.0,
             "eCO_diversion": 0.0,
             "eNOx_diversion": 0.0,
-            "envPM_diversion": 0.0,
             # Holding
             "eHC_holding": 0.0,
             "eCO_holding": 0.0,
             "eNOx_holding": 0.0,
-            "envPM_holding": 0.0,
         }
 
         # Données discontinues entre deux phases (essentiellement moteur)
@@ -419,60 +422,52 @@ class Enregistrement:
             self.mission_data["FB_climb"] * coeff,
             self.mission_data["eHC_climb"], 
             self.mission_data["eCO_climb"], 
-            self.mission_data["eNOx_climb"],
-            self.mission_data["envPM_climb"]),
+            self.mission_data["eNOx_climb"]),
 
             ("Croisière", 
             self.mission_data["FB_cruise"] * coeff,
             self.mission_data["eHC_cruise"], 
             self.mission_data["eCO_cruise"], 
-            self.mission_data["eNOx_cruise"],
-            self.mission_data["envPM_cruise"]),
+            self.mission_data["eNOx_cruise"]),
 
             ("Descente", 
             self.mission_data["FB_descent"] * coeff,
             self.mission_data["eHC_descent"], 
             self.mission_data["eCO_descent"], 
-            self.mission_data["eNOx_descent"],
-            self.mission_data["envPM_descent"]),
+            self.mission_data["eNOx_descent"]),
 
             ("Mission", 
             (self.mission_data["FB_climb"] + self.mission_data["FB_cruise"] + self.mission_data["FB_descent"]) * coeff,
             self.mission_data["eHC_climb"] + self.mission_data["eHC_cruise"] + self.mission_data["eHC_descent"], 
             self.mission_data["eCO_climb"] + self.mission_data["eCO_cruise"] + self.mission_data["eCO_descent"], 
-            self.mission_data["eNOx_climb"] + self.mission_data["eNOx_cruise"] + self.mission_data["eNOx_descent"], 
-            self.mission_data["envPM_climb"] + self.mission_data["envPM_cruise"] + self.mission_data["envPM_descent"]),
+            self.mission_data["eNOx_climb"] + self.mission_data["eNOx_cruise"] + self.mission_data["eNOx_descent"]),
 
             ("Diversion", 
             self.mission_data["FB_diversion"] * coeff,
             self.mission_data["eHC_diversion"],
             self.mission_data["eCO_diversion"], 
-            self.mission_data["eNOx_diversion"],
-            self.mission_data["envPM_diversion"]),
+            self.mission_data["eNOx_diversion"]),
 
             ("Holding", 
             self.mission_data["FB_holding"] * coeff,
             self.mission_data["eHC_holding"],
             self.mission_data["eCO_holding"], 
-            self.mission_data["eNOx_holding"],
-            self.mission_data["envPM_holding"]),
+            self.mission_data["eNOx_holding"]),
 
             ("Reserves",
             (self.mission_data["FB_diversion"] + self.mission_data["FB_holding"]) * coeff,
              self.mission_data["eHC_diversion"] + self.mission_data["eHC_holding"],
              self.mission_data["eCO_diversion"] + self.mission_data["eCO_holding"],
-             self.mission_data["eNOx_diversion"] + self.mission_data["eNOx_holding"],
-             self.mission_data["envPM_diversion"] + self.mission_data["envPM_holding"])
+             self.mission_data["eNOx_diversion"] + self.mission_data["eNOx_holding"])
         ]
         
         totalCO2 = 0.0
         totalHC = 0.0
         totalCO = 0.0
         totalNOx = 0.0
-        totalnvPM = 0.0
 
         lines = []
-        header = f"{'Phase':<12}{'CO₂ (t)':>10}{'HC (kg)':>10}{'CO (kg)':>10}{'NOx (kg)':>10}{'nvPM (g)':>10}"
+        header = f"{'Phase':<12}{'CO₂ (t)':>10}{'HC (kg)':>10}{'CO (kg)':>10}{'NOx (kg)':>10}"
         separator = "-" * len(header)
 
         lines.append(separator)
@@ -483,14 +478,14 @@ class Enregistrement:
         lines.append(separator)
 
         # Itération sur toutes les phases pour arriver au total
-        for name, CO2, HC, CO, NOx, nvPM in phases:
+        for name, CO2, HC, CO, NOx in phases:
             # Pour le total de la mission, on met un séparateur
             if name == "Mission" or name == "Reserves":
                 lines.append(separator)
 
 
             lines.append(
-                f"{name:<12}{CO2:>10.1f}{HC:>10.1f}{CO:>10.1f}{NOx:>10.1f}{nvPM*1000:>10.1f}"
+                f"{name:<12}{CO2:>10.1f}{HC:>10.1f}{CO:>10.1f}{NOx:>10.1f}"
             )
 
             # On remet un séparateur pour la mission et on ne compte pas sa distance parcourue
@@ -501,10 +496,9 @@ class Enregistrement:
                 totalHC += HC
                 totalCO += CO
                 totalNOx += NOx
-                totalnvPM += nvPM
 
         lines.append(
-            f"{'TOTAL':<12}{totalCO2:>10.1f}{totalHC:>10.1f}{totalCO:>10.1f}{totalNOx:>10.1f}{totalnvPM*1000:>10.1f}"
+            f"{'TOTAL':<12}{totalCO2:>10.1f}{totalHC:>10.1f}{totalCO:>10.1f}{totalNOx:>10.1f}"
         )
 
         # On renvoie la string formatée

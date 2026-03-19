@@ -86,10 +86,10 @@ class Montee:
         :param dt: pas de temps (s)
         '''
         h_t = Avion.get_h()
+        # Atmosphère
+        Atmosphere.calculateRhoPT(Avion.get_h())
 
         while h_t < h_lim:
-            # Atmosphère
-            Atmosphere.calculateRhoPT(Avion.get_h())
 
             # Vitesses
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -142,6 +142,7 @@ class Montee:
             # Fuel burn
             Avion.Masse.burnFuel(dt)
 
+            Atmosphere.calculateRhoPT(Avion.get_h())
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
@@ -222,7 +223,8 @@ class Montee:
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
             
-            # Pas de changement d'altitude en palier            
+            # Pas de changement d'altitude en palier     
+            Atmosphere.calculateRhoPT(Avion.get_h())       
             Enregistrement.save(Avion, Atmosphere, dt)
 
     @staticmethod
@@ -244,7 +246,7 @@ class Montee:
         # Tant que l'on a pas atteint le Mach limite ou l'altitude limite
         while Avion.Aero.getMach() < Mach_lim and h_t < h_lim:
             # Atmosphère
-            Atmosphere.calculateRhoPT(h_t)
+            # Atmosphere.calculateRhoPT(h_t)
 
             # Vitesses
             Avion.Aero.convertCASToMach(Atmosphere)
@@ -307,6 +309,7 @@ class Montee:
 
             Avion.Add_dl(Vx * dt)
             Avion.Add_dt(dt)
+            Atmosphere.calculateRhoPT(Avion.get_h())
 
             Enregistrement.save(Avion, Atmosphere, dt)
 
@@ -328,7 +331,7 @@ class Montee:
         while h_t < h_lim:
 
             # Atmosphère
-            Atmosphere.calculateRhoPT(Avion.get_h())
+            # Atmosphere.calculateRhoPT(Avion.get_h())
 
             # Vitesse
             Avion.Aero.convertMachToTAS(Atmosphere)
@@ -380,5 +383,7 @@ class Montee:
             
             # Fuel burn
             Avion.Masse.burnFuel(dt)
+
+            Atmosphere.calculateRhoPT(Avion.get_h())
             
             Enregistrement.save(Avion, Atmosphere, dt)

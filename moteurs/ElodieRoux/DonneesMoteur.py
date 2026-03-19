@@ -8,8 +8,7 @@ class DonneesMoteur:
                 fuel_flow_ref,
                 EI_HC_ref,
                 EI_CO_ref,
-                EI_NOx_ref,
-                EI_nvPM_Mass):
+                EI_NOx_ref):
             
         self.OPR = OPR
         self.BPR = BPR
@@ -22,6 +21,5 @@ class DonneesMoteur:
         self.EI_HC_ref = EI_HC_ref
         self.EI_CO_ref = EI_CO_ref
         self.EI_NOx_ref = EI_NOx_ref
-        self.EI_nvPM_Mass = EI_nvPM_Mass
 
 

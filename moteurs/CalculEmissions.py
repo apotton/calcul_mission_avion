@@ -101,7 +101,7 @@ def correct_EI_for_flight(EI_HC_ref, EI_CO_ref, EI_NOx_ref, Tamb, Pamb, humidity
 def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     '''
     Calcule les émissions instantannées (kg/s) et totales (kg) de différents
-    polluants: HC, CO, NOx et nvPM.
+    polluants: HC, CO, NOx.
 
     :param Avion: Instance de la classe Avion
     :param Atmosphere: Instance de la classe Atmosphere
@@ -117,14 +117,17 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
                        Enregistrement.data["P"],
                        Enregistrement.data["Mach"])
     
-    # Interpolation au sol des émissions (pas d'autres interpolations pour nvPM)
+    # Interpolation au sol des émissions
     EI_HC_sol = get_interpolated_EI(FFf, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_HC_ref())
     EI_CO_sol = get_interpolated_EI(FFf, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_CO_ref())
-    EI_Nox_sol = get_interpolated_EI(FFf, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_NOx_ref())
-    EI_nvPM_vol = get_interpolated_EI(FFf, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_nvPM_Mass())
+    EI_NOx_sol = get_interpolated_EI(FFf, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_NOx_ref())
+
+    Enregistrement.data["EI_HC_sol"] = EI_HC_sol
+    Enregistrement.data["EI_CO_sol"] = EI_CO_sol
+    Enregistrement.data["EI_NOx_sol"] = EI_NOx_sol
 
     # Calcul des émissions en vol, en g/kg
-    EI_HC_vol, EI_CO_vol, EI_Nox_vol = correct_EI_for_flight(EI_HC_sol, EI_CO_sol, EI_Nox_sol,
+    EI_HC_vol, EI_CO_vol, EI_Nox_vol = correct_EI_for_flight(EI_HC_sol, EI_CO_sol, EI_NOx_sol,
                                                              Enregistrement.data["T"],
                                                              Enregistrement.data["P"],
                                                              humidity=w)
@@ -134,7 +137,6 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     Enregistrement.data["eHC"] = FF * EI_HC_vol / 1000
     Enregistrement.data["eCO"] = FF * EI_CO_vol / 1000
     Enregistrement.data["eNOx"] = FF * EI_Nox_vol / 1000
-    Enregistrement.data["envPM"] = FF * EI_nvPM_vol / 1000
 
     ## Calcul (intégration) des émissions totales
     phase = Enregistrement.data["phase"]
@@ -145,33 +147,28 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     Enregistrement.mission_data["eHC_climb"] = np.trapezoid(Enregistrement.data["eHC"][mask_climb], t[mask_climb])
     Enregistrement.mission_data["eCO_climb"] = np.trapezoid(Enregistrement.data["eCO"][mask_climb], t[mask_climb])
     Enregistrement.mission_data["eNOx_climb"] = np.trapezoid(Enregistrement.data["eNOx"][mask_climb], t[mask_climb])
-    Enregistrement.mission_data["envPM_climb"] = np.trapezoid(Enregistrement.data["envPM"][mask_climb], t[mask_climb])
 
     # Croisière
     mask_cruise = (phase == 1)
     Enregistrement.mission_data["eHC_cruise"] = np.trapezoid(Enregistrement.data["eHC"][mask_cruise], t[mask_cruise])
     Enregistrement.mission_data["eCO_cruise"] = np.trapezoid(Enregistrement.data["eCO"][mask_cruise], t[mask_cruise])
     Enregistrement.mission_data["eNOx_cruise"] = np.trapezoid(Enregistrement.data["eNOx"][mask_cruise], t[mask_cruise])
-    Enregistrement.mission_data["envPM_cruise"] = np.trapezoid(Enregistrement.data["envPM"][mask_cruise], t[mask_cruise])
 
     # Descente
     mask_descent = (phase == 2)
     Enregistrement.mission_data["eHC_descent"] = np.trapezoid(Enregistrement.data["eHC"][mask_descent], t[mask_descent])
     Enregistrement.mission_data["eCO_descent"] = np.trapezoid(Enregistrement.data["eCO"][mask_descent], t[mask_descent])
     Enregistrement.mission_data["eNOx_descent"] = np.trapezoid(Enregistrement.data["eNOx"][mask_descent], t[mask_descent])
-    Enregistrement.mission_data["envPM_descent"] = np.trapezoid(Enregistrement.data["envPM"][mask_descent], t[mask_descent])
 
     # Diversion
     mask_diversion = (phase == 3)
     Enregistrement.mission_data["eHC_diversion"] = np.trapezoid(Enregistrement.data["eHC"][mask_diversion], t[mask_diversion])
     Enregistrement.mission_data["eCO_diversion"] = np.trapezoid(Enregistrement.data["eCO"][mask_diversion], t[mask_diversion])
     Enregistrement.mission_data["eNOx_diversion"] = np.trapezoid(Enregistrement.data["eNOx"][mask_diversion], t[mask_diversion])
-    Enregistrement.mission_data["envPM_diversion"] = np.trapezoid(Enregistrement.data["envPM"][mask_diversion], t[mask_diversion])
 
     # Holding
     mask_holding = (phase == 4)
     Enregistrement.mission_data["eHC_holding"] = np.trapezoid(Enregistrement.data["eHC"][mask_holding], t[mask_holding])
     Enregistrement.mission_data["eCO_holding"] = np.trapezoid(Enregistrement.data["eCO"][mask_holding], t[mask_holding])
     Enregistrement.mission_data["eNOx_holding"] = np.trapezoid(Enregistrement.data["eNOx"][mask_holding], t[mask_holding])
-    Enregistrement.mission_data["envPM_holding"] = np.trapezoid(Enregistrement.data["envPM"][mask_holding], t[mask_holding])
 

@@ -16,8 +16,7 @@ class DonneesMoteur:
                  fuel_flow_ref,
                  EI_HC_ref,
                  EI_CO_ref,
-                 EI_NOx_ref,
-                 EI_nvPM_Mass):
+                 EI_NOx_ref):
         
         self.mach_table = mach_table
         self.alt_table_ft = alt_table_ft
@@ -34,6 +33,5 @@ class DonneesMoteur:
         self.EI_HC_ref = EI_HC_ref
         self.EI_CO_ref = EI_CO_ref
         self.EI_NOx_ref = EI_NOx_ref
-        self.EI_nvPM_Mass = EI_nvPM_Mass
 
 
