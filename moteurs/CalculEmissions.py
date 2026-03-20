@@ -112,7 +112,7 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     w = Atmosphere.w
 
     # Recalage Fuel Flow au sol (méthode BFFM2)
-    FFf = calculateFFf(Enregistrement.data["FF"],
+    FFf = calculateFFf(Enregistrement.data["WF_total"],
                        Enregistrement.data["T"], 
                        Enregistrement.data["P"],
                        Enregistrement.data["Mach"])
@@ -122,10 +122,10 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
     EI_CO_sol = get_interpolated_EI(FFf/2, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_CO_ref())
     EI_NOx_sol = get_interpolated_EI(FFf/2, Avion.Moteur.getfuel_flow_ref(), Avion.Moteur.getEI_NOx_ref())
 
-    Enregistrement.data["FF_sol"]     = FFf
-    Enregistrement.data["EI_HC_sol"]  = EI_HC_sol
-    Enregistrement.data["EI_CO_sol"]  = EI_CO_sol
-    Enregistrement.data["EI_NOx_sol"] = EI_NOx_sol
+    Enregistrement.data["WF_total_sol"] = FFf
+    Enregistrement.data["EI_HC_sol"]    = EI_HC_sol
+    Enregistrement.data["EI_CO_sol"]    = EI_CO_sol
+    Enregistrement.data["EI_NOx_sol"]   = EI_NOx_sol
 
     # Calcul des émissions en vol, en g/kg
     EI_HC_vol, EI_CO_vol, EI_Nox_vol = correct_EI_for_flight(EI_HC_sol, EI_CO_sol, EI_NOx_sol,
@@ -134,10 +134,10 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
                                                              humidity=w)
     
     # Calcul des émissions instantanées (kg/s)
-    FF = Enregistrement.data["FF"]
-    Enregistrement.data["eHC"] = FF * EI_HC_vol / 1000
-    Enregistrement.data["eCO"] = FF * EI_CO_vol / 1000
-    Enregistrement.data["eNOx"] = FF * EI_Nox_vol / 1000
+    FF = Enregistrement.data["WF_total"]
+    Enregistrement.data["eHC_total"] = FF * EI_HC_vol / 1000
+    Enregistrement.data["eCO_total"] = FF * EI_CO_vol / 1000
+    Enregistrement.data["eNOx_total"] = FF * EI_Nox_vol / 1000
 
     ## Calcul (intégration) des émissions totales
     phase = Enregistrement.data["phase"]
@@ -145,31 +145,31 @@ def getAllEmissions(Avion: Avion, Atmosphere: Atmosphere, Enregistrement):
 
     # Montée
     mask_climb = (phase == 0)
-    Enregistrement.mission_data["eHC_climb"] = np.trapezoid(Enregistrement.data["eHC"][mask_climb], t[mask_climb])
-    Enregistrement.mission_data["eCO_climb"] = np.trapezoid(Enregistrement.data["eCO"][mask_climb], t[mask_climb])
-    Enregistrement.mission_data["eNOx_climb"] = np.trapezoid(Enregistrement.data["eNOx"][mask_climb], t[mask_climb])
+    Enregistrement.mission_data["eHC_climb"] = np.trapezoid(Enregistrement.data["eHC_total"][mask_climb], t[mask_climb])
+    Enregistrement.mission_data["eCO_climb"] = np.trapezoid(Enregistrement.data["eCO_total"][mask_climb], t[mask_climb])
+    Enregistrement.mission_data["eNOx_climb"] = np.trapezoid(Enregistrement.data["eNOx_total"][mask_climb], t[mask_climb])
 
     # Croisière
     mask_cruise = (phase == 1)
-    Enregistrement.mission_data["eHC_cruise"] = np.trapezoid(Enregistrement.data["eHC"][mask_cruise], t[mask_cruise])
-    Enregistrement.mission_data["eCO_cruise"] = np.trapezoid(Enregistrement.data["eCO"][mask_cruise], t[mask_cruise])
-    Enregistrement.mission_data["eNOx_cruise"] = np.trapezoid(Enregistrement.data["eNOx"][mask_cruise], t[mask_cruise])
+    Enregistrement.mission_data["eHC_cruise"] = np.trapezoid(Enregistrement.data["eHC_total"][mask_cruise], t[mask_cruise])
+    Enregistrement.mission_data["eCO_cruise"] = np.trapezoid(Enregistrement.data["eCO_total"][mask_cruise], t[mask_cruise])
+    Enregistrement.mission_data["eNOx_cruise"] = np.trapezoid(Enregistrement.data["eNOx_total"][mask_cruise], t[mask_cruise])
 
     # Descente
     mask_descent = (phase == 2)
-    Enregistrement.mission_data["eHC_descent"] = np.trapezoid(Enregistrement.data["eHC"][mask_descent], t[mask_descent])
-    Enregistrement.mission_data["eCO_descent"] = np.trapezoid(Enregistrement.data["eCO"][mask_descent], t[mask_descent])
-    Enregistrement.mission_data["eNOx_descent"] = np.trapezoid(Enregistrement.data["eNOx"][mask_descent], t[mask_descent])
+    Enregistrement.mission_data["eHC_descent"] = np.trapezoid(Enregistrement.data["eHC_total"][mask_descent], t[mask_descent])
+    Enregistrement.mission_data["eCO_descent"] = np.trapezoid(Enregistrement.data["eCO_total"][mask_descent], t[mask_descent])
+    Enregistrement.mission_data["eNOx_descent"] = np.trapezoid(Enregistrement.data["eNOx_total"][mask_descent], t[mask_descent])
 
     # Diversion
     mask_diversion = (phase == 3)
-    Enregistrement.mission_data["eHC_diversion"] = np.trapezoid(Enregistrement.data["eHC"][mask_diversion], t[mask_diversion])
-    Enregistrement.mission_data["eCO_diversion"] = np.trapezoid(Enregistrement.data["eCO"][mask_diversion], t[mask_diversion])
-    Enregistrement.mission_data["eNOx_diversion"] = np.trapezoid(Enregistrement.data["eNOx"][mask_diversion], t[mask_diversion])
+    Enregistrement.mission_data["eHC_diversion"] = np.trapezoid(Enregistrement.data["eHC_total"][mask_diversion], t[mask_diversion])
+    Enregistrement.mission_data["eCO_diversion"] = np.trapezoid(Enregistrement.data["eCO_total"][mask_diversion], t[mask_diversion])
+    Enregistrement.mission_data["eNOx_diversion"] = np.trapezoid(Enregistrement.data["eNOx_total"][mask_diversion], t[mask_diversion])
 
     # Holding
     mask_holding = (phase == 4)
-    Enregistrement.mission_data["eHC_holding"] = np.trapezoid(Enregistrement.data["eHC"][mask_holding], t[mask_holding])
-    Enregistrement.mission_data["eCO_holding"] = np.trapezoid(Enregistrement.data["eCO"][mask_holding], t[mask_holding])
-    Enregistrement.mission_data["eNOx_holding"] = np.trapezoid(Enregistrement.data["eNOx"][mask_holding], t[mask_holding])
+    Enregistrement.mission_data["eHC_holding"] = np.trapezoid(Enregistrement.data["eHC_total"][mask_holding], t[mask_holding])
+    Enregistrement.mission_data["eCO_holding"] = np.trapezoid(Enregistrement.data["eCO_total"][mask_holding], t[mask_holding])
+    Enregistrement.mission_data["eNOx_holding"] = np.trapezoid(Enregistrement.data["eNOx_total"][mask_holding], t[mask_holding])
 

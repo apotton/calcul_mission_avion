@@ -350,13 +350,13 @@ class App(ctk.CTk):
             if key == "t": return arr / 60, "min"
             if key == "P": return arr / 100, "hPa"
             if key == "T": return arr - 273.15, "°C"
-            if key == "F": return arr / 1000, "kN"
+            if key == "FN_total": return arr / 1000, "kN"
             if key in ["SAR", "SGR"]: return arr / Constantes.conv_NM_m , "NM/kg"
             if key == "ECCF": return arr * Constantes.conv_NM_m, "kg/NM"
-            if key in ["eHC", "eCO", "eNOx"]: return arr * 1000, "g/s"
+            if key in ["eHC_total", "eCO_total", "eNOx_total"]: return arr * 1000, "g/s"
             if key in ["EI_HC_sol", "EI_CO_sol", "EI_NOx_sol"]: return arr, "g/kg"
             # Grandeurs qui restent en unités SI
-            unites = {"m": "kg", "FB": "kg", "rho": "kg/m³", "FF": "kg/s", "FF_sol": "kg/m³", "Mach": "-"}
+            unites = {"m": "kg", "FB": "kg", "rho": "kg/m³", "WF_total": "kg/s", "WF_total_sol": "kg/s", "Mach": "-"}
             return arr, unites.get(key, "-")
 
         # Extraction des unités et valeurs

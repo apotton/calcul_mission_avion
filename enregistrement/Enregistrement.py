@@ -36,8 +36,8 @@ class Enregistrement:
             "finesse"  : np.zeros(self.default_size, dtype=np.float32),
 
             # Propulsion
-            "F" : np.zeros(self.default_size, dtype=np.float32),
-            "FF" : np.zeros(self.default_size, dtype=np.float32),
+            "FN_total" : np.zeros(self.default_size, dtype=np.float32),
+            "WF_total" : np.zeros(self.default_size, dtype=np.float32),
             "SFC" : np.zeros(self.default_size, dtype=np.float32),
 
             # Masse / carburant
@@ -55,15 +55,15 @@ class Enregistrement:
             "ECCF": np.zeros(self.default_size, dtype = np.float32),
 
             # Emissions niveau sol
-            "FF_sol"     : np.zeros(self.default_size, dtype=np.float32),
+            "WF_total_sol"     : np.zeros(self.default_size, dtype=np.float32),
             "EI_HC_sol"  : np.zeros(self.default_size, dtype=np.float32),
             "EI_CO_sol"  : np.zeros(self.default_size, dtype=np.float32),
             "EI_NOx_sol" : np.zeros(self.default_size, dtype=np.float32),
 
             # Emissions polluantes
-            "eHC"  : np.zeros(self.default_size, dtype = np.float32),
-            "eCO"  : np.zeros(self.default_size, dtype = np.float32),
-            "eNOx" : np.zeros(self.default_size, dtype = np.float32),
+            "eHC_total"  : np.zeros(self.default_size, dtype = np.float32),
+            "eCO_total"  : np.zeros(self.default_size, dtype = np.float32),
+            "eNOx_total" : np.zeros(self.default_size, dtype = np.float32),
         }
 
         # Unités des données tabulaires
@@ -87,8 +87,8 @@ class Enregistrement:
             "finesse"  : "-",
 
             # Propulsion
-            "F" : "N",
-            "FF"  : "kg/s",
+            "FN_total" : "N",
+            "WF_total"  : "kg/s",
             "SFC" : "kg/(N.s)",
 
             # Masse / carburant
@@ -106,15 +106,15 @@ class Enregistrement:
             "ECCF": "kg/m",
 
             # Emissions niveau sol
-            "FF_sol"     : "kg/s",
+            "WF_total_sol"     : "kg/s",
             "EI_HC_sol"  : "g/kg",
             "EI_CO_sol"  : "g/kg",
             "EI_NOx_sol" : "g/kg",
 
             # Emissions polluantes
-            "eHC"  : "kg/s",
-            "eCO"  : "kg/s",
-            "eNOx" : "kg/s",
+            "eHC_total"  : "kg/s",
+            "eCO_total"  : "kg/s",
+            "eNOx_total" : "kg/s",
         }
 
         # Données de convergence simu
@@ -177,7 +177,7 @@ class Enregistrement:
         }
 
         # Données discontinues entre deux phases (essentiellement moteur)
-        self.discontinuous_data = ["F", "FF", "SFC", "SGR", "SAR", "ECCF"]
+        self.discontinuous_data = ["FN_total", "WF_total", "SFC", "SGR", "SAR", "ECCF"]
 
     
     def save(self, Avion: Avion, Atmosphere: Atmosphere, dt):
@@ -197,8 +197,8 @@ class Enregistrement:
 
                 # Celles-là ne le sont pas
                 self.data["phase"][self.counter] = Avion.getPhase()
-                self.data["F"][self.counter] = Avion.Moteur.getF()
-                self.data["FF"][self.counter] = Avion.Moteur.getFF()
+                self.data["FN_total"][self.counter] = Avion.Moteur.getF()
+                self.data["WF_total"][self.counter] = Avion.Moteur.getFF()
                 self.data["SFC"][self.counter] = Avion.Moteur.getSFC()
 
                 if Avion.getPhase() == 1:
@@ -222,8 +222,8 @@ class Enregistrement:
         self.data["Cx"][self.counter] = Avion.Aero.getCx()
         self.data["finesse"][self.counter]  = Avion.Aero.getCz() / Avion.Aero.getCx()
 
-        self.data["F"][self.counter] = Avion.Moteur.getF()
-        self.data["FF"][self.counter] = Avion.Moteur.getFF()
+        self.data["FN_total"][self.counter] = Avion.Moteur.getF()
+        self.data["WF_total"][self.counter] = Avion.Moteur.getFF()
         self.data["SFC"][self.counter] = Avion.Moteur.getSFC()
 
         self.data["FB"][self.counter] = Avion.Masse.getFuelBurned()
