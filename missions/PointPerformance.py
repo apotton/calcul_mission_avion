@@ -142,23 +142,23 @@ class PointPerformance():
                 ("Finesse (L/D)", finesse, "-"),
                 ("Traînée (Rx)", R_X, "N")
             ],
-            "Performances Montée (Max)": [
-                ("Poussée max", F_N_max, "N"),
-                ("Fuel Flow max", F_F_max, "kg/h"),
+            "Performances Montée (Max Climb)": [
+                ("Poussée max (2 moteurs)", F_N_max, "N"),
+                ("Fuel Flow max (2 moteurs)", F_F_max, "kg/h"),
                 ("SFC max", SFC_max, "kg/N/h"),
                 ("Pente de montée", pente * 180 / np.pi, "°"),
                 ("Rate of Climb (ROC)", ROC / Constantes.conv_kt_mps * 60 , "ft/m") 
             ],
             "Performances Croisière (Équilibre)": [
-                ("Poussée équilibre", F_N_eq, "N"),
-                ("Fuel Flow", F_F_eq, "kg/h"),
+                ("Poussée équilibre (2 moteurs)", F_N_eq, "N"),
+                ("Fuel Flow (2 moteurs)", F_F_eq, "kg/h"),
                 ("SFC", SFC_eq, "kg/N/h"),
                 ("Specific Air Range (SAR)", SAR, "NM/kg"),
                 ("Specific Ground Range (SAR)", SGR, "NM/kg")
             ],
-            "Performances Idle (moteur ralenti)": [
-                ("Poussée idle", F_N_IF, "N"),
-                ("Fuel Flow", F_F_IF, "kg/h"),
+            "Performances Idle (Moteurs ralentis)": [
+                ("Poussée idle (2 moteurs)", F_N_IF, "N"),
+                ("Fuel Flow (2 moteurs)", F_F_IF, "kg/h"),
                 ("SFC", SFC_IF, "kg/N/h"),
                 ("Pente de descente", pente_IF * 180/np.pi, "°"),
                 ("Rate of Climb (ROC)", ROC_IF / Constantes.conv_kt_mps * 60, "ft/m")
